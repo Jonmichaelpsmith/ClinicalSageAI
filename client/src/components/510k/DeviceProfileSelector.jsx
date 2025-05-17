@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useModal } from '@/contexts/ModalProvider';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +11,10 @@ import {
   createProfileFromTemplate
 } from '../../utils/deviceProfileDefaults';
 
-const DeviceProfileSelector = ({ onProfileSelect, k510DocumentId, isOpen, onClose }) => {
+const DeviceProfileSelector = ({ onProfileSelect, k510DocumentId }) => {
+  const { isModalOpen, closeModal } = useModal();
+  const isOpen = isModalOpen('device-profile-selector');
+  const onClose = () => closeModal('device-profile-selector');
   const [selectedTab, setSelectedTab] = useState('all');
   const [filterArea, setFilterArea] = useState('all');
   const allTemplates = getAllProfileTemplates();

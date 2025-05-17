@@ -9,6 +9,7 @@ import { initializeStates, saveState, loadState, recoverWorkflow, getWorkflowDia
 import WorkflowContinuityManager from '../components/recovery/WorkflowContinuityManager';
 import DeviceProfileSelector from '../components/510k/DeviceProfileSelector';
 import NavigationBlocker from '../components/navigation/NavigationBlocker';
+import { useModal } from '@/contexts/ModalProvider';
 
 // Implementation of openDocumentSafely function
 const openDocumentSafely = (documentPath, documentName, toast) => {
@@ -116,6 +117,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   const assistantContext = safeAssistantHook();
   const { openAssistant = () => {}, setModuleContext = () => {} } = assistantContext || {};
   const { toast } = useToast();
+  const { openModal, closeModal, isModalOpen } = useModal();
   
   // State variables
   const [title, setTitle] = useState('FDA 510(k) Submission');
@@ -373,6 +375,16 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     if (saved !== null) return saved;
     return !deviceProfile;
   });
+
+  const openProfileSelector = () => {
+    setShowProfileSelector(true);
+    openModal('device-profile-selector');
+  };
+
+  const closeProfileSelector = () => {
+    setShowProfileSelector(false);
+    closeModal('device-profile-selector');
+  };
   
   // Handle device profile selection from the selector 
   // Updated with proper state handling and user feedback
@@ -392,8 +404,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     // Only update these if not already set from profile
     if (selectedProfile.deviceName) setDeviceName(selectedProfile.deviceName);
     if (selectedProfile.intendedUse) setIntendedUse(selectedProfile.intendedUse);
-    setShowProfileSelector(false);
-    saveState('showProfileSelector', false);
+    closeProfileSelector();
     
     toast({
       title: "Device Profile Selected",
@@ -405,12 +416,20 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   // Persist profile selector visibility state
   useEffect(() => {
     saveState('showProfileSelector', showProfileSelector);
+    if (showProfileSelector) {
+      openModal('device-profile-selector');
+    } else {
+      closeModal('device-profile-selector');
+    }
   }, [showProfileSelector]);
 
-  // Hide profile selector when navigating to Document Intelligence
+  // Manage modal visibility when navigating to Document Intelligence
   useEffect(() => {
     if (activeTab === 'document-intelligence') {
-      setShowProfileSelector(false);
+      closeProfileSelector();
+      openModal('document-intelligence');
+    } else {
+      closeModal('document-intelligence');
     }
   }, [activeTab]);
   const [compliance, setCompliance] = useState(null);
@@ -1205,7 +1224,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
             setDeviceProfile(savedProfile);
           } else {
             // Show profile selector if we can't recover the profile
-            setShowProfileSelector(true);
+            openProfileSelector();
             console.warn("[CERV2 Navigation] Cannot advance to step", step, "without completing step 1 (Device Profile)");
             toast({
               title: "Complete Device Profile First",
@@ -1501,7 +1520,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setShowProfileSelector(true)}
+            onClick={openProfileSelector}
             className="mx-2"
           >
             <RefreshCw className="h-4 w-4 mr-1" />
@@ -1539,7 +1558,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
         return (
           <div className="space-y-4">
             {/* Show device profile selector when needed */}
-            {showProfileSelector && (
+            {isModalOpen('device-profile-selector') && (
               <div className="mb-4 p-4 border border-blue-100 rounded-lg bg-blue-50">
                 <h3 className="text-lg font-semibold mb-2">Select a Device Profile</h3>
                 <p className="mb-4 text-gray-600">Choose a pre-configured device profile to streamline your workflow:</p>
@@ -2111,8 +2130,6 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       if (!deviceProfile && showProfileSelector) {
         return (
           <DeviceProfileSelector
-            isOpen={true}
-            onClose={() => setShowProfileSelector(false)}
             onProfileSelect={handleProfileSelect}
             k510DocumentId={k510DocumentId || 'new-device'}
           />
@@ -2307,7 +2324,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     else if (documentType === 'cer' && activeTab === 'literature-review') {
       return <LiteratureReviewWorkflow cerDocumentId={cerDocumentId} />;
     }
-    else if (activeTab === 'document-intelligence') {
+    else if (isModalOpen('document-intelligence')) {
       // Import DocumentIntelligenceTab directly for better performance
       const DocumentIntelligenceTab = require('../components/document-intelligence/DocumentIntelligenceTab').default;
       // Import ModalPortal to render the modal with proper isolation
@@ -2315,7 +2332,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       
       // Close the profile selector if it's open
       if (showProfileSelector) {
-        setShowProfileSelector(false);
+        closeProfileSelector();
       }
       
       return (
@@ -2336,7 +2353,10 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                 <Button 
                   variant="outline" 
                   size="sm"
-                  onClick={() => setActiveTab('device')}
+                  onClick={() => {
+                    closeModal('document-intelligence');
+                    setActiveTab('device');
+                  }}
                   className="border-white/30 text-white hover:bg-white/20 hover:text-white"
                 >
                   <X className="h-4 w-4 mr-1" />
@@ -2353,6 +2373,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                     if (updatedProfile) {
                       setDeviceProfile(updatedProfile);
                       saveState('deviceProfile', updatedProfile);
+                      closeModal('document-intelligence');
                       setActiveTab('device');
                       toast({
                         title: "Device Profile Updated",
