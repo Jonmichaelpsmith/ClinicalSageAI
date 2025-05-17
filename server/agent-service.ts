@@ -1,9 +1,10 @@
-import { queryHuggingFace, generateEmbeddings, HFModel } from './huggingface-service';
+import { queryHuggingFace, HFModel } from './huggingface-service';
 import * as fs from 'fs';
 import * as path from 'path';
 import { db } from './db';
 import { csrReports, csrDetails } from '../shared/schema';
 import { sql } from 'drizzle-orm';
+import { queryCsrs } from '@/api/csrClient';
 
 // Use environment variables for API keys
 const HF_API_KEY = process.env.HF_API_KEY;
@@ -166,29 +167,14 @@ export class StudyDesignAgentService {
     phase?: string
   ): Promise<any[]> {
     try {
-      // Generate embedding for the query
-      const queryEmbedding = await generateEmbeddings(query);
-      
-      // Build database query
-      let dbQuery = db.select()
-        .from(csrReports)
-        .limit(5);
-      
-      // Add filters if provided
-      if (indication) {
-        dbQuery = dbQuery.where(sql`${csrReports.indication} = ${indication}`);
-      }
-      
-      if (phase) {
-        dbQuery = dbQuery.where(sql`${csrReports.phase} = ${phase}`);
-      }
-      
-      // Execute query
-      const relevantReports = await dbQuery;
-      
-      // TODO: Implement vector search once embeddings are available in the database
-      // For now, return the filtered reports directly
-      return relevantReports;
+      const response = await queryCsrs({
+        query_text: query,
+        indication,
+        phase,
+        limit: 5,
+      });
+
+      return response.csrs || [];
     } catch (error) {
       console.error('Error finding relevant CSRs:', error);
       return [];
