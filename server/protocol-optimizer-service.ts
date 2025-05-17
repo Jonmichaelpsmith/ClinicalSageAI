@@ -1,6 +1,7 @@
 import { ProtocolData } from './protocol-analyzer-service';
 import { huggingFaceService } from './huggingface-service';
 import { isApiKeyAvailable, generateTailoredProtocolRecommendations } from './openai-service';
+import { matchProtocol } from './csr-api-client';
 
 export interface OptimizationResult {
   original: ProtocolData;
@@ -34,6 +35,17 @@ export class ProtocolOptimizerService {
     academicReferences: any[] = []
   ): Promise<string> {
     try {
+      if (matchedCsrs.length === 0) {
+        try {
+          matchedCsrs = await matchProtocol({
+            indication: protocolMeta.indication,
+            phase: protocolMeta.phase,
+            endpoints: []
+          });
+        } catch (err) {
+          console.error('Error fetching similar CSRs:', err);
+        }
+      }
       // If OpenAI API is available, use that for more tailored recommendations
       if (isApiKeyAvailable()) {
         return await generateTailoredProtocolRecommendations(
@@ -76,7 +88,28 @@ Based on our analysis of your ${protocolMeta.phase.replace('phase', 'Phase ')} $
   async optimizeProtocol(protocolData: ProtocolData): Promise<OptimizationResult> {
     // In a real implementation, this would use a machine learning model
     // to analyze the protocol and generate optimization recommendations
-    
+
+    // Fetch similar CSRs for evidence
+    let csrEvidence = '';
+    try {
+      const matches = await matchProtocol({
+        indication: protocolData.indication,
+        phase: protocolData.phase,
+        endpoints: [
+          protocolData.primary_endpoint,
+          ...(protocolData.secondary_endpoints || [])
+        ]
+      });
+      if (matches && matches.length > 0) {
+        csrEvidence = matches
+          .slice(0, 3)
+          .map(csr => `${csr.title} – ${csr.outcome || 'Outcome N/A'}`)
+          .join('; ');
+      }
+    } catch (err) {
+      console.error('Error retrieving CSR matches:', err);
+    }
+
     // Generate some sample recommendations based on rules
     const recommendations: Recommendation[] = [];
     
@@ -86,7 +119,7 @@ Based on our analysis of your ${protocolMeta.phase.replace('phase', 'Phase ')} $
         field: 'sample_size',
         original: protocolData.sample_size,
         suggested: Math.max(50, protocolData.sample_size * 2),
-        reason: 'Small sample sizes reduce statistical power. Consider increasing to improve chances of detecting treatment effect.',
+        reason: 'Small sample sizes reduce statistical power. Consider increasing to improve chances of detecting treatment effect.' + (csrEvidence ? ` Evidence from similar CSRs: ${csrEvidence}.` : ''),
         confidence: 0.9
       });
     } else if (protocolData.sample_size > 500 && protocolData.phase === 'Phase I') {
@@ -94,7 +127,7 @@ Based on our analysis of your ${protocolMeta.phase.replace('phase', 'Phase ')} $
         field: 'sample_size',
         original: protocolData.sample_size,
         suggested: 50,
-        reason: 'Sample size is unusually large for a Phase I trial, which typically focuses on safety in a small group.',
+        reason: 'Sample size is unusually large for a Phase I trial, which typically focuses on safety in a small group.' + (csrEvidence ? ` Evidence from similar CSRs: ${csrEvidence}.` : ''),
         confidence: 0.7
       });
     }
@@ -106,7 +139,7 @@ Based on our analysis of your ${protocolMeta.phase.replace('phase', 'Phase ')} $
         field: 'duration_weeks',
         original: protocolData.duration_weeks,
         suggested: Math.max(24, protocolData.duration_weeks * 2),
-        reason: 'For chronic conditions, longer follow-up periods are recommended to better assess long-term outcomes.',
+        reason: 'For chronic conditions, longer follow-up periods are recommended to better assess long-term outcomes.' + (csrEvidence ? ` Evidence from similar CSRs: ${csrEvidence}.` : ''),
         confidence: 0.8
       });
     }
@@ -132,7 +165,7 @@ Based on our analysis of your ${protocolMeta.phase.replace('phase', 'Phase ')} $
             field: 'primary_endpoint',
             original: protocolData.primary_endpoint,
             suggested: endpoints[0],
-            reason: `Consider using established endpoints like ${endpoints.join(', ')} for ${category} trials, which may improve regulatory acceptance.`,
+            reason: `Consider using established endpoints like ${endpoints.join(', ')} for ${category} trials, which may improve regulatory acceptance.` + (csrEvidence ? ` Evidence from similar CSRs: ${csrEvidence}.` : ''),
             confidence: 0.6
           });
         }
