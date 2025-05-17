@@ -7,24 +7,40 @@ import { Slider } from "../lightweight-wrappers.jsx";
 // // import 'slick-carousel/slick/slick-theme.css' - commented out by resolver - commented out by resolver;
 
 const logos = [
-  'fda.svg','ema.svg','pmda.svg','mhra.svg','tga.svg','nmpa.svg','korea_mfds.svg'
+  'fda.svg',
+  'ema.svg',
+  'pmda.svg',
+  'mhra.svg',
+  'tga.svg',
+  'nmpa.svg',
+  'korea_mfds.svg',
 ];
 
 const features = [
   {
-    icon: <ShieldCheck size={32} className="text-emerald-600"/>,
-    title: 'Regulatory‑Grade Automation',
-    desc: 'Fully compliant IND, CTA & CSR generation with built‑in FDA, EMA & PMDA rulesets, including region-specific validation.'
+    icon: <Database size={32} className="text-emerald-600" />,
+    title: 'Multi‑tenant Architecture',
+    desc: 'Isolated workspaces with secure tenant contexts.'
   },
   {
-    icon: <BarChart2 size={32} className="text-emerald-600"/>,
-    title: 'Deep Intelligence Library',
-    desc: '892 real‑world trial benchmarks & 14 AI models predict risk, cost & enrollment speed across global markets.'
+    icon: <ShieldCheck size={32} className="text-emerald-600" />,
+    title: 'Quality Management',
+    desc: 'Risk-based quality controls with CTQ factor tracking.'
   },
   {
-    icon: <UploadCloud size={32} className="text-emerald-600"/>,
-    title: 'One‑Click ESG / CESP / PMDA upload',
-    desc: 'Push‑button submission with automated ACK tracking & dashboards for multi-regulatory review.'
+    icon: <FileText size={32} className="text-emerald-600" />,
+    title: 'Regulatory Compliance',
+    desc: 'Comprehensive tracking, documentation and validation.'
+  },
+  {
+    icon: <UploadCloud size={32} className="text-emerald-600" />,
+    title: 'Document Management',
+    desc: 'Streamlined creation, storage and retrieval of reports.'
+  },
+  {
+    icon: <BarChart2 size={32} className="text-emerald-600" />,
+    title: 'AI‑powered Analysis',
+    desc: 'Advanced analysis of clinical data and literature.'
   }
 ];
 
@@ -59,23 +75,6 @@ const roleSolutions = [
   }
 ];
 
-const caseStudies = [
-  {
-    title: 'Oncology Biotech',
-    highlight: '46% faster IND approval',
-    desc: 'Shortened Phase I startup by 4.3 months using TrialSage protocol optimization'
-  },
-  {
-    title: 'Gene Therapy Developer',
-    highlight: '87% reduction in protocol QC cycles',
-    desc: 'Eliminated 26 review cycles with automated multi-regional compliance checks'
-  },
-  {
-    title: 'Rare Disease Consortium',
-    highlight: '64% lower regulatory costs',
-    desc: 'Saved $1.2M on IND/CTAs using TrialSage multi-regional submission automation'
-  }
-];
 
 export default function HomeLanding() {
   const sliderSettings = { arrows:false, infinite:true, autoplay:true, autoplaySpeed:3000, slidesToShow:5, slidesToScroll:1, pauseOnHover:false, cssEase:'linear', responsive:[{breakpoint:768, settings:{slidesToShow:3}}] };
@@ -111,10 +110,11 @@ export default function HomeLanding() {
 
       {/* Hero */}
       <section className="container mx-auto px-6 py-20 text-center">
-        <h1 className="text-4xl md:text-5xl font-extrabold leading-tight gradient-text">Concepts&nbsp;→&nbsp;Cures, 10× Faster</h1>
+        <h1 className="text-4xl md:text-5xl font-extrabold leading-tight gradient-text">TrialSage™ – Multi‑tenant Regulatory Intelligence Platform</h1>
         <p className="mt-4 text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-          TrialSage® unifies AI‑driven protocol design, regulatory authoring & eCTD submission—turning biotech ambition into approved therapies at warp speed.
+          Open-source project focused on Clinical Evaluation Report generation and regulatory compliance.
         </p>
+        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">This platform is under active development.</p>
         <div className="mt-8 flex justify-center gap-4 flex-wrap">
           <Link to="/signup" className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg flex items-center gap-2">
             Get Started <ArrowRight size={18}/>
@@ -126,7 +126,7 @@ export default function HomeLanding() {
 
       {/* Logos */}
       <section className="bg-gray-50 dark:bg-slate-800 py-6">
-        <h3 className="text-center text-sm uppercase text-gray-500 dark:text-gray-400 mb-4">Trusted by global regulatory authorities</h3>
+        <h3 className="text-center text-sm uppercase text-gray-500 dark:text-gray-400 mb-4">Example regulatory authority logos</h3>
         <Slider {...sliderSettings} className="container mx-auto flex items-center">
           {logos.map((l,i)=>(
             <div key={i} className="px-4 opacity-70 grayscale hover:opacity-100 transition">
@@ -217,19 +217,6 @@ export default function HomeLanding() {
         </div>
       </section>
       
-      {/* Case Studies */}
-      <section className="container mx-auto px-6 py-12">
-        <h2 className="text-3xl font-bold text-center mb-12">Real-World Impact</h2>
-        <div className="grid md:grid-cols-3 gap-8">
-          {caseStudies.map((study, i) => (
-            <div key={i} className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-6">
-              <h3 className="font-semibold text-lg mb-2">{study.title}</h3>
-              <p className="text-emerald-600 font-bold text-xl mb-2">{study.highlight}</p>
-              <p className="text-gray-600 dark:text-gray-400">{study.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
 
       {/* Demo Portal Button */}
       <section className="bg-gray-900 text-white py-16 text-center">
@@ -294,6 +281,7 @@ export default function HomeLanding() {
           </div>
           <div className="border-t border-gray-200 dark:border-gray-700 mt-8 pt-8 text-center text-sm text-gray-500 dark:text-gray-400">
             © {new Date().getFullYear()} Concepts2Cures.AI • All rights reserved
+            <span className="block">Open-source project under active development.</span>
           </div>
         </div>
       </footer>
