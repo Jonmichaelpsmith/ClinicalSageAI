@@ -3590,7 +3590,7 @@ export default function CoAuthor() {
                         }, 1500);
                       }}
                     >
-                      <Play className="h-3.5 w-3.5 mr-1.5" />
+                      <PlayCircle className="h-3.5 w-3.5 mr-1.5" />
                       Run Validation
                     </Button>
                   </div>
