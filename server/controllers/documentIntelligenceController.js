@@ -395,9 +395,14 @@ async function extractStructuredData(content, documentType) {
  * Clean up temporary files after processing
  */
 async function cleanupFiles(files) {
+  if (!files || files.length === 0) return;
+  
   for (const file of files) {
     try {
-      await fsPromises.unlink(file.path);
+      if (file.path && fs.existsSync(file.path)) {
+        await fsPromises.unlink(file.path);
+        logger.info('Deleted temporary file', { path: file.path });
+      }
     } catch (err) {
       logger.warn('Error deleting temporary file', { path: file.path, error: err.message });
     }
