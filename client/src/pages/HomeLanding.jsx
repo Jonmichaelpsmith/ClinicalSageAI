@@ -12,19 +12,29 @@ const logos = [
 
 const features = [
   {
-    icon: <ShieldCheck size={32} className="text-emerald-600"/>,
-    title: 'Regulatory‑Grade Automation',
-    desc: 'Fully compliant IND, CTA & CSR generation with built‑in FDA, EMA & PMDA rulesets, including region-specific validation.'
+    icon: <Users size={32} className="text-emerald-600" />,
+    title: 'Multi-tenant Architecture',
+    desc: 'Isolated tenant workspaces with secure role-based access.'
   },
   {
-    icon: <BarChart2 size={32} className="text-emerald-600"/>,
-    title: 'Deep Intelligence Library',
-    desc: '892 real‑world trial benchmarks & 14 AI models predict risk, cost & enrollment speed across global markets.'
+    icon: <ShieldCheck size={32} className="text-emerald-600" />,
+    title: 'Quality Management',
+    desc: 'Risk-based controls with CTQ factor tracking.'
   },
   {
-    icon: <UploadCloud size={32} className="text-emerald-600"/>,
-    title: 'One‑Click ESG / CESP / PMDA upload',
-    desc: 'Push‑button submission with automated ACK tracking & dashboards for multi-regulatory review.'
+    icon: <Clipboard size={32} className="text-emerald-600" />,
+    title: 'Regulatory Compliance',
+    desc: 'Comprehensive validation and documentation tools.'
+  },
+  {
+    icon: <FileText size={32} className="text-emerald-600" />,
+    title: 'Document Management',
+    desc: 'Streamlined creation, storage and retrieval of files.'
+  },
+  {
+    icon: <BarChart2 size={32} className="text-emerald-600" />,
+    title: 'AI-powered Analysis',
+    desc: 'Advanced analysis of clinical data and literature.'
   }
 ];
 
@@ -61,19 +71,19 @@ const roleSolutions = [
 
 const caseStudies = [
   {
-    title: 'Oncology Biotech',
-    highlight: '46% faster IND approval',
-    desc: 'Shortened Phase I startup by 4.3 months using TrialSage protocol optimization'
+    title: 'Biotech Startup',
+    highlight: 'Streamlined document management',
+    desc: 'Implemented TrialSage to organize regulatory files across teams.'
   },
   {
-    title: 'Gene Therapy Developer',
-    highlight: '87% reduction in protocol QC cycles',
-    desc: 'Eliminated 26 review cycles with automated multi-regional compliance checks'
+    title: 'Academic Research Group',
+    highlight: 'Centralized quality tracking',
+    desc: 'Coordinated compliance tasks and maintained version control.'
   },
   {
-    title: 'Rare Disease Consortium',
-    highlight: '64% lower regulatory costs',
-    desc: 'Saved $1.2M on IND/CTAs using TrialSage multi-regional submission automation'
+    title: 'Medical Device Company',
+    highlight: 'Improved collaboration',
+    desc: 'Adopted the platform for shared access to clinical evaluation reports.'
   }
 ];
 
@@ -111,10 +121,11 @@ export default function HomeLanding() {
 
       {/* Hero */}
       <section className="container mx-auto px-6 py-20 text-center">
-        <h1 className="text-4xl md:text-5xl font-extrabold leading-tight gradient-text">Concepts&nbsp;→&nbsp;Cures, 10× Faster</h1>
+        <h1 className="text-4xl md:text-5xl font-extrabold leading-tight gradient-text">TrialSage™ – Multi‑tenant Regulatory Intelligence Platform</h1>
         <p className="mt-4 text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-          TrialSage® unifies AI‑driven protocol design, regulatory authoring & eCTD submission—turning biotech ambition into approved therapies at warp speed.
+          Open-source project focused on Clinical Evaluation Report generation and regulatory compliance.
         </p>
+        <p className="mt-2 text-sm italic text-gray-500 dark:text-gray-400">This platform is under active development.</p>
         <div className="mt-8 flex justify-center gap-4 flex-wrap">
           <Link to="/signup" className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg flex items-center gap-2">
             Get Started <ArrowRight size={18}/>
@@ -126,7 +137,7 @@ export default function HomeLanding() {
 
       {/* Logos */}
       <section className="bg-gray-50 dark:bg-slate-800 py-6">
-        <h3 className="text-center text-sm uppercase text-gray-500 dark:text-gray-400 mb-4">Trusted by global regulatory authorities</h3>
+        <h3 className="text-center text-sm uppercase text-gray-500 dark:text-gray-400 mb-4">Global regulatory authorities</h3>
         <Slider {...sliderSettings} className="container mx-auto flex items-center">
           {logos.map((l,i)=>(
             <div key={i} className="px-4 opacity-70 grayscale hover:opacity-100 transition">
@@ -219,7 +230,7 @@ export default function HomeLanding() {
       
       {/* Case Studies */}
       <section className="container mx-auto px-6 py-12">
-        <h2 className="text-3xl font-bold text-center mb-12">Real-World Impact</h2>
+        <h2 className="text-3xl font-bold text-center mb-12">Sample Use Cases</h2>
         <div className="grid md:grid-cols-3 gap-8">
           {caseStudies.map((study, i) => (
             <div key={i} className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-6">
