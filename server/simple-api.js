@@ -14,6 +14,123 @@ const PORT = 4000; // Use a different port from main app
 app.use(cors());
 app.use(express.json());
 
+// Sample document templates
+const templates = [
+  {
+    id: 1,
+    title: 'Clinical Overview Template',
+    category: 'clinical',
+    module: 'Module 2.5',
+    lastUpdated: 'May 5, 2025',
+    version: '2.3',
+    creator: 'Regulatory Team',
+    usageCount: 128,
+    description:
+      'Standard template for creating eCTD-compliant Clinical Overview documents with proper formatting and structure.',
+    tags: ['eCTD', 'clinical', 'module 2.5'],
+    compliance: 'FDA, EMA, PMDA',
+    templateID: '09933',
+  },
+  {
+    id: 2,
+    title: 'Module 3 Quality Template',
+    category: 'quality',
+    module: 'Module 3',
+    lastUpdated: 'Apr 23, 2025',
+    version: '1.5',
+    creator: 'CMC Department',
+    usageCount: 87,
+    description:
+      'Comprehensive template for all Module 3 Chemistry, Manufacturing and Controls sections with pre-defined headings.',
+    tags: ['eCTD', 'quality', 'module 3', 'CMC'],
+    compliance: 'FDA, EMA, Health Canada',
+    templateID: 'QU3002',
+  },
+  {
+    id: 3,
+    title: 'NDA Cover Letter Template',
+    category: 'administrative',
+    module: 'Module 1.1',
+    lastUpdated: 'Feb 11, 2025',
+    version: '3.1',
+    creator: 'Regulatory Affairs',
+    usageCount: 215,
+    description:
+      'Standard format for cover letters to accompany New Drug Application submissions.',
+    tags: ['eCTD', 'administrative', 'cover letter', 'NDA'],
+    compliance: 'FDA, Health Canada',
+    templateID: 'CL1001',
+  },
+  {
+    id: 4,
+    title: 'Clinical Study Report Template',
+    category: 'clinical',
+    module: 'Module 5',
+    lastUpdated: 'Mar 17, 2025',
+    version: '2.0',
+    creator: 'Clinical Team',
+    usageCount: 93,
+    description:
+      'Structured template for creating ICH E3-compliant clinical study reports with all required sections.',
+    tags: ['eCTD', 'clinical', 'CSR', 'module 5'],
+    compliance: 'ICH, FDA, EMA, PMDA',
+    templateID: 'CSR5001',
+  },
+  {
+    id: 5,
+    title: 'Nonclinical Overview Template',
+    category: 'nonclinical',
+    module: 'Module 2.4',
+    lastUpdated: 'Jan 24, 2025',
+    version: '1.8',
+    creator: 'Toxicology Team',
+    usageCount: 62,
+    description:
+      'Template for creating the Nonclinical Overview section with predefined formatting and guidance.',
+    tags: ['eCTD', 'nonclinical', 'toxicology', 'module 2.4'],
+    compliance: 'FDA, EMA',
+    templateID: 'NC2401',
+  },
+  {
+    id: 6,
+    title: 'Risk Management Plan Template',
+    category: 'clinical',
+    module: 'Module 1.8.2',
+    lastUpdated: 'Apr 2, 2025',
+    version: '3.2',
+    creator: 'Pharmacovigilance',
+    usageCount: 48,
+    description:
+      'EMA-compliant Risk Management Plan template with all required sections and formatting.',
+    tags: ['eCTD', 'clinical', 'RMP', 'risk management'],
+    compliance: 'EMA',
+    templateID: 'RMP1001',
+  },
+];
+
+// Templates endpoint with optional search and category filters
+app.get('/api/templates', (req, res) => {
+  const { search = '', category } = req.query;
+
+  let results = templates;
+
+  if (category && category !== 'all') {
+    results = results.filter((t) => t.category === category);
+  }
+
+  if (search) {
+    const q = search.toLowerCase();
+    results = results.filter(
+      (t) =>
+        t.title.toLowerCase().includes(q) ||
+        t.description.toLowerCase().includes(q) ||
+        t.tags.some((tag) => tag.toLowerCase().includes(q))
+    );
+  }
+
+  res.status(200).json({ success: true, templates: results });
+});
+
 // Vault documents endpoint
 app.get('/api/vault/recent-docs', (req, res) => {
   const recentDocs = [
