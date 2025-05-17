@@ -238,18 +238,15 @@ async def generate_form(project_id: str, form_type: str, background_tasks: Backg
         # Save data in the background
         background_tasks.add_task(save_data)
         
-        # Set the appropriate content type based on the form type
-        # In a real implementation, this would be application/vnd.openxmlformats-officedocument.wordprocessingml.document
-        # For now, we'll use text/plain
-        media_type = "text/plain"
-        
-        # Return the form as a streaming response
+        media_type = (
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        )
         return StreamingResponse(
-            form_data, 
+            form_data,
             media_type=media_type,
             headers={
-                "Content-Disposition": f'attachment; filename="Form{form_type}_{project_id}.txt"'
-            }
+                "Content-Disposition": f'attachment; filename="Form{form_type}_{project_id}.docx"'
+            },
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
