@@ -6,12 +6,12 @@
 
 import express from 'express';
 import { checkAuth } from '../controllers/auth.js';
-import { serveClientPortalDirectPage, serveAutoLoginPage } from '../controllers/clientPortal.js';
+import { serveClientPortalPage, serveAutoLoginPage } from '../controllers/clientPortal.js';
 
 const router = express.Router();
 
 // Secure client portal route (with auth check)
-router.get('/client-portal-direct', checkAuth, serveClientPortalDirectPage);
+router.get('/client-portal', checkAuth, serveClientPortalPage);
 
 // Auto-login page route
 router.get('/auto-login', serveAutoLoginPage);
