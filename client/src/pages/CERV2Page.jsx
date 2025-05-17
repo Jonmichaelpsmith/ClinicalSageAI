@@ -10,62 +10,7 @@ import WorkflowContinuityManager from '../components/recovery/WorkflowContinuity
 import DeviceProfileSelector from '../components/510k/DeviceProfileSelector';
 import NavigationBlocker from '../components/navigation/NavigationBlocker';
 
-// Function to safely open documents and prevent redirection issues
-const openDocumentSafely = (url, documentName, showToast) => {
-  try {
-    // Check if this is a draft document by looking at document name or URL
-    const isDraftDocument = 
-      documentName?.toLowerCase().includes('draft') || 
-      url?.toLowerCase().includes('draft') ||
-      (showToast && documentName?.includes('510(k)'));
-    
-    if (isDraftDocument) {
-      // For draft documents, load them within CERV2 instead of opening in a new tab
-      console.log("Loading draft document within CERV2:", documentName);
-      
-      // Set document ID based on name for consistency
-      const documentId = `draft-${documentName.replace(/\s+/g, '-').toLowerCase()}`;
-      
-      // Update state to reflect the loaded draft document
-      this.setState({
-        loadedDocument: {
-          id: documentId,
-          name: documentName,
-          url: url,
-          type: url.toLowerCase().includes('cer') ? 'cer' : '510k',
-          status: 'draft'
-        },
-        activeTab: 'document-viewer' // Switch to document viewer tab
-      });
-      
-      // Display success message
-      if (showToast) {
-        showToast({
-          title: "Draft document loaded",
-          description: `Viewing ${documentName} in CERV2`
-        });
-      }
-    } else {
-      // For non-draft documents, open in a new tab as before
-      window.open(url, '_blank', 'noopener,noreferrer');
-      if (showToast) {
-        showToast({
-          title: "Document opened",
-          description: `Viewing ${documentName} document`
-        });
-      }
-    }
-  } catch (error) {
-    console.error("Error opening document:", error);
-    if (showToast) {
-      showToast({
-        title: "Error",
-        description: "Could not open document. Please try again.",
-        variant: "destructive"
-      });
-    }
-  }
-};
+// We'll add openDocumentSafely as a class method in the CERV2Page component
 
 // Create a fallback if context is unavailable
 const safeAssistantHook = () => {
