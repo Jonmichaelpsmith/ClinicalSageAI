@@ -9,13 +9,11 @@ export default function HistoryModal({ sectionId, onClose }) {
   const [loading, setLoading] = useState(true);
   const [history, setHistory] = useState([]);
   const [selectedVersion, setSelectedVersion] = useState(null);
-  const [error, setError] = useState(null);
   
   useEffect(() => {
     const fetchHistory = async () => {
       try {
         setLoading(true);
-        setError(null);
         const historyData = await coauthorService.getDraftHistory(sectionId);
         setHistory(historyData);
         
@@ -27,7 +25,6 @@ export default function HistoryModal({ sectionId, onClose }) {
         setLoading(false);
       } catch (error) {
         console.error('Failed to fetch history:', error);
-        setError('Failed to load history');
         setLoading(false);
       }
     };
@@ -58,12 +55,6 @@ export default function HistoryModal({ sectionId, onClose }) {
             <span>Version History - Section {sectionId}</span>
           </DialogTitle>
         </DialogHeader>
-
-        {error && (
-          <div className="p-2 text-sm text-red-600 border rounded mb-2">
-            {error}
-          </div>
-        )}
         
         {loading ? (
           <div className="py-8 flex justify-center">

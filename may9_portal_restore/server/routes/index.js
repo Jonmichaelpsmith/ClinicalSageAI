@@ -40,24 +40,11 @@ export default function setupApiRoutes(app) {
     .then(cerDataModule => {
       const cerDataRoutes = cerDataModule.default;
       console.log('✅ CER Data Retrieval routes loaded dynamically');
-
+      
       app.use('/api/cer-data', cerDataRoutes);
       console.log('✅ Mounted CER data retrieval routes at /api/cer-data');
     })
     .catch(err => {
       console.error('❌ Failed to load CER data retrieval routes:', err);
-    });
-
-  // Import CMC routes
-  import('./cmc.js')
-    .then(cmcModule => {
-      const cmcRoutes = cmcModule.default;
-      console.log('✅ CMC routes loaded dynamically');
-
-      app.use('/api/cmc', cmcRoutes);
-      console.log('✅ Mounted CMC routes at /api/cmc');
-    })
-    .catch(err => {
-      console.error('❌ Failed to load CMC routes:', err);
     });
 }

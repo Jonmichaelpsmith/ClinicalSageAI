@@ -5,7 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Spinner } from '@/components/ui/spinner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { FileUp, Search, Database, BookOpen, Clock, Tag, AlertTriangle, Beaker } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -51,8 +50,6 @@ export default function AcademicKnowledgeDemo() {
   });
   const [searchResults, setSearchResults] = useState<Resource[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
-  const [isStatsLoading, setIsStatsLoading] = useState(true);
-  const [statsError, setStatsError] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const { toast } = useToast();
@@ -64,20 +61,24 @@ export default function AcademicKnowledgeDemo() {
 
   const fetchStats = async () => {
     try {
-      setStatsError(false);
-      setIsStatsLoading(true);
       const response = await apiRequest('GET', '/api/academic-knowledge/stats');
       const data = await response.json();
       if (data.success) {
         setStats(data.stats);
-      } else {
-        setStatsError(true);
       }
     } catch (error) {
       console.error('Error fetching stats:', error);
-      setStatsError(true);
-    } finally {
-      setIsStatsLoading(false);
+      // toast call replaced
+  // Original: toast({
+        title: 'Error',
+        description: 'Failed to fetch knowledge base statistics.',
+        variant: 'destructive',
+      })
+  console.log('Toast would show:', {
+        title: 'Error',
+        description: 'Failed to fetch knowledge base statistics.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -469,24 +470,7 @@ export default function AcademicKnowledgeDemo() {
             </TabsContent>
             
             <TabsContent value="stats">
-              {isStatsLoading ? (
-                <div className="flex items-center justify-center p-8">
-                  <Spinner />
-                </div>
-              ) : statsError ? (
-                <div className="p-4">
-                  <Alert variant="destructive">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertTitle>Error loading statistics</AlertTitle>
-                    <AlertDescription>
-                      Failed to fetch knowledge base statistics.
-                    </AlertDescription>
-                  </Alert>
-                  <Button variant="outline" onClick={fetchStats} className="mt-2">
-                    Retry
-                  </Button>
-                </div>
-              ) : stats ? (
+              {stats ? (
                 <div className="grid gap-6">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <Card>
@@ -577,7 +561,9 @@ export default function AcademicKnowledgeDemo() {
                   </Card>
                 </div>
               ) : (
-                <p className="text-center text-sm p-8">No statistics available.</p>
+                <div className="flex items-center justify-center p-8">
+                  <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+                </div>
               )}
             </TabsContent>
           </Tabs>
