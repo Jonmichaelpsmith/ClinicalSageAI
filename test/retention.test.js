@@ -268,7 +268,7 @@ describe('Auto-Retention Scheduler Tests', () => {
   
   // This test needs to be adapted to work with the actual implementation
   // Here it's simplified to avoid excessive mocking
-  describe.skip('Retention Job Tests', () => {
+  describe('Retention Job Tests', () => {
     beforeEach(() => {
       // Set up mock data for document processing
       mockSupabase.from.withArgs('retention_policies').returns(mockSupabase);
