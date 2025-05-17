@@ -58,6 +58,19 @@ class HistoryItem(BaseModel):
     timestamp: str
     type: str
 
+
+class FileNode(BaseModel):
+    """Model representing a file or folder inside an eCTD sequence."""
+    name: str
+    path: str
+    type: str  # 'file' or 'directory'
+    size: Optional[int] = None
+    modified: Optional[str] = None
+    children: Optional[List["FileNode"]] = None
+
+
+FileNode.update_forward_refs()
+
 # In-memory storage
 # In a real implementation, this would be replaced with a database
 projects: Dict[str, Dict[str, Any]] = {}
@@ -67,6 +80,9 @@ history: Dict[str, List[Dict[str, Any]]] = {}
 DATA_DIR = Path("ind_automation/data")
 PROJECTS_FILE = DATA_DIR / "projects.json"
 HISTORY_FILE = DATA_DIR / "history.json"
+
+# Base directory for sample eCTD sequences
+ECTD_ROOT = Path("ectd")
 
 # Create data directory if it doesn't exist
 DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -180,7 +196,7 @@ async def update_project(project_id: str, project: Project, background_tasks: Ba
     
     # Save data in the background
     background_tasks.add_task(save_data)
-    
+
     return projects[project_id]
 
 @app.post("/api/ind/{project_id}/sequence", response_model=GenerateSequenceResponse)
@@ -213,6 +229,33 @@ async def get_history(project_id: str):
         return []
     
     return history[project_id]
+
+
+def _build_file_tree(path: Path, root: Path) -> Dict[str, Any]:
+    """Recursively build a file tree for the given path."""
+    stat = path.stat()
+    node: Dict[str, Any] = {
+        "name": path.name,
+        "path": str(path.relative_to(root)),
+        "type": "directory" if path.is_dir() else "file",
+        "modified": datetime.fromtimestamp(stat.st_mtime).isoformat(),
+    }
+    if path.is_dir():
+        node["children"] = [
+            _build_file_tree(p, root) for p in sorted(path.iterdir())
+        ]
+    else:
+        node["size"] = stat.st_size
+    return node
+
+
+@app.get("/api/ectd/{project_id}/{sequence}/files", response_model=FileNode)
+async def list_sequence_files(project_id: str, sequence: str):
+    """List files and folders for a specific eCTD sequence."""
+    seq_path = ECTD_ROOT / project_id / sequence
+    if not seq_path.exists():
+        raise HTTPException(status_code=404, detail="Sequence not found")
+    return _build_file_tree(seq_path, seq_path.parent)
 
 from fastapi.responses import StreamingResponse
 from .form_generator import generate_form as generate_form_document
