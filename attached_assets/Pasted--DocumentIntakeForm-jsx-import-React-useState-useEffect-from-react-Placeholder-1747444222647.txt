@@ -1,0 +1,327 @@
+// DocumentIntakeForm.jsx
+import React, { useState, useEffect } from 'react';
+
+// --- Placeholder Utility Components (can be defined elsewhere or refined) ---
+// FileUploadZone might not be used directly for input here anymore if parent handles upload.
+// However, a similar display for files could be useful.
+
+const DocumentTypeSelector = ({ onSelect, documentTypes, selectedType, context }) => (
+  <div>
+    <label htmlFor={`docType-${context}`} className="block text-sm font-medium text-gray-700 mb-1">
+      Select Document Type (Optional)
+    </label>
+    <select
+      id={`docType-${context}`}
+      name="documentType"
+      value={selectedType || ''}
+      onChange={(e) => onSelect(e.target.value)}
+      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+    >
+      <option value="">Auto-detect or General</option>
+      {documentTypes.map(docType => (
+        // Handling cases where docType might be a group or a single item
+        docType.options ? (
+          <optgroup label={docType.groupLabel} key={docType.groupLabel}>
+            {docType.options.map(option => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </optgroup>
+        ) : (
+          <option key={docType.value} value={docType.value}>{docType.label}</option>
+        )
+      ))}
+    </select>
+  </div>
+);
+
+const ExtractionSettings = ({ confidenceThreshold, onThresholdChange, extractionMode, onExtractionModeChange }) => (
+  <div>
+    <h4 className="text-md font-medium text-gray-800 mb-2">Extraction Settings</h4>
+    <div className="space-y-3">
+      <div>
+        <label htmlFor="confidenceThreshold" className="block text-sm font-medium text-gray-700">
+          Confidence Threshold: {confidenceThreshold}%
+        </label>
+        <input
+          type="range"
+          id="confidenceThreshold"
+          name="confidenceThreshold"
+          min="0"
+          max="100"
+          value={confidenceThreshold}
+          onChange={(e) => onThresholdChange(parseInt(e.target.value, 10))}
+          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+        />
+      </div>
+      <div>
+        <label htmlFor="extractionMode" className="block text-sm font-medium text-gray-700">
+          Extraction Mode
+        </label>
+        <select
+          id="extractionMode"
+          name="extractionMode"
+          value={extractionMode}
+          onChange={(e) => onExtractionModeChange(e.target.value)}
+          className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+        >
+          <option value="full">Full Document Scan</option>
+          <option value="targeted">Targeted Section Extraction (if available)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+);
+
+// --- Main DocumentIntakeForm Component ---
+/**
+ * DocumentIntakeForm component.
+ * Assumes files are uploaded and OCR'd by a parent component (e.g., CERV2Page.jsx).
+ * This component then allows configuration for AI-based data extraction from the OCR'd text.
+ * @param {Array} processedDocuments - Array of objects, each representing an OCR'd document.
+ * Expected format: [{ id, name, size, type, ocrTextContent }, ...]
+ * @param {Function} onStartAiExtraction - Callback function to initiate AI extraction.
+ * It will be called with the list of documents (including their selected types)
+ * and extraction settings.
+ */
+const DocumentIntakeForm = ({ processedDocuments = [], onStartAiExtraction }) => {
+  const [activeTab, setActiveTab] = useState('extract_config'); // Renamed for clarity
+  const [documentSettings, setDocumentSettings] = useState({}); // Stores type for each doc: { [docId]: 'type_value' }
+
+  const [selectedRegulatoryContext, setSelectedRegulatoryContext] = useState('fda_510k');
+  const [confidenceThreshold, setConfidenceThreshold] = useState(80);
+  const [extractionMode, setExtractionMode] = useState('full');
+
+  // Initialize documentSettings when processedDocuments prop changes
+  useEffect(() => {
+    const initialSettings = {};
+    processedDocuments.forEach(doc => {
+      initialSettings[doc.id] = ''; // Default to no specific type selected
+    });
+    setDocumentSettings(initialSettings);
+  }, [processedDocuments]);
+
+  const handleRegulatoryContextChange = (e) => {
+    setSelectedRegulatoryContext(e.target.value);
+    // Optionally reset individual document types if context broadly applies
+    const newSettings = {};
+    processedDocuments.forEach(doc => {
+        newSettings[doc.id] = ''; // Reset type for all docs when global context changes
+    });
+    setDocumentSettings(newSettings);
+  };
+
+  const handleDocumentTypeChange = (docId, type) => {
+    setDocumentSettings(prev => ({ ...prev, [docId]: type }));
+  };
+
+  const handleInitiateExtraction = () => {
+    if (processedDocuments.length === 0) {
+      alert("No documents have been processed for AI extraction.");
+      return;
+    }
+    const documentsToExtract = processedDocuments.map(doc => ({
+      ...doc,
+      selectedDocumentType: documentSettings[doc.id] || 'auto_detect', // Use selected or default to auto
+    }));
+
+    const extractionConfig = {
+      regulatoryContext: selectedRegulatoryContext,
+      confidenceThreshold,
+      extractionMode,
+      documents: documentsToExtract,
+    };
+    console.log('Starting AI Extraction with config:', extractionConfig);
+    if (onStartAiExtraction) {
+      onStartAiExtraction(extractionConfig);
+    } else {
+      console.warn('onStartAiExtraction prop not provided.');
+      alert('AI Extraction initiated (simulated). Check console for config.');
+    }
+  };
+  
+  const getDocumentTypesForContext = (context) => {
+    // (Same as your previous getDocumentTypesForContext function)
+    switch (context) {
+      case 'fda_510k':
+        return [
+          { value: 'prev_510k', label: 'Previous 510(k) Submission' },
+          { value: 'device_description', label: 'Device Description' },
+          { value: 'test_report_bench', label: 'Test Report (Bench)' },
+          { value: 'test_report_animal', label: 'Test Report (Animal)' },
+          { value: 'test_report_clinical', label: 'Test Report (Clinical)' },
+          { value: 'labeling', label: 'Labeling/IFU (FDA)' },
+        ];
+      case 'eu_mdr_td':
+        return [
+          { value: 'cep', label: 'Clinical Evaluation Plan (CEP)' },
+          { value: 'cer', label: 'Clinical Evaluation Report (CER)' },
+          // ... other EU MDR types
+        ];
+      default:
+        return [
+            { value: 'qms_doc', label: 'QMS Document' },
+            { value: 'other', label: 'Other Regulatory Document'}
+        ];
+    }
+  };
+
+  const regulatoryContextOptions = [
+    { value: 'fda_510k', label: 'FDA 510(k) Related' },
+    { value: 'eu_mdr_td', label: 'EU MDR Technical Documentation' },
+    // ... other context options
+    { value: 'general_reg', label: 'General Regulatory Document' }
+  ];
+
+  return (
+    <div className="w-full max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 font-sans">
+      <div className="mb-6 border-b border-gray-200">
+        <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+          {['extract_config', 'review', 'history'].map((tab) => ( // Renamed 'extract' to 'extract_config'
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm capitalize
+                ${activeTab === tab
+                  ? 'border-indigo-500 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+            >
+              {tab.replace('_', ' ')}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      <div>
+        {activeTab === 'extract_config' && (
+          <div className="bg-white shadow-xl rounded-lg p-6">
+            <div className="mb-6 pb-4 border-b border-gray-200">
+              <h3 className="text-xl font-semibold leading-6 text-gray-900">Configure AI Document Extraction</h3>
+              <p className="mt-1 text-sm text-gray-500">
+                The documents listed below have been uploaded and OCR'd. Configure settings for AI-based data extraction.
+              </p>
+            </div>
+            
+            <div className="space-y-6">
+              <div>
+                <label htmlFor="regulatoryContext" className="block text-sm font-medium text-gray-700 mb-1">
+                  Primary Regulatory Context for Extraction
+                </label>
+                <select
+                  id="regulatoryContext"
+                  name="regulatoryContext"
+                  value={selectedRegulatoryContext}
+                  onChange={handleRegulatoryContextChange}
+                  className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                >
+                  {regulatoryContextOptions.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              {processedDocuments.length > 0 ? (
+                <div className="space-y-4">
+                  <h4 className="text-md font-medium text-gray-700 mb-2">Processed Documents:</h4>
+                  {processedDocuments.map(doc => (
+                    <div key={doc.id} className="p-3 border rounded-md bg-gray-50 space-y-2">
+                      <p className="font-semibold text-gray-800">{doc.name}</p>
+                      <p className="text-xs text-gray-500">Size: {(doc.size / 1024 / 1024).toFixed(2)} MB | Type: {doc.type}</p>
+                      <p className="text-xs text-gray-500">OCR Content: {doc.ocrTextContent ? `${doc.ocrTextContent.substring(0, 100)}...` : 'Not available'}</p>
+                      <DocumentTypeSelector
+                        onSelect={(type) => handleDocumentTypeChange(doc.id, type)}
+                        documentTypes={getDocumentTypesForContext(selectedRegulatoryContext)} // Types based on global context
+                        selectedType={documentSettings[doc.id] || ''}
+                        context={`doc-${doc.id}`} // Unique key for select element id
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-4">
+                  No documents have been processed for AI extraction yet. 
+                  Please upload and OCR documents in the relevant section of CERV2.
+                </p>
+              )}
+              
+              <ExtractionSettings
+                confidenceThreshold={confidenceThreshold}
+                onThresholdChange={setConfidenceThreshold}
+                extractionMode={extractionMode}
+                onExtractionModeChange={setExtractionMode}
+              />
+
+              <div className="pt-4">
+                <button
+                  onClick={handleInitiateExtraction}
+                  disabled={processedDocuments.length === 0}
+                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-300"
+                >
+                  Start AI Extraction
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'review' && (
+          // ... (Data Review tab content as before)
+           <div className="bg-white shadow-xl rounded-lg p-6">
+            <h3 className="text-xl font-semibold leading-6 text-gray-900 mb-4">Data Review</h3>
+            <p className="text-gray-600">
+              This section will display extracted data for user verification and editing.
+              A synchronized view of the document source would appear alongside the extracted fields.
+            </p>
+          </div>
+        )}
+
+        {activeTab === 'history' && (
+          // ... (Document History tab content as before)
+          <div className="bg-white shadow-xl rounded-lg p-6">
+            <h3 className="text-xl font-semibold leading-6 text-gray-900 mb-4">Document History</h3>
+            <p className="text-gray-600">
+              This section will list uploaded documents, their versions, and the audit trail of extracted data.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default DocumentIntakeForm;
+
+// --- How to integrate with a parent component (e.g., CERV2Page.jsx) ---
+//
+// function ParentComponent() {
+//   // State in parent to hold OCR'd documents
+//   const [ocrProcessedFiles, setOcrProcessedFiles] = useState([
+//     // Example: This data would come from your existing upload & OCR process
+//     { id: 'doc1', name: 'DeviceSpec_RevA.pdf', size: 1024*1024*2, type: 'application/pdf', ocrTextContent: 'This document contains specifications...' },
+//     { id: 'doc2', name: 'Previous_510k_Summary.docx', size: 1024*1024*1, type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', ocrTextContent: 'The K123456 device was found substantially equivalent...' }
+//   ]);
+//
+//   const handleStartAI = (extractionConfig) => {
+//     console.log("Parent received request to start AI extraction:", extractionConfig);
+//     // TODO: Send this config to your backend AI extraction service
+//     // (e.g., the one using OpenAI GPT-4o as per your plan)
+//   };
+//
+//   // Your existing file upload and OCR logic would populate/update ocrProcessedFiles
+//
+//   return (
+//     <div className="min-h-screen bg-gray-100 py-8">
+//       {/* Other parts of CERV2Page or your parent component */}
+//       
+//       {/* Conditionally render DocumentIntakeForm when you have OCR'd files */}
+//       {ocrProcessedFiles && ocrProcessedFiles.length > 0 && (
+//         <DocumentIntakeForm 
+//           processedDocuments={ocrProcessedFiles}
+//           onStartAiExtraction={handleStartAI} 
+//         />
+//       )}
+//
+//       {/* UI for uploading files (using your existing CERV2Page mechanism) would be elsewhere */}
+//     </div>
+//   );
+// }

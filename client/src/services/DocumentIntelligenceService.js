@@ -1,143 +1,225 @@
 /**
  * Document Intelligence Service
  * 
- * This service provides functionality for document upload, processing,
- * and structured data extraction from regulatory documents using AI.
+ * This service handles communication with the document intelligence API endpoints
+ * and processes document extraction data.
  */
 
-/**
- * Process a document to extract structured data
- * @param {FormData} formData - FormData containing document files and metadata
- * @returns {Promise<Object>} The extracted structured data
- */
-async function processDocuments(formData) {
-  try {
-    const response = await fetch('/api/document-intelligence/process', {
-      method: 'POST',
-      body: formData,
-    });
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(errorText || 'Error processing documents');
+import { apiRequest } from "@/lib/queryClient";
+
+class DocumentIntelligenceService {
+  /**
+   * Extract data from documents using AI
+   * 
+   * @param {Object} extractionConfig Configuration for extraction
+   * @param {string} extractionConfig.regulatoryContext The regulatory context
+   * @param {number} extractionConfig.confidenceThreshold Confidence threshold
+   * @param {string} extractionConfig.extractionMode Extraction mode
+   * @param {Array} extractionConfig.documents List of documents to extract from
+   * @returns {Promise<Object>} Extracted data
+   */
+  async extractDocumentData(extractionConfig) {
+    try {
+      const response = await apiRequest(
+        "POST", 
+        "/api/document-intelligence/extract", 
+        extractionConfig
+      );
+      
+      return await response.json();
+    } catch (error) {
+      console.error("Document extraction error:", error);
+      throw new Error("Failed to extract data from documents");
     }
-    
-    return await response.json();
-  } catch (error) {
-    console.error('Document processing error:', error);
-    throw error;
   }
-}
 
-/**
- * Map extracted fields to device intake form data
- * @param {Array} extractedFields - Array of extracted field objects
- * @returns {Object} Mapped form data for device intake
- */
-function mapExtractedFieldsToFormData(extractedFields) {
-  if (!extractedFields || !Array.isArray(extractedFields) || extractedFields.length === 0) {
-    return {};
+  /**
+   * Process OCR'd documents for recognition
+   * 
+   * @param {Array} documents List of OCR'd documents
+   * @returns {Promise<Object>} Document recognition results
+   */
+  async recognizeDocumentTypes(documents) {
+    try {
+      const response = await apiRequest(
+        "POST", 
+        "/api/document-intelligence/recognize-types", 
+        { documents }
+      );
+      
+      return await response.json();
+    } catch (error) {
+      console.error("Document type recognition error:", error);
+      throw new Error("Failed to recognize document types");
+    }
   }
-  
-  // Create field mapping
-  const fieldMapping = {
-    // Administrative Information - Section A
-    deviceName: 'administrativeInfo.deviceName',
-    manufacturer: 'administrativeInfo.manufacturer',
-    manufacturerAddress: 'administrativeInfo.manufacturerAddress',
-    contactPerson: 'administrativeInfo.contactName',
-    contactEmail: 'administrativeInfo.contactEmail',
-    contactPhone: 'administrativeInfo.contactPhone',
-    
-    // Device Information - Section B
-    deviceClass: 'deviceInfo.deviceClass',
-    productCode: 'deviceInfo.productCode',
-    regulationNumber: 'deviceInfo.regulationNumber',
-    panel: 'deviceInfo.medicalSpecialtyPanel',
-    
-    // Device Marketing - Section C 
-    intendedUse: 'deviceMarketing.intendedUse',
-    indications: 'deviceMarketing.indicationsForUse',
-    deviceDescription: 'deviceMarketing.deviceDescription',
-    
-    // Predicate Devices - Section D
-    predicateDeviceName: 'predicateDevice.deviceName',
-    predicateManufacturer: 'predicateDevice.manufacturer',
-    predicateK510Number: 'predicateDevice.k510Number',
-  };
-  
-  // Initialize result object
-  const result = {};
-  
-  // Process each extracted field
-  extractedFields.forEach(field => {
-    const mappedPath = fieldMapping[field.name];
-    
-    if (mappedPath && field.confidence >= 0.7) {
-      // Split the path into parts
-      const parts = mappedPath.split('.');
+
+  /**
+   * Validate extracted fields for compliance
+   * 
+   * @param {Array} extractedFields List of extracted fields
+   * @param {string} regulatoryContext The regulatory context
+   * @returns {Promise<Object>} Validation results
+   */
+  async validateExtractedFields(extractedFields, regulatoryContext) {
+    try {
+      const response = await apiRequest(
+        "POST", 
+        "/api/document-intelligence/validate", 
+        { extractedFields, regulatoryContext }
+      );
       
-      // Handle nested paths recursively
-      let current = result;
-      
-      for (let i = 0; i < parts.length - 1; i++) {
-        const part = parts[i];
-        if (!current[part]) {
-          current[part] = {};
-        }
-        current = current[part];
+      return await response.json();
+    } catch (error) {
+      console.error("Field validation error:", error);
+      throw new Error("Failed to validate extracted fields");
+    }
+  }
+
+  /**
+   * Map extracted fields to device profile form data
+   * 
+   * @param {Array} extractedFields List of extracted fields
+   * @returns {Object} Mapped device profile data
+   */
+  mapExtractedFieldsToFormData(extractedFields) {
+    // Initialize device profile with empty sections
+    const deviceProfile = {
+      deviceName: '',
+      manufacturer: '',
+      modelNumber: '',
+      deviceDescription: '',
+      intendedUse: '',
+      classification: '',
+      regulatoryClass: '',
+      productCode: '',
+      riskLevel: '',
+      technicalSpecifications: [],
+      materials: [],
+      sterilization: {
+        isPreSterilized: false,
+        method: '',
+        details: ''
+      },
+      biocompatibility: {
+        hasTests: false,
+        testResults: '',
+        materials: []
       }
-      
-      // Set the value at the final path segment
-      current[parts[parts.length - 1]] = field.value;
-    }
-  });
-  
-  return result;
-}
-
-/**
- * Extract and map document data to device intake form
- * @param {FormData} formData - FormData containing document files and metadata
- * @returns {Promise<Object>} The mapped form data for device intake
- */
-async function extractAndMapDocumentData(formData) {
-  try {
-    const extractionResult = await processDocuments(formData);
-    const mappedData = mapExtractedFieldsToFormData(extractionResult.extractedFields);
-    
-    return {
-      ...extractionResult,
-      mappedData
     };
-  } catch (error) {
-    console.error('Error extracting and mapping document data:', error);
-    throw error;
+
+    // Map extracted fields to device profile properties
+    extractedFields.forEach(field => {
+      const { name, value, confidence } = field;
+      
+      // Only use fields with sufficient confidence
+      if (confidence < 0.6) return;
+      
+      // Map based on field name
+      switch (name.toLowerCase()) {
+        case 'device name':
+        case 'devicename':
+        case 'device_name':
+          deviceProfile.deviceName = value;
+          break;
+          
+        case 'manufacturer':
+        case 'manufacturer name':
+        case 'company':
+          deviceProfile.manufacturer = value;
+          break;
+          
+        case 'model number':
+        case 'modelnumber':
+        case 'model':
+        case 'model_number':
+          deviceProfile.modelNumber = value;
+          break;
+          
+        case 'device description':
+        case 'devicedescription':
+        case 'description':
+          deviceProfile.deviceDescription = value;
+          break;
+          
+        case 'intended use':
+        case 'intendeduse':
+        case 'indication for use':
+        case 'indications':
+          deviceProfile.intendedUse = value;
+          break;
+          
+        case 'classification':
+        case 'device classification':
+          deviceProfile.classification = value;
+          break;
+          
+        case 'regulatory class':
+        case 'regulatoryclass':
+        case 'class':
+          deviceProfile.regulatoryClass = value;
+          break;
+          
+        case 'product code':
+        case 'productcode':
+          deviceProfile.productCode = value;
+          break;
+          
+        case 'risk level':
+        case 'risklevel':
+        case 'risk':
+          deviceProfile.riskLevel = value;
+          break;
+          
+        // Material extraction with potential array handling
+        case 'materials':
+        case 'material':
+        case 'device materials':
+          if (Array.isArray(value)) {
+            deviceProfile.materials = value;
+          } else if (typeof value === 'string') {
+            // Split comma separated values into array
+            deviceProfile.materials = value.split(',').map(item => item.trim()).filter(Boolean);
+          }
+          break;
+          
+        // Technical specs extraction
+        case 'technical specifications':
+        case 'technicalspecifications':
+        case 'specifications':
+        case 'specs':
+          if (Array.isArray(value)) {
+            deviceProfile.technicalSpecifications = value;
+          } else if (typeof value === 'string') {
+            // Split newlines or commas into array items
+            deviceProfile.technicalSpecifications = value
+              .split(/[\n,]/)
+              .map(item => item.trim())
+              .filter(Boolean);
+          }
+          break;
+          
+        // Sterilization information
+        case 'sterilization method':
+        case 'sterilizationmethod':
+          deviceProfile.sterilization.method = value;
+          deviceProfile.sterilization.isPreSterilized = 
+            value && value.toLowerCase() !== 'none' && value.toLowerCase() !== 'n/a';
+          break;
+          
+        // Handle biocompatibility fields
+        case 'biocompatibility':
+        case 'biocompatibility tests':
+          deviceProfile.biocompatibility.hasTests = 
+            value && value.toLowerCase() !== 'none' && value.toLowerCase() !== 'n/a';
+          deviceProfile.biocompatibility.testResults = value;
+          break;
+      }
+    });
+
+    return deviceProfile;
   }
 }
 
-/**
- * Calculate overall confidence score for extraction
- * @param {Array} extractedFields - Array of extracted field objects
- * @returns {number} Overall confidence score (0-1)
- */
-function calculateOverallConfidence(extractedFields) {
-  if (!extractedFields || !Array.isArray(extractedFields) || extractedFields.length === 0) {
-    return 0;
-  }
-  
-  const totalConfidence = extractedFields.reduce(
-    (sum, field) => sum + field.confidence, 
-    0
-  );
-  
-  return totalConfidence / extractedFields.length;
-}
-
-// Export service functions
-export const documentIntelligenceService = {
-  processDocuments,
-  mapExtractedFieldsToFormData,
-  extractAndMapDocumentData,
-  calculateOverallConfidence
-};
+// Export as singleton
+export const documentIntelligenceService = new DocumentIntelligenceService();
