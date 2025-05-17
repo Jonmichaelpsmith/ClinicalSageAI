@@ -149,7 +149,7 @@ const DocumentIntelligenceTab = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-white rounded-lg relative" style={{zIndex: 20}}>
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold tracking-tight flex items-center">
@@ -169,7 +169,7 @@ const DocumentIntelligenceTab = ({
       
       {renderWorkflowStatus()}
       
-      <Card>
+      <Card className="relative z-30 shadow-xl">
         <CardHeader>
           <CardTitle>Document Processing Workflow</CardTitle>
           <CardDescription>
