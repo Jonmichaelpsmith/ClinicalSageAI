@@ -8,8 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Bot, FileText } from 'lucide-react'; // AI icon and file icon
 
 // Import DocuShare components and tabs
-import DocuSharePanel from '@/components/document-management/DocuSharePanel';
-import DocuShareIntegration from '@/components/document-management/DocuShareIntegration';
+import UnifiedVaultPanel from '@/components/document-management/UnifiedVaultPanel';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 // Import the steps configuration
@@ -159,11 +158,12 @@ export default function IndWizardLayout({ children }) {
                 <FileText className="h-4 w-4 mr-1.5 text-teal-600" />
                 DocuShare Documents
               </h3>
-              <DocuShareIntegration 
-                moduleName="ind" 
+              <UnifiedVaultPanel
+                moduleName="ind"
                 moduleLabel="IND Documents"
-                compact={true}
-                hidePreview={true}
+                compact
+                hidePreview
+                showMetrics={false}
               />
             </div>
           </ScrollArea>
@@ -218,12 +218,13 @@ export default function IndWizardLayout({ children }) {
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
-                <DocuShareIntegration 
+                <UnifiedVaultPanel
                   moduleName="ind"
                   moduleLabel={`${currentStep.title} Documents`}
-                  compact={true}
-                  hidePreview={true}
-                  hideMetadata={true}
+                  compact
+                  hidePreview
+                  hideMetadata
+                  showMetrics={false}
                 />
               </CardContent>
             </Card>

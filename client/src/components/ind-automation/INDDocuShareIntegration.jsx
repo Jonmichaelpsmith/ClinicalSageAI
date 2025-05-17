@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import EnhancedDocuSharePanel from './EnhancedDocuSharePanel';
+import UnifiedVaultPanel from '@/components/document-management/UnifiedVaultPanel';
 import { Badge } from '@/components/ui/badge';
 import { ArrowUpDown, FileText, Folder, Info, Download, Upload, Sparkles, Database, BarChart, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -223,7 +223,7 @@ export default function INDDocuShareIntegration() {
             
             <TabsContent value="document-manager" className="mt-0">
               <div className="h-full min-h-[650px]">
-                <EnhancedDocuSharePanel />
+                <UnifiedVaultPanel moduleName="ind" showMetrics={false} />
               </div>
             </TabsContent>
             
