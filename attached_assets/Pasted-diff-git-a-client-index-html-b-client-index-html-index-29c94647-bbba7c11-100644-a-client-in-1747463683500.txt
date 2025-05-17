@@ -1,0 +1,319 @@
+diff --git a/client/index.html b/client/index.html
+index 29c94647..bbba7c11 100644
+--- a/client/index.html
++++ b/client/index.html
+@@ -1,13 +1,15 @@
+ <!DOCTYPE html>
+ <html lang="en">
+   <head>
+     <meta charset="UTF-8" />
+     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+     <title>TrialSage™ - Advanced AI-Powered Regulatory Platform</title>
+     <meta name="description" content="TrialSage is an advanced AI-powered regulatory document management platform for clinical research professionals, specializing in intelligent Clinical Evaluation Report (CER) generation and compliance analysis." />
+   </head>
+   <body>
+     <div id="root"></div>
++    <!-- Portal target for app-wide modals -->
++    <div id="modal-root"></div>
+     <script type="module" src="/src/main.tsx"></script>
+   </body>
+ </html>
+\ No newline at end of file
+diff --git a/client/src/components/BenchmarksModal.jsx b/client/src/components/BenchmarksModal.jsx
+index d536a7d4..05cd8c38 100644
+--- a/client/src/components/BenchmarksModal.jsx
++++ b/client/src/components/BenchmarksModal.jsx
+@@ -1,26 +1,27 @@
+ import React, { useEffect, useState, useMemo, useCallback } from "react";
++import ModalPortal from './ModalPortal';
+ import { X, Download, Search, TrendingUp } from "lucide-react";
+ import { SparklineChart, SparkLine, SparkPoint } from "recharts";
+ import Fuse from "fuse.js";
+ import { saveAs } from "file-saver";
+ 
+ export default function BenchmarksModal({ onClose }) {
+   const [benchmarks, setBenchmarks] = useState([]);
+   const [loading, setLoading] = useState(true);
+   const [error, setError] = useState(null);
+   const [searchTerm, setSearchTerm] = useState("");
+   const [selectedBenchmark, setSelectedBenchmark] = useState(null);
+ 
+   useEffect(() => {
+     setLoading(true);
+     fetch("/api/benchmarks?limit=100")
+       .then((r) => {
+         if (!r.ok) {
+           throw new Error(`HTTP error! Status: ${r.status}`);
+         }
+         return r.json();
+       })
+       .then((data) => {
+         setBenchmarks(data);
+         setLoading(false);
+       })
+@@ -37,52 +38,53 @@ export default function BenchmarksModal({ onClose }) {
+       keys: ['metric'], 
+       threshold: 0.4,
+       ignoreLocation: true
+     });
+   }, [benchmarks]);
+   
+   // Filter benchmarks based on search term
+   const filteredBenchmarks = useMemo(() => {
+     if (!searchTerm.trim()) return benchmarks;
+     return fuse.search(searchTerm).map(result => result.item);
+   }, [searchTerm, benchmarks, fuse]);
+ 
+   // Export to CSV
+   const exportToCSV = useCallback(() => {
+     // Create CSV content
+     const header = "Metric,Value\n";
+     const rows = benchmarks.map(b => `"${b.metric}","${b.value}"`).join("\n");
+     const csvContent = header + rows;
+     
+     // Create and download the file
+     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8" });
+     saveAs(blob, "trialsage_benchmarks.csv");
+   }, [benchmarks]);
+ 
+   return (
+-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+-      <div className="bg-white dark:bg-slate-800 max-w-4xl w-full rounded-lg shadow-xl p-6 relative">
++    <ModalPortal>
++      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
++        <div className="bg-white dark:bg-slate-800 max-w-4xl w-full rounded-lg shadow-xl p-6 relative">
+         <button onClick={onClose} className="absolute top-3 right-3 text-gray-500 hover:text-red-500">
+           <X size={20} />
+         </button>
+         <div className="mb-4 flex items-start justify-between">
+           <div>
+             <h2 className="text-xl font-semibold">Data Benchmarks</h2>
+             <p className="text-sm text-gray-600 dark:text-gray-400">
+               Industry-standard performance metrics derived from 892 clinical study reports
+             </p>
+           </div>
+           <button 
+             onClick={exportToCSV}
+             className="flex items-center gap-1 px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-800 dark:hover:bg-emerald-700 text-emerald-700 dark:text-emerald-200 text-sm rounded-md"
+           >
+             <Download size={14} />
+             <span>Export CSV</span>
+           </button>
+         </div>
+ 
+         <div className="mb-4 relative">
+           <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+           <input
+             type="text"
+             placeholder="Search benchmarks..."
+             value={searchTerm}
+@@ -172,27 +174,28 @@ export default function BenchmarksModal({ onClose }) {
+                   className="py-3 px-4 border-b sm:border border-gray-100 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer flex justify-between items-center gap-2"
+                 >
+                   <div className="font-medium text-sm">{benchmark.metric}</div>
+                   <div className="text-right whitespace-nowrap text-emerald-600 dark:text-emerald-400 font-semibold">
+                     {benchmark.value}
+                   </div>
+                 </div>
+               ))}
+               {filteredBenchmarks.length === 0 && (
+                 <div className="col-span-3 py-4">
+                   <p className="italic text-gray-500 text-center">No benchmarks match your search</p>
+                 </div>
+               )}
+             </div>
+             
+             {filteredBenchmarks.length > 0 && (
+               <div className="pt-4 text-sm text-gray-500 dark:text-gray-400 text-center">
+                 Showing {filteredBenchmarks.length} of 892 benchmarks
+                 {searchTerm && ` matching "${searchTerm}"`}
+               </div>
+             )}
+           </>
+         )}
+       </div>
+     </div>
++    </ModalPortal>
+   );
+ }
+\ No newline at end of file
+diff --git a/client/src/components/DocumentDiffDialog.tsx b/client/src/components/DocumentDiffDialog.tsx
+index baa87526..35a20f83 100644
+--- a/client/src/components/DocumentDiffDialog.tsx
++++ b/client/src/components/DocumentDiffDialog.tsx
+@@ -1,47 +1,50 @@
+ import React from 'react';
++import ModalPortal from './ModalPortal';
+ import DocumentDiffViewer from './DocumentDiffViewer';
+ 
+ interface DocumentDiffDialogProps {
+   documentId: number;
+   oldVersionId?: number;
+   newVersionId?: number;
+   isOpen: boolean;
+   onClose: () => void;
+   documentTitle?: string;
+ }
+ 
+ export default function DocumentDiffDialog({
+   documentId,
+   oldVersionId,
+   newVersionId,
+   isOpen,
+   onClose,
+   documentTitle
+ }: DocumentDiffDialogProps) {
+   if (!isOpen) {
+     return null;
+   }
+ 
+   return (
+-    <div className="modal document-diff-dialog" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+-      <div className="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+-        <div className="modal-content">
++    <ModalPortal>
++      <div className="modal document-diff-dialog" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
++        <div className="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
++          <div className="modal-content">
+           <div className="modal-header">
+             <h5 className="modal-title">
+               Document Comparison {documentTitle && <span className="text-muted">- {documentTitle}</span>}
+             </h5>
+             <button type="button" className="btn-close" aria-label="Close" onClick={onClose}></button>
+           </div>
+           <div className="modal-body p-0">
+             <DocumentDiffViewer
+               documentId={documentId}
+               oldVersionId={oldVersionId}
+               newVersionId={newVersionId}
+               onClose={onClose}
+             />
+           </div>
+         </div>
+       </div>
+     </div>
++    </ModalPortal>
+   );
+ }
+\ No newline at end of file
+diff --git a/client/src/components/InsightsModal.jsx b/client/src/components/InsightsModal.jsx
+index 4ca3daf6..edbb8232 100644
+--- a/client/src/components/InsightsModal.jsx
++++ b/client/src/components/InsightsModal.jsx
+@@ -1,91 +1,94 @@
+ // InsightsModal.jsx – detailed cards with filter, tabs & docs links
+ import React, { useEffect, useState } from "react";
++import ModalPortal from './ModalPortal';
+ import { X } from "lucide-react";
+ 
+ export default function InsightsModal({ onClose }) {
+   const [models, setModels] = useState([]);
+   const [filter, setFilter] = useState("");
+   const [tag, setTag] = useState("all");
+   const [loading, setLoading] = useState(true);
+   const [error, setError] = useState(null);
+ 
+   useEffect(() => {
+     setLoading(true);
+     fetch("/api/insight-models?limit=100")
+       .then((r) => {
+         if (!r.ok) {
+           throw new Error(`HTTP error! Status: ${r.status}`);
+         }
+         return r.json();
+       })
+       .then((data) => {
+         setModels(data);
+         setLoading(false);
+       })
+       .catch((err) => {
+         console.error("Error fetching AI models:", err);
+         setError(err.message);
+         setLoading(false);
+       });
+   }, []);
+ 
+   const tags = Array.from(new Set(models.flatMap(m => m.tags || [])));
+   const visible = models.filter(m =>
+     (tag === "all" || (m.tags || []).includes(tag)) &&
+     (filter === "" || m.name.toLowerCase().includes(filter.toLowerCase()))
+   );
+ 
+   return (
+-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+-      <div className="bg-white dark:bg-slate-800 w-full max-w-4xl rounded-lg shadow-2xl p-6 relative">
++    <ModalPortal>
++      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
++        <div className="bg-white dark:bg-slate-800 w-full max-w-4xl rounded-lg shadow-2xl p-6 relative">
+         <button onClick={onClose} className="absolute top-3 right-3 text-gray-500 hover:text-red-500"><X size={20} /></button>
+         <h2 className="text-2xl font-semibold mb-4">AI Insight Models ({models.length})</h2>
+ 
+         {loading ? (
+           <div className="flex justify-center items-center py-12">
+             <div className="animate-spin h-8 w-8 border-4 border-emerald-500 rounded-full border-t-transparent"></div>
+           </div>
+         ) : error ? (
+           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 rounded-md text-red-700 dark:text-red-400">
+             Error loading AI models: {error}
+           </div>
+         ) : (
+           <>
+             <div className="flex flex-wrap gap-2 mb-4 text-xs">
+               <button onClick={()=>setTag("all")} className={`px-3 py-1 rounded ${
+                 tag==='all' ? 'bg-emerald-600 text-white' : 'bg-gray-100 dark:bg-slate-700'}`}>All</button>
+               {tags.map(t=> (
+                 <button key={t} onClick={()=>setTag(t)} className={`px-3 py-1 rounded ${
+                   tag===t ? 'bg-emerald-600 text-white' : 'bg-gray-100 dark:bg-slate-700'}`}>{t}</button>
+               ))}
+             </div>
+ 
+             <input
+               type="text"
+               placeholder="Search model…"
+               value={filter}
+               onChange={(e)=>setFilter(e.target.value)}
+               className="mb-4 w-full border rounded px-3 py-2 text-sm focus:outline-emerald-600 bg-gray-50 dark:bg-slate-700 dark:border-slate-600"
+             />
+ 
+             <div className="grid sm:grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto pr-1">
+               {visible.map((m,i)=>(
+                 <a
+                   key={i}
+                   href={m.docUrl||"#"}
+                   target={m.docUrl?"_blank":"_self"}
+                   className="block p-4 border rounded-lg bg-gray-50 dark:bg-slate-700 hover:border-emerald-600 transition"
+                 >
+                   <h3 className="font-semibold mb-1 text-emerald-600 dark:text-emerald-300">{m.name}</h3>
+                   <p className="text-xs opacity-80 mb-2" style={{minHeight:"2.5em"}}>{m.description}</p>
+                   <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded dark:bg-emerald-900 dark:text-emerald-200">v{m.version}</span>
+                 </a>
+               ))}
+               {visible.length===0 && <p className="italic text-gray-500">No models match.</p>}
+             </div>
+           </>
+         )}
+       </div>
+     </div>
++    </ModalPortal>
+   );
+ }
+\ No newline at end of file
+diff --git a/client/src/components/ModalPortal.tsx b/client/src/components/ModalPortal.tsx
+new file mode 100644
+index 00000000..290bb51e
+--- /dev/null
++++ b/client/src/components/ModalPortal.tsx
+@@ -0,0 +1,13 @@
++import { createPortal } from 'react-dom';
++import { ReactNode } from 'react';
++
++const modalRoot = typeof document !== 'undefined' ? document.getElementById('modal-root') : null;
++
++interface ModalPortalProps {
++  children: ReactNode;
++}
++
++export default function ModalPortal({ children }: ModalPortalProps) {
++  if (!modalRoot) return null;
++  return createPortal(children, modalRoot);
++}
