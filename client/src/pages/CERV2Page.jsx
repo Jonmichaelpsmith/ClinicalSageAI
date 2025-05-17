@@ -2294,106 +2294,43 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       // Import the DocumentIntelligenceTab component only when needed
       const DocumentIntelligenceTab = lazy(() => import('../components/document-intelligence/DocumentIntelligenceTab'));
       
-      // CRITICAL BUGFIX: Force-close any open device selection modal/dialog
-      // This is an enterprise-grade priority fix that prevents UI conflicts
-      if (typeof window !== 'undefined') {
-        // Use timeout to ensure this runs after React's rendering cycle
-        setTimeout(() => {
-          // Force hide any open profile selector or modal dialogs
-          const modalBackdrops = document.querySelectorAll('[class*="backdrop"], [class*="modal-overlay"], [class*="dialog-overlay"]');
-          modalBackdrops.forEach(el => {
-            if (el.parentNode) el.parentNode.removeChild(el);
-          });
-          
-          // Force hide any open modals in document body
-          const modalElements = document.querySelectorAll('[role="dialog"]:not([id*="document-intelligence"])');
-          modalElements.forEach(el => {
-            if (el.style) el.style.display = 'none';
-          });
-          
-          // Reset any body/document scroll locks that might have been applied
-          document.body.style.overflow = '';
-          document.documentElement.style.overflow = '';
-        }, 50);
+      // Simple fix to disable profile selectors
+      if (showProfileSelector) {
+        setShowProfileSelector(false);
       }
       
-      // Use Portal component to render outside normal document flow for isolation
       return (
-        <div id="document-intelligence-modal-root" className="fixed inset-0 z-[99999] flex items-center justify-center">
-          {/* Enterprise-grade backdrop with enforced position and stacking */}
-          <div 
-            className="absolute inset-0 bg-slate-900/30 backdrop-blur-sm" 
-            style={{position: 'fixed', zIndex: 99999}}
-            onClick={() => {
-              setActiveTab('device');
-              toast({
-                title: "Document Intelligence Closed",
-                description: "Returned to device profile view"
-              });
-            }}
-          />
+        <div className="w-full h-full bg-white z-50" style={{position: 'relative'}}>
+          <div className="flex justify-between items-center p-4 border-b">
+            <h2 className="text-lg font-semibold">Document Intelligence</h2>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setActiveTab('device')}
+              className="ml-auto"
+            >
+              Close
+            </Button>
+          </div>
           
-          {/* Enterprise-grade container with shadow boundary isolation */}
-          <div 
-            className="relative max-w-7xl w-full mx-auto bg-white rounded-lg shadow-2xl overflow-hidden"
-            style={{
-              zIndex: 100000,
-              isolation: 'isolate',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-              maxHeight: 'calc(100vh - 40px)',
-              overflowY: 'auto'
-            }}
-          >
-            {/* Enterprise header with enforced isolation */}
-            <div className="sticky top-0 flex justify-between items-center p-4 border-b bg-white z-10">
-              <div className="flex items-center">
-                <Brain className="h-6 w-6 text-primary mr-2" />
-                <h2 className="text-xl font-bold">Document Intelligence</h2>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="hidden sm:flex items-center">
-                  <AlertTriangle className="h-3.5 w-3.5 mr-1 text-yellow-500" />
-                  <span>Enterprise Feature</span>
-                </Badge>
-                
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => setActiveTab('device')}
-                  className="text-gray-500 hover:text-gray-800"
-                >
-                  <X className="h-5 w-5" />
-                </Button>
-              </div>
-            </div>
-            
-            {/* Content area with internal scrolling */}
-            <div className="p-4">
-              <Suspense fallback={
-                <div className="p-8 text-center">
-                  <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2 text-primary" />
-                  <p>Loading Document Intelligence Engine...</p>
-                </div>
-              }>
-                <DocumentIntelligenceTab 
-                  regulatoryContext={documentType}
-                  deviceProfile={deviceProfile}
-                  onDeviceProfileUpdate={(updatedProfile) => {
-                    if (updatedProfile) {
-                      setDeviceProfile(updatedProfile);
-                      saveState('deviceProfile', updatedProfile);
-                      
-                      toast({
-                        title: "Device Profile Updated",
-                        description: "Successfully applied document data to your device profile.",
-                        variant: "success"
-                      });
-                    }
-                  }}
-                />
-              </Suspense>
-            </div>
+          <div className="p-4">
+            <Suspense fallback={<div className="p-8 text-center">Loading Document Intelligence...</div>}>
+              <DocumentIntelligenceTab 
+                regulatoryContext={documentType}
+                deviceProfile={deviceProfile}
+                onDeviceProfileUpdate={(updatedProfile) => {
+                  if (updatedProfile) {
+                    setDeviceProfile(updatedProfile);
+                    saveState('deviceProfile', updatedProfile);
+                    toast({
+                      title: "Device Profile Updated",
+                      description: "Successfully applied document data to your device profile.",
+                      variant: "success"
+                    });
+                  }
+                }}
+              />
+            </Suspense>
           </div>
         </div>
       );
