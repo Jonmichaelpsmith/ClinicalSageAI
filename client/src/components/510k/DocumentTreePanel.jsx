@@ -139,15 +139,21 @@ const DocumentTreePanel = ({ isOpen, onClose, documentId }) => {
     );
   };
   
-  console.log("DocumentTreePanel rendering with isOpen:", isOpen);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log("DocumentTreePanel rendering with isOpen:", isOpen);
+  }
   
   // Always display this debug info in dev
   useEffect(() => {
-    console.log("DocumentTreePanel mounted with isOpen:", isOpen);
-    
+    if (process.env.NODE_ENV !== 'production') {
+      console.log("DocumentTreePanel mounted with isOpen:", isOpen);
+    }
+
     // Cleanup
     return () => {
-      console.log("DocumentTreePanel unmounted");
+      if (process.env.NODE_ENV !== 'production') {
+        console.log("DocumentTreePanel unmounted");
+      }
     };
   }, [isOpen]);
   
