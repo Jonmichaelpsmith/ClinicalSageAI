@@ -12,6 +12,7 @@ import NextActionsSidebar from '../components/NextActionsSidebar';
 import VaultQuickAccess from '../components/VaultQuickAccess';
 import AnalyticsQuickView from '../components/AnalyticsQuickView';
 import ReportsQuickWidget from '../components/ReportsQuickWidget';
+import ProjectManagerGrid from '../components/project-manager/ProjectManagerGrid';
 
 const ClientPortalLanding = () => {
   const [projects, setProjects] = useState([]);
@@ -26,51 +27,22 @@ const ClientPortalLanding = () => {
   } = useTenant();
 
   useEffect(() => {
-    // Log that the ClientPortalLanding component has mounted
-    console.log('ClientPortalLanding component mounted');
-    
-    // Use mock data instead of fetching from API
-    const mockProjects = [
-      { 
-        id: 'proj-001', 
-        name: 'Enzymax Forte IND', 
-        status: 'active', 
-        progress: 65, 
-        lastUpdated: '2025-04-20',
-        modules: ['IND Wizard', 'CMC Wizard', 'Vault'] 
-      },
-      { 
-        id: 'proj-002', 
-        name: 'Cardiozen Phase 2 Study', 
-        status: 'active', 
-        progress: 42, 
-        lastUpdated: '2025-04-22',
-        modules: ['Study Architect', 'Protocol Designer'] 
-      },
-      { 
-        id: 'proj-003', 
-        name: 'Neuroclear Medical Device', 
-        status: 'pending', 
-        progress: 28, 
-        lastUpdated: '2025-04-18',
-        modules: ['CER Generator'] 
-      },
-      { 
-        id: 'proj-004', 
-        name: 'Respironix eCTD Submission', 
-        status: 'active', 
-        progress: 75, 
-        lastUpdated: '2025-05-05',
-        modules: ['eCTD Co-Author', 'Vault'] 
+    const fetchProjects = async () => {
+      console.log('ClientPortalLanding component mounted');
+      setLoading(true);
+      try {
+        const { data } = await axios.get('/api/projects/status');
+        setProjects(data.projects || []);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching projects:', err);
+        setError('Failed to load project data');
+      } finally {
+        setLoading(false);
       }
-    ];
-    
-    // Set mock projects data
-    setProjects(mockProjects);
-    setLoading(false);
-    
-    // Update console log for tracking
-    console.log('All module access links updated to point to /client-portal');
+    };
+
+    fetchProjects();
   }, []);
 
   // Module cards for the dashboard
@@ -216,9 +188,17 @@ const ClientPortalLanding = () => {
                     </div>
                   )}
                 </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="text-gray-500 text-center">Project list temporarily unavailable while system maintenance is performed.</p>
-                </div>
+                {loading ? (
+                  <div className="flex items-center justify-center py-10">
+                    <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  </div>
+                ) : error ? (
+                  <div className="p-4 bg-red-50 border border-red-200 rounded text-center text-red-700">
+                    Failed to load projects.
+                  </div>
+                ) : (
+                  <ProjectManagerGrid projects={projects} />
+                )}
               </div>
               
               {/* Quick Insight Metrics */}
