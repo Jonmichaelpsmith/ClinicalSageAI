@@ -817,53 +817,198 @@ const discoveryService = {
    */
   async generatePredicateComparison(selectedPredicates, deviceDescription) {
     try {
-      console.log(`Generating predicate comparison for ${selectedPredicates.length} devices`);
+      console.log(`Generating enhanced predicate comparison for ${selectedPredicates.length} devices`);
       
-      const predicateDetails = selectedPredicates.map((device, index) => 
-        `Predicate ${index + 1}: "${device.title}" by ${device.manufacturer} (${device.clearance_date || 'unknown date'})`
-      ).join('\n');
+      // Step 1: Enhance predicate devices with additional regulatory data when available
+      const enhancedPredicates = await Promise.all(selectedPredicates.map(async (device) => {
+        try {
+          // Try to get additional FDA data for this predicate if it has a k_number
+          if (device.k_number) {
+            try {
+              const fdaResponse = await fetch(`https://api.fda.gov/device/510k.json?search=k_number:"${device.k_number}"&limit=1`);
+              if (fdaResponse.ok) {
+                const fdaData = await fdaResponse.json();
+                if (fdaData.results && fdaData.results.length > 0) {
+                  const fdaDevice = fdaData.results[0];
+                  // Enhance device with additional FDA data
+                  return {
+                    ...device,
+                    product_code: fdaDevice.product_code || device.product_code,
+                    device_class: fdaDevice.device_class || device.device_class,
+                    advisory_committee: fdaDevice.advisory_committee || device.advisory_committee,
+                    regulatory_enhanced: true
+                  };
+                }
+              }
+            } catch (fdaError) {
+              console.warn(`Could not fetch additional FDA data for ${device.k_number}:`, fdaError.message);
+              // Continue with original device data
+            }
+          }
+          return device;
+        } catch (enhanceError) {
+          console.warn(`Error enhancing predicate device:`, enhanceError.message);
+          return device; // Return original device if enhancement fails
+        }
+      }));
       
+      // Step 2: Format detailed predicate information for more comprehensive comparison
+      const predicateDetails = enhancedPredicates.map((device, index) => {
+        const details = [
+          `Predicate ${index + 1}: "${device.title || device.device_name}" by ${device.manufacturer || device.applicant_100} (${device.clearance_date || device.decision_date || 'unknown date'})`,
+          `K Number: ${device.k_number || 'N/A'}`,
+          `Product Code: ${device.product_code || 'N/A'}`,
+          `Device Class: ${device.device_class || 'N/A'}`
+        ];
+        
+        // Add any additional details that are available
+        if (device.advisory_committee) details.push(`Advisory Committee: ${device.advisory_committee}`);
+        if (device.intended_use) details.push(`Intended Use: ${device.intended_use}`);
+        
+        return details.join('\n');
+      }).join('\n\n');
+      
+      // Step 3: Generate a more comprehensive comparison with structured sections
       const completion = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
           {
             role: "system",
-            content: `You are a medical device regulatory expert specializing in 510(k) submissions. Your task is to create a comprehensive predicate device comparison section that demonstrates substantial equivalence according to FDA requirements. Focus on technological characteristics, performance, safety, and effectiveness.`
+            content: `You are a senior medical device regulatory expert specializing in 510(k) submissions and FDA compliance. 
+            Your task is to create a comprehensive predicate device comparison that demonstrates substantial equivalence according to FDA requirements.
+            
+            Include these specific sections in your analysis:
+            1. Tabular Comparison - A detailed table comparing key characteristics
+            2. Intended Use Comparison - Analysis of intended use similarities/differences
+            3. Technological Characteristics - Detailed analysis of technologies used
+            4. Performance Data Comparison - Analysis of performance specifications
+            5. Safety Considerations - Safety-related comparison points
+            6. Risk Analysis - Any differential risks between subject and predicate devices
+            7. Substantial Equivalence Conclusion - Summary determination with regulatory rationale
+            
+            Use proper FDA regulatory terminology and focus on the aspects most critical for FDA reviewers.`
           },
           {
             role: "user",
-            content: `Generate a detailed predicate device comparison for the following medical device:\n\n${deviceDescription}\n\nBased on these selected predicate devices:\n${predicateDetails}\n\nThe comparison should include a clear tabular format showing similarities and differences across key characteristics, followed by a detailed analysis of substantial equivalence.`
+            content: `Generate an enhanced predicate device comparison report for the following medical device:
+            
+            SUBJECT DEVICE INFORMATION:
+            ${JSON.stringify(deviceDescription, null, 2)}
+            
+            PREDICATE DEVICE INFORMATION:
+            ${predicateDetails}
+            
+            REQUIREMENTS:
+            1. Create a comprehensive HTML comparison table with these columns: Feature/Characteristic, Subject Device, Predicate Device(s), Substantial Equivalence
+            2. For multiple predicates, include each predicate in its own column
+            3. Include a thorough analysis section after the table discussing key similarities and differences
+            4. Highlight any potential regulatory concerns or advantages in the comparison
+            5. Provide a clear substantial equivalence determination with regulatory justification
+            6. Format the output in clean, properly formatted HTML that can be directly embedded in documents`
           }
         ],
       });
       
       const comparison = completion.choices[0].message.content;
       
-      // Store the generated comparison
+      // Step 4: Enhance with scientific literature references if available
+      let enhancedComparison = comparison;
+      try {
+        // Get device keywords for literature search
+        const keywordsCompletion = await openai.chat.completions.create({
+          model: "gpt-3.5-turbo", // Use smaller model for efficiency
+          messages: [
+            {
+              role: "system",
+              content: "Extract 3-5 key medical/technical terms from this device description for literature search. Return only the terms separated by commas."
+            },
+            {
+              role: "user",
+              content: JSON.stringify(deviceDescription)
+            }
+          ]
+        });
+        
+        const searchTerms = keywordsCompletion.choices[0].message.content;
+        
+        // Search for relevant literature to support the comparison
+        let literatureResults = [];
+        try {
+          // Try PubMed search if API key is available
+          if (process.env.PUBMED_API_KEY) {
+            literatureResults = await this.searchLiterature(searchTerms, {}, '510k');
+          }
+        } catch (litError) {
+          console.warn('Literature search failed:', litError.message);
+        }
+        
+        // If we have literature results, enhance the comparison with references
+        if (literatureResults.length > 0) {
+          const referencesCompletion = await openai.chat.completions.create({
+            model: "gpt-4o",
+            messages: [
+              {
+                role: "system",
+                content: "You are a medical device regulatory documentation expert. Your task is to enhance the provided predicate device comparison with relevant scientific literature references from the provided literature."
+              },
+              {
+                role: "user",
+                content: `Enhance this predicate device comparison with relevant scientific literature references:
+                
+                COMPARISON DOCUMENT:
+                ${comparison}
+                
+                AVAILABLE LITERATURE REFERENCES:
+                ${JSON.stringify(literatureResults.slice(0, 5), null, 2)}
+                
+                Add a "Scientific Literature Support" section at the end with proper citations to these references where they support the comparison points. Only reference literature that is directly relevant to the devices being compared.`
+              }
+            ]
+          });
+          
+          enhancedComparison = referencesCompletion.choices[0].message.content;
+        }
+      } catch (literatureError) {
+        console.warn('Literature enhancement failed:', literatureError.message);
+        // Continue with the original comparison
+      }
+      
+      // Step 5: Store the enhanced comparison
       const query = `
         INSERT INTO predicate_comparisons (
-          device_description, predicates_count, content, created_at
-        ) VALUES ($1, $2, $3, NOW())
+          device_description, predicates_count, content, enhanced_content, created_at
+        ) VALUES ($1, $2, $3, $4, NOW())
         RETURNING id;
       `;
       
       const values = [
-        deviceDescription,
-        selectedPredicates.length,
-        comparison
+        JSON.stringify(deviceDescription),
+        enhancedPredicates.length,
+        comparison,
+        enhancedComparison
       ];
       
       const result = await pool.query(query, values);
       
+      // Return the comprehensive comparison data
       return {
         success: true,
         id: result.rows[0].id,
-        comparison: comparison,
-        predicateCount: selectedPredicates.length
+        comparison: enhancedComparison,
+        predicateCount: enhancedPredicates.length,
+        predicates: enhancedPredicates.map(p => ({
+          id: p.id || p.k_number,
+          title: p.title || p.device_name,
+          manufacturer: p.manufacturer || p.applicant_100,
+          k_number: p.k_number
+        })),
+        analysisDate: new Date().toISOString(),
+        regulatoryContext: 'FDA 510(k) Substantial Equivalence',
+        format: 'html'
       };
     } catch (error) {
       console.error('Error in generatePredicateComparison:', error);
-      throw new Error(`Predicate comparison generation failed: ${error.message}`);
+      throw new Error(`Enhanced predicate comparison generation failed: ${error.message}`);
     }
   },
   
