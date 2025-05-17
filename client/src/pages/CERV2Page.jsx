@@ -2294,26 +2294,55 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       // Import the DocumentIntelligenceTab component only when needed
       const DocumentIntelligenceTab = lazy(() => import('../components/document-intelligence/DocumentIntelligenceTab'));
       
+      // CRITICAL FIX: Force hide any open profile selection dialogs when document intelligence is active
+      // This prevents the transparent overlay UI conflict seen in fullscreen mode
+      if (showProfileSelector) {
+        setShowProfileSelector(false);
+      }
+      
       return (
-        <div className="relative" style={{zIndex: 20}}>
-          <Suspense fallback={<div className="p-8 text-center">Loading Document Intelligence...</div>}>
-            <DocumentIntelligenceTab 
-              regulatoryContext={documentType}
-              deviceProfile={deviceProfile}
-              onDeviceProfileUpdate={(updatedProfile) => {
-                if (updatedProfile) {
-                  setDeviceProfile(updatedProfile);
-                  saveState('deviceProfile', updatedProfile);
-                  
-                  toast({
-                    title: "Device Profile Updated",
-                    description: "Successfully applied document data to your device profile.",
-                    variant: "success"
-                  });
-                }
-              }}
-            />
-          </Suspense>
+        <div className="relative isolate" style={{zIndex: 9999}}>
+          <div className="fixed inset-0 bg-black/5 backdrop-blur-sm" onClick={() => {
+            // This overlay allows clicking outside to exit document intelligence mode
+            setActiveTab('device');
+            toast({
+              title: "Document Intelligence Closed",
+              description: "Returned to device profile view"
+            });
+          }}></div>
+          
+          <div className="relative z-[9999] bg-white p-4 rounded-lg shadow-2xl max-w-7xl mx-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Document Intelligence</h2>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setActiveTab('device')}
+                className="text-gray-500 hover:text-gray-800"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              </Button>
+            </div>
+            
+            <Suspense fallback={<div className="p-8 text-center">Loading Document Intelligence...</div>}>
+              <DocumentIntelligenceTab 
+                regulatoryContext={documentType}
+                deviceProfile={deviceProfile}
+                onDeviceProfileUpdate={(updatedProfile) => {
+                  if (updatedProfile) {
+                    setDeviceProfile(updatedProfile);
+                    saveState('deviceProfile', updatedProfile);
+                    
+                    toast({
+                      title: "Device Profile Updated",
+                      description: "Successfully applied document data to your device profile.",
+                      variant: "success"
+                    });
+                  }
+                }}
+              />
+            </Suspense>
+          </div>
         </div>
       );
     }
