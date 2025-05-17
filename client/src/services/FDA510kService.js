@@ -450,6 +450,78 @@ class FDA510kService {
   }
   
   /**
+   * Compare predicate devices to generate a detailed comparison analysis
+   * 
+   * @param {Object} deviceDescription - Description of the subject device
+   * @param {Array} selectedPredicates - Array of selected predicate devices to compare
+   * @param {Object} options - Additional options for the comparison
+   * @returns {Promise<Object>} Comparison results with detailed analysis
+   */
+  async comparePredicateDevices(deviceDescription, selectedPredicates, options = {}) {
+    console.log('Comparing predicate devices for:', deviceDescription?.deviceName, 'with', selectedPredicates?.length, 'predicates');
+    
+    try {
+      // Try primary API endpoint first
+      try {
+        const response = await api.post('/api/discovery/predicate-comparison', {
+          deviceDescription,
+          selectedPredicates,
+          options
+        });
+        
+        if (response.data && response.data.success) {
+          console.log('Successfully retrieved predicate comparison from primary endpoint');
+          return response.data;
+        }
+      } catch (primaryError) {
+        console.warn('Primary predicate comparison API failed:', primaryError.message);
+      }
+      
+      // Try alternate API endpoint
+      try {
+        const altResponse = await api.post('/fda510k/predicate-comparison', {
+          deviceDescription,
+          selectedPredicates,
+          options
+        });
+        
+        if (altResponse.data) {
+          console.log('Successfully retrieved predicate comparison from alternate endpoint');
+          return altResponse.data;
+        }
+      } catch (altError) {
+        console.warn('Alternate predicate comparison API failed:', altError.message);
+      }
+      
+      // Try legacy API endpoint as last resort
+      try {
+        const legacyResponse = await api.post('/510k-equivalence-api/compare', {
+          subjectDevice: deviceDescription,
+          predicateDevices: selectedPredicates,
+          analysisOptions: options
+        });
+        
+        if (legacyResponse.data) {
+          console.log('Successfully retrieved predicate comparison from legacy endpoint');
+          return {
+            success: true,
+            data: legacyResponse.data
+          };
+        }
+      } catch (legacyError) {
+        console.warn('Legacy predicate comparison API failed:', legacyError.message);
+      }
+      
+      // All API attempts failed
+      console.error('All predicate comparison API endpoints failed');
+      throw new Error('Could not retrieve predicate device comparison');
+    } catch (error) {
+      console.error('Critical error in predicate device comparison:', error);
+      throw error;
+    }
+  }
+  
+  /**
    * Save device profile with proper document structure
    * 
    * @param {Object} deviceProfile - The device profile data to save
