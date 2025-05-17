@@ -27,7 +27,13 @@ The TrialSage Automated Knowledge Enhancement System ensures our AI continuously
 - Extracts key information and formats it for our knowledge service
 - Tracks processed articles to avoid duplication
 
-### 4. Knowledge Scheduler (`knowledge_scheduler.js`)
+### 4. CSR Downloader (`csr_downloader.py`)
+
+- Retrieves new CSRs from ClinicalTrials.gov and other public registries
+- Saves downloaded reports in the `csrs/` directory
+- Logs processed NCT IDs to avoid duplicates
+
+### 5. Knowledge Scheduler (`knowledge_scheduler.js`)
 
 - Coordinates all knowledge enhancement tasks
 - Runs on configurable schedules:
@@ -35,6 +41,7 @@ The TrialSage Automated Knowledge Enhancement System ensures our AI continuously
   - Academic knowledge enhancement: Daily (2:00 AM)
   - Journal RSS monitoring: Twice daily (8:00 AM and 8:00 PM)
   - Bulk Canada imports: Monthly (1st at 1:00 AM)
+  - ClinicalTrials.gov CSR downloader: Weekly (Sundays at 4:00 AM)
 - Provides status monitoring and manual task execution
 - Maintains detailed logs of all enhancement activities
 

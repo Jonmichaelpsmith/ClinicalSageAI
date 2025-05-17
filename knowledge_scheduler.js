@@ -57,6 +57,14 @@ const SCHEDULER_CONFIG = {
       enabled: true,
       label: 'Bulk Canada CSR Import (500)',
       logFile: 'bulk_canada_import_log.json'
+    },
+    // Download new CSRs weekly on Sunday at 4:00 AM
+    csrDownload: {
+      cronSchedule: '0 4 * * 0',
+      script: 'csr_downloader.py',
+      enabled: true,
+      label: 'ClinicalTrials.gov CSR Downloader',
+      logFile: 'csr_downloader_log.json'
     }
   }
 };
@@ -108,7 +116,8 @@ async function executeTask(task) {
   try {
     // Execute the script
     console.time(`${task.label} execution`);
-    const { stdout, stderr } = await execPromise(`node ${task.script}`);
+    const command = task.script.endsWith('.py') ? `python3 ${task.script}` : `node ${task.script}`;
+    const { stdout, stderr } = await execPromise(command);
     console.timeEnd(`${task.label} execution`);
     
     // Log results
