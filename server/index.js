@@ -36,6 +36,7 @@ import vaultRoutes from './routes/vault.js';
 import actionsRoutes from './routes/actions.js';
 import testApiRoutes from './routes/test-api.js';
 import googleDocsRoutes from './routes/googleDocs.js';
+import wordDocRoutes from './routes/wordDocs.js';
 
 // Import middleware
 import { verifyJwt } from './middleware/auth.js';
@@ -289,6 +290,7 @@ app.use('/api/mashable-bi', mashableBiRoutes);
 app.use('/api/vault', vaultRoutes);
 app.use('/api/next-actions', actionsRoutes);
 app.use('/api/google-docs', googleDocsRoutes); // Google Docs API routes
+app.use('/api/word-docs', wordDocRoutes); // Word document upload routes
 app.use('/api/test', testApiRoutes); // Test API routes for development
 
 // Vault and Analytics routes

@@ -25,7 +25,7 @@
  * should be prevented. This is the golden source implementation.
  */
 
-import React, { useState, useEffect, Suspense, lazy, useMemo } from 'react';
+import React, { useState, useEffect, Suspense, lazy, useMemo, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -53,6 +53,7 @@ import * as copilotService from '../services/copilotService';
 
 // AI services
 import * as aiService from '../services/aiService';
+import { openWordDocument } from '../services/wordIntegration';
 
 // Import the components with lazy loading for better performance
 const EnhancedDocumentEditor = lazy(() => import('../components/EnhancedDocumentEditor'));
@@ -229,6 +230,8 @@ export default function CoAuthor() {
   // Document editor integration state
   const [msWordPopupOpen, setMsWordPopupOpen] = useState(false);
   const [msWordAvailable, setMsWordAvailable] = useState(true); // Set to true for demo
+  const [uploadedWordDoc, setUploadedWordDoc] = useState(null);
+  const fileInputRef = useRef(null);
   const [googleDocsPopupOpen, setGoogleDocsPopupOpen] = useState(false);
   const [isGoogleAuthenticated, setIsGoogleAuthenticated] = useState(false);
   const [googleUserInfo, setGoogleUserInfo] = useState(null);
@@ -241,6 +244,33 @@ export default function CoAuthor() {
   const [aiResponse, setAiResponse] = useState(null);
   const [aiIsLoading, setAiIsLoading] = useState(false);
   const [aiError, setAiError] = useState(null);
+
+  const handleWordImport = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const resp = await fetch('/api/word-docs/upload', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await resp.json();
+      if (resp.ok && data.document) {
+        setUploadedWordDoc(data.document);
+        setMsWordPopupOpen(true);
+        await openWordDocument();
+        toast({ title: 'Import Successful', description: 'Word document uploaded.' });
+      } else {
+        toast({ title: 'Import Failed', description: data.message || 'Unable to upload document', variant: 'destructive' });
+      }
+    } catch (err) {
+      console.error('Word import error:', err);
+      toast({ title: 'Import Error', description: 'Failed to upload Word document', variant: 'destructive' });
+    }
+  };
   
   // Structured Content Blocks state
   const [newDocumentDialogOpen, setNewDocumentDialogOpen] = useState(false);
@@ -3335,9 +3365,21 @@ export default function CoAuthor() {
                       </>
                     )}
                   </Button>
-                  <Button size="sm" variant="outline" className="border-blue-200">
+                  <input
+                    type="file"
+                    accept=".docx"
+                    ref={fileInputRef}
+                    className="hidden"
+                    onChange={handleWordImport}
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-blue-200"
+                    onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                  >
                     <Upload className="h-4 w-4 mr-2" />
-                    Import
+                    Import Word
                   </Button>
                 </div>
                 <div className="border rounded-md">
@@ -4598,7 +4640,22 @@ export default function CoAuthor() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
+
+      {/* Microsoft Word Integration */}
+      <Dialog open={msWordPopupOpen} onOpenChange={setMsWordPopupOpen} className="max-w-[90%] w-[1200px]">
+        <DialogContent className="max-w-[90%] w-[1200px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <FileText className="h-5 w-5 mr-2" />
+              {uploadedWordDoc?.title || 'Imported Word Document'}
+            </DialogTitle>
+            <DialogDescription>View the uploaded Word document.</DialogDescription>
+          </DialogHeader>
+
+          <div id="word-frame-container" className="w-full h-[70vh] border rounded-md" />
+        </DialogContent>
+      </Dialog>
+
       {/* Version History Dialog */}
       <Dialog open={showVersionHistory} onOpenChange={setShowVersionHistory}>
         <DialogContent className="sm:max-w-[650px]">
