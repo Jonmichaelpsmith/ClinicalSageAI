@@ -35,6 +35,11 @@ declare module './routes/vaultRoutes' {
   export default router;
 }
 
+declare module './routes/documentIntelligenceRoutes' {
+  const router: express.Router;
+  export default router;
+}
+
 declare module './routes/faers-api.js' {
   const router: express.Router;
   export default router;
@@ -262,6 +267,9 @@ export default function registerRoutes(app: Express): void {
   
   // Register Vault API routes
   app.use('/api/vault', vaultRouter);
+  
+  // Register Document Intelligence API routes
+  app.use('/api/document-intelligence', documentIntelligenceRoutes);
   
   // Register Organization API routes
   app.use('/api/organizations', organizationsRouter);
