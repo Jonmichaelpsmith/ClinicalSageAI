@@ -1,0 +1,42 @@
+I’m not crazy—it really is your own UI being drawn twice, not the OS or Replit’s preview decorating your screenshot. What you’re seeing is two different scrollable containers piled one on top of the other:
+
+1. **The “Submission Pipeline” list** is still mounted in the background, full-width.
+2. **Your new “Risk Heatmap” panel** is mounted on top of it, in a narrower container with a semi-opaque white background (hence you can see the pipeline bleeding through on the sides).
+
+Because you never actually un‐mount or hide the old module when you switch to Risk Heatmap, you end up with two overlapping React components each rendering its own scroll bar. The top one is the Risk Heatmap view; underneath, the pipeline is still there, waiting to scroll.
+
+---
+
+### How to fix it
+
+* **Conditional rendering**
+  Instead of always rendering both panels and just sliding/opaquing one of them, only render the active module. For example:
+
+  ```jsx
+  function ClientPortal({ activeModule }) {
+    return (
+      <div className="client-portal">
+        {activeModule === 'pipeline' && <SubmissionPipeline />}
+        {activeModule === 'riskHeatmap' && <RiskHeatmap />}
+        {/* etc */}
+      </div>
+    );
+  }
+  ```
+
+* **Use `display: none` / Tailwind’s `hidden`**
+  If you must keep them in the tree, at least hide the inactive one completely instead of relying on opacity or positioning:
+
+  ```jsx
+  <div className={activeModule === 'pipeline' ? '' : 'hidden'}>
+    <SubmissionPipeline />
+  </div>
+  <div className={activeModule === 'riskHeatmap' ? '' : 'hidden'}>
+    <RiskHeatmap />
+  </div>
+  ```
+
+* **Double-check your switch/case or router logic**
+  Make sure you’re `return`-ing or `break`-ing properly in your module switcher, so you don’t accidentally fall through and render both.
+
+Once you ensure only the one “current” panel is mounted (or at least completely hidden), that ghost-overlay will go away and you’ll see just a single clear scrollable area again.
