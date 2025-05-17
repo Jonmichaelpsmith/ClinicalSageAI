@@ -9,6 +9,9 @@ import moduleIntegrationRoutes from './routes/moduleIntegrationRoutes';
 import vaultRoutes from './routes/vaultRoutes';
 import documentIntelligenceRoutes from './routes/documentIntelligenceRoutes';
 
+// Collaboration routes
+import collaborationRoutes from './routes/collaborationRoutes';
+
 // Declare module types to avoid TypeScript errors
 declare module './routes/googleDocs' {
   const router: express.Router;
@@ -101,6 +104,11 @@ declare module './routes/ai-routes.js' {
 }
 
 declare module './routes/auth.js' {
+  const router: express.Router;
+  export default router;
+}
+
+declare module './routes/collaborationRoutes' {
   const router: express.Router;
   export default router;
 }
