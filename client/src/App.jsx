@@ -31,8 +31,16 @@ const LoadingPage = () => (
 import ClientPortalLanding from './pages/ClientPortalLanding';
 import HomeLanding from './pages/HomeLanding';
 
-// Placeholder import for SubmissionBuilder - REPLACE WITH ACTUAL PATH
-const SubmissionBuilder = lazy(() => import('./modules/SubmissionBuilder')); 
+// Create a simple placeholder component for SubmissionBuilder until we restore the actual module
+const SubmissionBuilder = lazy(() => Promise.resolve({
+  default: ({ initialModule }) => (
+    <div className="p-8">
+      <h2 className="text-2xl font-bold mb-4">Submission Builder Module</h2>
+      <p className="mb-4">Currently being restored. Initial module: {initialModule || 'Not specified'}</p>
+      <p>Please check back shortly.</p>
+    </div>
+  )
+}));
 
 // Lazy load all other pages grouped by related functionality
 const CERPage = lazy(() => import('./pages/CerPage'));
