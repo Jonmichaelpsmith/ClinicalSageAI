@@ -1,6 +1,6 @@
 // server/repositories/learningRepository.ts
 import { db } from '../db';
-import { eq, and, desc, sql } from 'drizzle-orm';
+import { eq, and, desc } from 'drizzle-orm';
 import { 
   users, 
   learningModules, 
@@ -61,11 +61,11 @@ export class LearningRepository {
     return template;
   }
 
-  async getDocumentTemplatesByDomain(domain: string) {
-    const templates = await db.select().from(documentTemplates);
-    return templates.filter(template => 
-      Array.isArray(template.domains) && template.domains.includes(domain)
-    );
+  async getDocumentTemplatesByModuleSection(section: string) {
+    return db
+      .select()
+      .from(documentTemplates)
+      .where(eq(documentTemplates.moduleSection, section));
   }
 
   async createDocumentTemplate(data: InsertDocumentTemplate) {
@@ -82,16 +82,6 @@ export class LearningRepository {
     return updatedTemplate;
   }
 
-  async incrementTemplateUseCount(id: number) {
-    const [updatedTemplate] = await db
-      .update(documentTemplates)
-      .set({ 
-        useCount: sql`${documentTemplates.useCount} + 1`
-      })
-      .where(eq(documentTemplates.id, id))
-      .returning();
-    return updatedTemplate;
-  }
 
   // User Progress
   async getUserProgressByUserId(userId: number) {
