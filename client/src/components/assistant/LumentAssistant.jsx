@@ -13,6 +13,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import * as wordIntegration from '@/services/wordIntegration';
+import * as msCopilotService from '@/services/msCopilotService';
 
 /**
  * Lument ASSISTANT Component
@@ -36,20 +38,37 @@ const LumentAssistant = ({ context = {}, active = false }) => {
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!inputValue.trim()) return;
-    
+
     // Add user message
-    setMessages([
-      ...messages,
-      { type: 'user', content: inputValue }
-    ]);
-    
-    // Simulate AI response based on context and query
-    setTimeout(() => {
-      let response;
+    setMessages(prev => [...prev, { type: 'user', content: inputValue }]);
+
+    // If editing a Word document use Microsoft Copilot for the response
+    if (context.editorType === 'word') {
+      try {
+        let docText = '';
+        try {
+          docText = await wordIntegration.getDocumentContent();
+        } catch (err) {
+          console.error('Failed to get Word content:', err);
+        }
+        const aiResp = await msCopilotService.askCopilot(inputValue, { documentContext: docText });
+        const suggestions = aiResp.suggestions && aiResp.suggestions.length
+          ? '\n\n' + aiResp.suggestions.map(s => `- ${s}`).join('\n')
+          : '';
+        const combined = (aiResp.text || '') + suggestions;
+        setMessages(prev => [...prev, { type: 'assistant', content: combined }]);
+      } catch (err) {
+        console.error('Copilot error:', err);
+        setMessages(prev => [...prev, { type: 'assistant', content: 'Unable to retrieve suggestions from Copilot.' }]);
+      }
+    } else {
+      // Simulate AI response based on context and query
+      setTimeout(() => {
+        let response;
       
       // Generate contextual responses based on the active module and query
       if (context.module === 'cer2v' || inputValue.toLowerCase().includes('cer')) {
@@ -68,7 +87,8 @@ const LumentAssistant = ({ context = {}, active = false }) => {
       
       setMessages(prev => [...prev, { type: 'assistant', content: response }]);
     }, 1000);
-    
+    }
+
     // Clear input
     setInputValue('');
   };
