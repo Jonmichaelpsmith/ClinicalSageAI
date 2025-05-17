@@ -58,6 +58,7 @@ import * as aiService from '../services/aiService';
 const EnhancedDocumentEditor = lazy(() => import('../components/EnhancedDocumentEditor'));
 const Office365WordEmbed = lazy(() => import('../components/Office365WordEmbed'));
 const GoogleDocsEmbed = lazy(() => import('../components/GoogleDocsEmbed'));
+import OptimizedCollaborationLayout from '@/components/layout/OptimizedCollaborationLayout';
 import { 
   FileText, 
   Edit, 
@@ -215,6 +216,8 @@ const generateFakeEmbedding = () => {
 };
 
 export default function CoAuthor() {
+  const projectId = 'current-project';
+  const moduleName = 'co-author';
   // Component state
   const [isTreeOpen, setIsTreeOpen] = useState(false);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
@@ -2379,6 +2382,7 @@ export default function CoAuthor() {
   ]);
 
   return (
+    <OptimizedCollaborationLayout projectId={projectId} moduleName={moduleName}>
     <div className="flex flex-col h-full">
       {/* Header Section */}
       <div className="mb-6 pt-4 px-6">
@@ -7344,5 +7348,6 @@ export default function CoAuthor() {
       </Dialog>
     </div>
   </div>
+  </OptimizedCollaborationLayout>
   );
 }

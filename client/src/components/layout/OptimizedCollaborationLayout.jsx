@@ -13,9 +13,14 @@ const LazyCollaborationHub = lazy(() =>
  * only when needed. This prevents the collaboration features from negatively impacting
  * initial page load performance, especially important for large pages like CERV2.
  */
-const OptimizedCollaborationLayout = ({ children }) => {
+const OptimizedCollaborationLayout = ({
+  children,
+  projectId: propProjectId,
+  moduleName: propModuleName,
+  currentUser: propCurrentUser
+}) => {
   // Mock data for demonstration - in a real implementation, this would come from authentication
-  const currentUser = {
+  const currentUser = propCurrentUser || {
     id: '0',
     name: 'Current User',
     avatar: '/avatars/user.jpg',
@@ -23,8 +28,8 @@ const OptimizedCollaborationLayout = ({ children }) => {
   };
 
   // Get current project info - in a real implementation this would come from context or URL
-  const projectId = 'current-project';
-  const moduleName = 'cer'; // or '510k', 'ind', etc.
+  const projectId = propProjectId || 'current-project';
+  const moduleName = propModuleName || 'cer'; // or '510k', 'ind', etc.
 
   return (
     <SecurityProvider>
