@@ -2295,34 +2295,26 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       const DocumentIntelligenceTab = lazy(() => import('../components/document-intelligence/DocumentIntelligenceTab'));
       
       return (
-        <Suspense fallback={<div className="p-8 text-center">Loading Document Intelligence...</div>}>
-          <DocumentIntelligenceTab 
-            deviceType={documentType}
-            onDataExtracted={(data, shouldApply) => {
-              if (shouldApply && deviceProfile) {
-                // Apply extracted data to device profile
-                const updatedProfile = {
-                  ...deviceProfile,
-                  ...data,
-                  updatedAt: new Date().toISOString(),
-                  metadata: {
-                    ...deviceProfile.metadata,
-                    lastUpdated: new Date().toISOString()
-                  }
-                };
-                
-                setDeviceProfile(updatedProfile);
-                saveState('deviceProfile', updatedProfile);
-                
-                toast({
-                  title: "Device Profile Updated",
-                  description: "Successfully applied document data to your device profile.",
-                  variant: "success"
-                });
-              }
-            }}
-          />
-        </Suspense>
+        <div className="relative" style={{zIndex: 20}}>
+          <Suspense fallback={<div className="p-8 text-center">Loading Document Intelligence...</div>}>
+            <DocumentIntelligenceTab 
+              regulatoryContext={documentType}
+              deviceProfile={deviceProfile}
+              onDeviceProfileUpdate={(updatedProfile) => {
+                if (updatedProfile) {
+                  setDeviceProfile(updatedProfile);
+                  saveState('deviceProfile', updatedProfile);
+                  
+                  toast({
+                    title: "Device Profile Updated",
+                    description: "Successfully applied document data to your device profile.",
+                    variant: "success"
+                  });
+                }
+              }}
+            />
+          </Suspense>
+        </div>
       );
     }
     else if (activeTab === 'compliance') {
