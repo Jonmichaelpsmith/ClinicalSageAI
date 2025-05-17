@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import coauthorService from '@/services/coauthorService';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
@@ -61,15 +62,30 @@ export default function DraftEditor({ content = '', onChange }) {
     }
   }, [content]);
 
+  // Autosave drafts
+  useEffect(() => {
+    if (!textareaRef.current) return;
+    const timeout = setTimeout(() => {
+      coauthorService
+        .saveDraft({ sectionId: textareaRef.current.dataset.sectionId || 'current', content })
+        .catch((err) => console.error('Auto-save failed', err));
+    }, 2000);
+    return () => clearTimeout(timeout);
+  }, [content]);
+
   const handleGenerateContent = () => {
     setIsGenerating(true);
     setProgress(0);
-    // In a real implementation, this would call an API endpoint
-    // For demo, we'll simulate the generation after progress completes
-    setTimeout(() => {
-      const sampleText = "This section presents a comprehensive summary of the clinical studies conducted to evaluate the safety and efficacy of [PRODUCT NAME] for the treatment of [INDICATION]. Multiple randomized, double-blind, placebo-controlled studies were conducted across different geographical regions, demonstrating consistent efficacy results. The clinical development program included Phase 1 studies to establish pharmacokinetics and initial safety, Phase 2 dose-finding studies, and pivotal Phase 3 studies. Overall, the data supports a favorable benefit-risk profile for the proposed indication.";
-      onChange(sampleText);
-    }, 3000);
+    const sectionId = textareaRef.current?.dataset.sectionId || 'current';
+    coauthorService
+      .generateDraft(sectionId)
+      .then((draft) => {
+        onChange(draft);
+      })
+      .catch((err) => {
+        console.error('Generate failed', err);
+      })
+      .finally(() => setIsGenerating(false));
   };
 
   const handleInsertSuggestion = (suggestion) => {
