@@ -33,6 +33,9 @@ const ClientPortal = () => {
   const [, setLocation] = useLocation();
   const [activeDocumentTab, setActiveDocumentTab] = useState('recent');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showWordIntegration, setShowWordIntegration] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const { toast } = useToast();
 
   // Hardcoded solutions for demo purposes
   const subscribedSolutions = [
