@@ -102,6 +102,10 @@ PGDATABASE=trialsage
 # MongoDB (for CSR storage)
 MONGODB_URI=mongodb://localhost:27017/
 
+# Health Canada API (scheduler)
+HEALTH_CANADA_API_URL=https://api.hc-sc.gc.ca
+HEALTH_CANADA_API_KEY=your-health-canada-api-key
+
 # PubMed API (optional)
 PUBMED_API_KEY=your_pubmed_api_key
 ```
