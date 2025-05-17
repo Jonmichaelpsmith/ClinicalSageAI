@@ -1,425 +1,342 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileUploader } from "@/components/ui/file-uploader";
-import { Progress } from '@/components/ui/progress';
-import { useToast } from "@/hooks/use-toast";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { FilePlus, FileText, Upload, Database, ArrowRight, AlertCircle, CheckCircle, Layers } from 'lucide-react';
+import { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { CheckCircle2, FileText, AlertTriangle, ArrowRight, RotateCw } from 'lucide-react';
 import { documentIntelligenceService } from '@/services/DocumentIntelligenceService';
+import { useToast } from '@/hooks/use-toast';
+import { DocumentUploader } from './DocumentUploader';
+import { Progress } from '@/components/ui/progress';
 
-const DocumentIntakePanel = ({ 
-  onExtractComplete,
-  processedDocuments,
-  setProcessedDocuments,
-  isExtracting,
-  setIsExtracting
+/**
+ * Document Intake Panel component for uploading and extracting data from
+ * regulatory documents.
+ */
+export const DocumentIntakePanel = ({ 
+  onDataExtracted,
+  onDocumentsProcessed,
+  deviceId,
+  regulatoryContext = '510k'
 }) => {
-  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('upload');
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadedFiles, setUploadedFiles] = useState([]);
-  const [recognizedDocuments, setRecognizedDocuments] = useState([]);
-  const [extractionConfig, setExtractionConfig] = useState({
-    regulatoryContext: '510k',
-    confidenceThreshold: 0.7,
-    extractionMode: 'comprehensive'
-  });
-
-  // Handle file upload
-  const handleFileUpload = async (files) => {
-    if (!files || files.length === 0) return;
+  const [processedDocuments, setProcessedDocuments] = useState([]);
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [extractionProgress, setExtractionProgress] = useState(0);
+  const [extractedData, setExtractedData] = useState(null);
+  const { toast } = useToast();
+  
+  /**
+   * Handle when documents have been processed by the uploader
+   */
+  const handleDocumentsProcessed = (documents) => {
+    setProcessedDocuments(documents);
+    setActiveTab('review');
     
-    setUploadProgress(0);
-    setUploadedFiles([...files]);
-    
-    const interval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev >= 95) {
-          clearInterval(interval);
-          return 95;
-        }
-        return prev + 5;
-      });
-    }, 100);
-    
-    // Simulate document recognition
-    setTimeout(() => {
-      clearInterval(interval);
-      setUploadProgress(100);
-      
-      // Recognize document types
-      const newRecognizedDocs = [...files].map(file => ({
-        id: `doc-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        lastModified: file.lastModified,
-        // Auto-detect document type based on filename (simplified logic for demo)
-        recognizedType: file.name.toLowerCase().includes('510k') ? '510K Submission' :
-                        file.name.toLowerCase().includes('technical') ? 'Technical File' :
-                        file.name.toLowerCase().includes('ifu') ? 'Instructions for Use' :
-                        file.name.toLowerCase().includes('clinical') ? 'Clinical Report' :
-                        'Unknown Document',
-        confidence: 0.8 + (Math.random() * 0.2),
-        file
-      }));
-      
-      setRecognizedDocuments(prev => [...prev, ...newRecognizedDocs]);
-      setProcessedDocuments(prev => [...prev, ...newRecognizedDocs]);
-      setActiveTab('process');
-      
-      toast({
-        title: 'Documents Uploaded',
-        description: `${files.length} ${files.length === 1 ? 'document' : 'documents'} have been uploaded and recognized`,
-        variant: 'success',
-      });
-    }, 1500);
+    if (onDocumentsProcessed) {
+      onDocumentsProcessed(documents);
+    }
   };
   
-  // Extract data from documents
-  const extractDataFromDocuments = async () => {
-    if (recognizedDocuments.length === 0) {
-      toast({
-        title: 'No Documents',
-        description: 'Please upload documents first',
-        variant: 'destructive',
-      });
-      return;
-    }
+  /**
+   * Extract data from the processed documents
+   */
+  const handleExtractData = async () => {
+    if (!processedDocuments.length) return;
     
     setIsExtracting(true);
+    setExtractionProgress(0);
+    
+    // Simulate progress
+    const progressInterval = setInterval(() => {
+      setExtractionProgress((prev) => {
+        const newProgress = Math.min(prev + Math.random() * 5, 90);
+        return newProgress;
+      });
+    }, 300);
     
     try {
-      // Normally we would call a real service here
-      // const extractedData = await documentIntelligenceService.extractDocumentData({
-      //   ...extractionConfig,
-      //   documents: recognizedDocuments
-      // });
+      const extractionParams = {
+        documents: processedDocuments,
+        regulatoryContext,
+        extractionMode: 'comprehensive', // Options could be: basic, standard, comprehensive
+        confidenceThreshold: 0.7
+      };
       
-      // For this demo, simulate extraction with a timeout
+      const response = await documentIntelligenceService.extractDocumentData(extractionParams);
+      
+      // Stop the progress simulation
+      clearInterval(progressInterval);
+      setExtractionProgress(100);
+      
+      // Small delay to show 100% completion before showing results
       setTimeout(() => {
-        // Simulate extracted data based on document types
-        const extractedData = {
-          deviceName: "CardioHealth Monitor X1",
-          manufacturer: "MedTech Innovations, Inc.",
-          productCode: "DXH",
-          deviceClass: "II",
-          regulatoryClass: "Class II",
-          intendedUse: "Continuous monitoring of cardiac rhythm and vital signs in clinical and home settings",
-          description: "A portable cardiac monitoring system designed for continuous heart rhythm monitoring and vital sign tracking",
-          indications: "For use in patients requiring continuous cardiac monitoring due to suspected arrhythmias, post-cardiac surgery, or chronic cardiac conditions",
-          contraindications: "Not for use in MRI environments. Not for invasive pressure monitoring.",
-          operatingPrinciple: "Non-invasive ECG monitoring with proprietary algorithm for arrhythmia detection",
-          technicalSpecifications: {
-            dimensions: "120mm x 70mm x 15mm",
-            weight: "95g including battery",
-            powerSource: "Rechargeable lithium-ion battery",
-            batteryLife: "Up to 72 hours continuous monitoring",
-            connectivity: "Bluetooth 5.0, Wi-Fi",
-            storage: "32GB onboard storage for up to 30 days of data"
-          }
-        };
-        
-        // Update extraction status
         setIsExtracting(false);
-        onExtractComplete(extractedData);
+        setExtractedData(response.extractedData);
+        setActiveTab('results');
         
         toast({
           title: 'Data Extraction Complete',
-          description: 'Document data has been successfully extracted and processed',
+          description: `Successfully extracted ${Object.keys(response.extractedData || {}).length} data fields from documents`,
           variant: 'success',
         });
         
-      }, 2500);
+        if (onDataExtracted) {
+          onDataExtracted(response.extractedData);
+        }
+      }, 500);
+      
     } catch (error) {
+      console.error('Error extracting data:', error);
+      clearInterval(progressInterval);
       setIsExtracting(false);
+      setExtractionProgress(0);
+      
       toast({
         title: 'Extraction Failed',
-        description: error.message || 'An error occurred during data extraction',
+        description: error.message || 'Failed to extract data from documents. Please try again.',
         variant: 'destructive',
       });
     }
   };
   
-  // Clear all data
-  const handleClear = () => {
-    setUploadedFiles([]);
-    setRecognizedDocuments([]);
+  /**
+   * Apply the extracted data to a device profile
+   */
+  const handleApplyData = async () => {
+    if (!extractedData || !deviceId) return;
+    
+    try {
+      const response = await documentIntelligenceService.applyDataToDeviceProfile(deviceId, extractedData);
+      
+      toast({
+        title: 'Data Applied',
+        description: 'Device profile has been updated with the extracted data',
+        variant: 'success',
+      });
+      
+    } catch (error) {
+      console.error('Error applying data to device profile:', error);
+      
+      toast({
+        title: 'Application Failed',
+        description: error.message || 'Failed to apply data to device profile. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+  
+  /**
+   * Reset the entire process
+   */
+  const handleReset = () => {
     setProcessedDocuments([]);
-    setUploadProgress(0);
+    setIsExtracting(false);
+    setExtractionProgress(0);
+    setExtractedData(null);
     setActiveTab('upload');
   };
   
-  return (
-    <Card className="shadow-md">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-xl font-semibold">Document Intelligence</CardTitle>
-            <CardDescription>Upload and extract data from regulatory documents</CardDescription>
-          </div>
-          <Layers className="h-7 w-7 text-blue-600" />
+  /**
+   * Render the document review list
+   */
+  const renderDocumentList = () => {
+    return (
+      <div className="space-y-4 mt-4">
+        <div className="flex items-center space-x-2">
+          <CheckCircle2 className="h-5 w-5 text-green-600" />
+          <h3 className="text-sm font-medium">Processed Documents ({processedDocuments.length})</h3>
         </div>
+        <div className="space-y-2">
+          {processedDocuments.map((doc) => (
+            <Card key={doc.id} className="overflow-hidden">
+              <CardContent className="p-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <FileText className="h-5 w-5 text-blue-600" />
+                    <div>
+                      <p className="text-sm font-medium">{doc.name}</p>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">
+                          {doc.recognizedType || 'Unknown document type'}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          Confidence: {Math.round(doc.confidence * 100)}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  {doc.confidence < 0.7 && (
+                    <AlertTriangle className="h-5 w-5 text-yellow-500" title="Low confidence in document type recognition" />
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  };
+  
+  /**
+   * Render the extraction results
+   */
+  const renderExtractionResults = () => {
+    if (!extractedData) return null;
+    
+    // Group data by categories for better organization
+    const dataCategories = {
+      'Device Information': ['deviceName', 'manufacturer', 'modelNumber', 'deviceType', 'deviceClass'],
+      'Regulatory': ['regulatoryClass', 'productCode', 'regulationNumber'],
+      'Technical': ['specifications', 'dimensions', 'materials', 'sterilization'],
+      'Clinical': ['intendedUse', 'indications', 'contraindications', 'warnings']
+    };
+    
+    return (
+      <div className="space-y-6 mt-4">
+        {Object.entries(dataCategories).map(([category, fields]) => {
+          const categoryData = fields.filter(field => extractedData[field]).map(field => ({
+            field,
+            value: extractedData[field]
+          }));
+          
+          if (!categoryData.length) return null;
+          
+          return (
+            <div key={category} className="space-y-2">
+              <h3 className="text-sm font-medium">{category}</h3>
+              <Card>
+                <CardContent className="p-4">
+                  <div className="space-y-3">
+                    {categoryData.map(({ field, value }) => (
+                      <div key={field} className="grid grid-cols-3 gap-2 text-sm">
+                        <div className="font-medium text-muted-foreground">
+                          {field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                        </div>
+                        <div className="col-span-2">{value}</div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          );
+        })}
+        
+        {Object.keys(extractedData).length === 0 && (
+          <div className="text-center p-6">
+            <AlertTriangle className="h-10 w-10 text-yellow-500 mx-auto mb-2" />
+            <h3 className="text-lg font-medium">No Data Extracted</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              The system couldn't extract any data from the provided documents.
+              Try uploading different documents or contact support for assistance.
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  };
+  
+  return (
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle>Document Intelligence</CardTitle>
+        <CardDescription>
+          Upload regulatory documents to automatically extract device data
+        </CardDescription>
       </CardHeader>
-      
       <CardContent>
-        <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6">
-            <TabsTrigger value="upload" disabled={isExtracting}>
-              <Upload className="h-4 w-4 mr-2" />
-              Upload
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="upload" disabled={isExtracting}>Upload</TabsTrigger>
+            <TabsTrigger 
+              value="review" 
+              disabled={!processedDocuments.length || isExtracting}
+            >
+              Review
             </TabsTrigger>
-            <TabsTrigger value="process" disabled={recognizedDocuments.length === 0 || isExtracting}>
-              <Database className="h-4 w-4 mr-2" />
-              Process
-            </TabsTrigger>
-            <TabsTrigger value="results" disabled={!processedDocuments.some(doc => doc.extractedData)}>
-              <FileText className="h-4 w-4 mr-2" />
+            <TabsTrigger 
+              value="results" 
+              disabled={!extractedData || isExtracting}
+            >
               Results
             </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="upload" className="mt-0">
-            <div className="space-y-4">
-              <div className="bg-gray-50 rounded-lg p-4 border">
-                <FileUploader 
-                  onFilesAdded={handleFileUpload}
-                  maxFiles={5}
-                  maxSize={10 * 1024 * 1024} // 10MB
-                  accept={{
-                    'application/pdf': ['.pdf'],
-                    'application/msword': ['.doc'],
-                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx']
-                  }}
-                  label="Drag & drop regulatory documents or click to browse"
-                  description="Supports PDF, DOC, and DOCX files up to 10MB"
-                />
+          <TabsContent value="upload" className="pt-4">
+            <DocumentUploader 
+              onDocumentsProcessed={handleDocumentsProcessed}
+              regulatoryContext={regulatoryContext}
+            />
+          </TabsContent>
+          
+          <TabsContent value="review" className="pt-4">
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-medium">Document Review</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Review the processed documents and extract device data
+                </p>
               </div>
               
-              {uploadProgress > 0 && uploadProgress < 100 && (
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm font-medium">
-                    <span>Uploading...</span>
-                    <span>{uploadProgress}%</span>
-                  </div>
-                  <Progress value={uploadProgress} />
-                </div>
-              )}
+              {renderDocumentList()}
               
-              {uploadedFiles.length > 0 && (
-                <div className="space-y-3">
-                  <h3 className="text-sm font-medium">Uploaded Files</h3>
-                  <div className="space-y-2">
-                    {uploadedFiles.map((file, index) => (
-                      <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded border">
-                        <div className="flex items-center">
-                          <FileText className="h-4 w-4 text-blue-500 mr-2" />
-                          <span className="text-sm font-medium">{file.name}</span>
-                        </div>
-                        <span className="text-xs text-gray-500">
-                          {(file.size / 1024).toFixed(1)} KB
-                        </span>
-                      </div>
-                    ))}
+              {isExtracting ? (
+                <div className="space-y-4 mt-6">
+                  <div className="flex items-center space-x-2">
+                    <RotateCw className="h-5 w-5 animate-spin text-primary" />
+                    <span className="text-sm font-medium">Extracting data from documents...</span>
                   </div>
-                  
-                  {uploadProgress === 100 && (
-                    <div className="flex justify-end">
-                      <Button size="sm" onClick={() => setActiveTab('process')}>
-                        Continue to Processing
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </div>
-                  )}
+                  <Progress 
+                    value={extractionProgress} 
+                    max={100} 
+                    className="h-2" 
+                    variant={extractionProgress < 100 ? "primary" : "success"} 
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    This may take a minute or two depending on the volume and complexity of the documents
+                  </p>
+                </div>
+              ) : (
+                <div className="flex justify-between items-center mt-6">
+                  <Button variant="outline" onClick={handleReset}>
+                    Start Over
+                  </Button>
+                  <Button onClick={handleExtractData}>
+                    Extract Data <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
                 </div>
               )}
             </div>
           </TabsContent>
           
-          <TabsContent value="process" className="mt-0">
-            <div className="space-y-5">
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                <h3 className="text-sm font-semibold text-blue-800 mb-2">Document Recognition Results</h3>
-                
-                {recognizedDocuments.length > 0 ? (
-                  <div className="space-y-3">
-                    {recognizedDocuments.map((doc) => (
-                      <div key={doc.id} className="bg-white p-3 rounded border flex items-center justify-between">
-                        <div className="flex items-center">
-                          <FileText className="h-4 w-4 text-blue-500 mr-2" />
-                          <div>
-                            <div className="text-sm font-medium">{doc.name}</div>
-                            <div className="text-xs text-gray-500">
-                              Recognized as: <span className="font-medium text-blue-600">{doc.recognizedType}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-xs bg-blue-100 px-2 py-1 rounded-full text-blue-800">
-                          {(doc.confidence * 100).toFixed(0)}% confidence
-                        </div>
-                      </div>
-                    ))}
-                    
-                    <div className="pt-2">
-                      <h3 className="text-sm font-semibold mb-2">Extraction Settings</h3>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="regulatoryContext">Regulatory Context</Label>
-                          <select 
-                            id="regulatoryContext"
-                            className="w-full rounded-md border border-input p-2 text-sm"
-                            value={extractionConfig.regulatoryContext}
-                            onChange={(e) => setExtractionConfig({
-                              ...extractionConfig, 
-                              regulatoryContext: e.target.value
-                            })}
-                          >
-                            <option value="510k">FDA 510(k)</option>
-                            <option value="pma">FDA PMA</option>
-                            <option value="mdr">EU MDR</option>
-                            <option value="ivdr">EU IVDR</option>
-                          </select>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="extractionMode">Extraction Mode</Label>
-                          <select 
-                            id="extractionMode"
-                            className="w-full rounded-md border border-input p-2 text-sm"
-                            value={extractionConfig.extractionMode}
-                            onChange={(e) => setExtractionConfig({
-                              ...extractionConfig, 
-                              extractionMode: e.target.value
-                            })}
-                          >
-                            <option value="basic">Basic</option>
-                            <option value="comprehensive">Comprehensive</option>
-                            <option value="detailed">Detailed</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex justify-between pt-2">
-                      <Button variant="outline" size="sm" onClick={handleClear}>
-                        Clear All
-                      </Button>
-                      <Button 
-                        onClick={extractDataFromDocuments}
-                        disabled={isExtracting}
-                        className="bg-blue-600 text-white hover:bg-blue-700"
-                      >
-                        {isExtracting ? (
-                          <>
-                            <div className="animate-spin h-4 w-4 mr-2 border-2 border-t-transparent rounded-full" />
-                            Extracting Data...
-                          </>
-                        ) : (
-                          <>
-                            Extract Device Data
-                            <ArrowRight className="ml-2 h-4 w-4" />
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <Alert variant="info" className="bg-blue-50 border-blue-200">
-                    <AlertCircle className="h-4 w-4 text-blue-600" />
-                    <AlertTitle>No documents processed</AlertTitle>
-                    <AlertDescription>
-                      Upload documents first to begin the recognition process.
-                    </AlertDescription>
-                  </Alert>
-                )}
+          <TabsContent value="results" className="pt-4">
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-medium">Extraction Results</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Review and apply the extracted device data
+                </p>
               </div>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="results" className="mt-0">
-            <div className="space-y-4">
-              <div className="bg-green-50 p-4 rounded-lg border border-green-100">
-                <div className="flex items-center mb-3">
-                  <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
-                  <h3 className="font-medium text-green-800">Extraction Complete</h3>
-                </div>
-                
-                <Alert variant="success" className="bg-white border-green-200 mb-4">
-                  <AlertTitle>Device data successfully extracted</AlertTitle>
-                  <AlertDescription>
-                    The system has extracted key device information from your documents. 
-                    You can now use this data to pre-populate your device profile.
-                  </AlertDescription>
-                </Alert>
-                
-                <div className="bg-white rounded-lg border p-4 space-y-3">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-xs text-gray-500">Device Name</Label>
-                      <div className="font-medium">CardioHealth Monitor X1</div>
-                    </div>
-                    <div>
-                      <Label className="text-xs text-gray-500">Manufacturer</Label>
-                      <div className="font-medium">MedTech Innovations, Inc.</div>
-                    </div>
-                    <div>
-                      <Label className="text-xs text-gray-500">Product Code</Label>
-                      <div className="font-medium">DXH</div>
-                    </div>
-                    <div>
-                      <Label className="text-xs text-gray-500">Device Class</Label>
-                      <div className="font-medium">Class II</div>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <Label className="text-xs text-gray-500">Intended Use</Label>
-                    <div className="text-sm">
-                      Continuous monitoring of cardiac rhythm and vital signs in clinical and home settings
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <Label className="text-xs text-gray-500">Description</Label>
-                    <div className="text-sm">
-                      A portable cardiac monitoring system designed for continuous heart rhythm monitoring and vital sign tracking
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="mt-4 flex justify-end">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="mr-2"
-                    onClick={() => setActiveTab('process')}
-                  >
-                    Back to Processing
-                  </Button>
-                  <Button 
-                    className="bg-green-600 hover:bg-green-700 text-white"
-                    onClick={() => {
-                      toast({
-                        title: "Data Applied to Device Profile",
-                        description: "The extracted data has been successfully applied to your device profile form.",
-                        variant: "success",
-                      });
-                    }}
-                  >
-                    Apply to Device Profile
-                  </Button>
-                </div>
+              
+              {renderExtractionResults()}
+              
+              <div className="flex justify-between items-center mt-6">
+                <Button variant="outline" onClick={handleReset}>
+                  Start Over
+                </Button>
+                <Button onClick={handleApplyData} disabled={!deviceId}>
+                  Apply to Device Profile <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
               </div>
             </div>
           </TabsContent>
         </Tabs>
       </CardContent>
+      <CardFooter className="justify-end border-t pt-4 bg-slate-50">
+        <div className="text-xs text-muted-foreground">
+          Document Intelligence v2.0 | Powered by GPT-4o
+        </div>
+      </CardFooter>
     </Card>
   );
 };
-
-export default DocumentIntakePanel;

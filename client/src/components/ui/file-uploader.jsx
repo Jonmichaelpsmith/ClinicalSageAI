@@ -1,32 +1,81 @@
-import React, { useRef, useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Upload, File, AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useState, useRef } from 'react';
+import { Upload, X, UploadCloud } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
+/**
+ * File Uploader component with drop zone and file listing
+ */
 export const FileUploader = ({
-  onFilesAdded,
-  maxFiles = 5,
-  maxSize = 5 * 1024 * 1024, // 5MB default
-  accept = undefined,
-  label = "Drag & drop files or click to browse",
-  description = "Supports most common file formats up to 5MB"
+  onFilesSelected,
+  multiple = false,
+  maxFiles = 10,
+  accept = '.pdf,.docx,.doc,.xls,.xlsx,.txt,.xml,.jpg,.jpeg,.png,.gif',
+  acceptedFileTypesMessage = 'PDF, Word, Excel, Text, and image files are supported',
+  maxSizeMB = 50,
 }) => {
-  const fileInputRef = useRef(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
-  const [error, setError] = useState(null);
-
+  const fileInputRef = useRef(null);
+  
+  // Handle click on upload button
+  const handleUploadClick = () => {
+    fileInputRef.current.click();
+  };
+  
+  // Handle file input change
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    processFiles(files);
+  };
+  
+  // Process selected files, checking for validation
+  const processFiles = (files) => {
+    // Check for max files limit
+    if (multiple && selectedFiles.length + files.length > maxFiles) {
+      alert(`You can only upload a maximum of ${maxFiles} files.`);
+      return;
+    }
+    
+    // Check for file size limit
+    const maxSizeBytes = maxSizeMB * 1024 * 1024;
+    const oversizedFiles = files.filter(file => file.size > maxSizeBytes);
+    
+    if (oversizedFiles.length > 0) {
+      alert(`Some files exceed the maximum size of ${maxSizeMB}MB: ${oversizedFiles.map(f => f.name).join(', ')}`);
+      return;
+    }
+    
+    // Update selected files
+    const newFiles = multiple ? [...selectedFiles, ...files] : files;
+    setSelectedFiles(newFiles);
+    
+    // Pass files to parent component
+    onFilesSelected(newFiles);
+  };
+  
+  // Handle file removal
+  const handleRemoveFile = (index) => {
+    const newFiles = [...selectedFiles];
+    newFiles.splice(index, 1);
+    setSelectedFiles(newFiles);
+    
+    // Pass updated files to parent component
+    onFilesSelected(newFiles);
+  };
+  
+  // Handle drag events
   const handleDragOver = (e) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(true);
   };
-
+  
   const handleDragLeave = (e) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
   };
-
+  
   const handleDrop = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -35,102 +84,82 @@ export const FileUploader = ({
     const files = Array.from(e.dataTransfer.files);
     processFiles(files);
   };
-
-  const handleFileInputChange = (e) => {
-    const files = Array.from(e.target.files);
-    processFiles(files);
-    
-    // Reset the input so the same file can be selected again
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+  
+  // Get file size as formatted string
+  const getFileSize = (size) => {
+    if (size < 1024) {
+      return size + ' B';
+    } else if (size < 1024 * 1024) {
+      return (size / 1024).toFixed(2) + ' KB';
+    } else {
+      return (size / (1024 * 1024)).toFixed(2) + ' MB';
     }
   };
-
-  const processFiles = (files) => {
-    setError(null);
-
-    // Check for file count limit
-    if (files.length > maxFiles) {
-      setError(`You can only upload a maximum of ${maxFiles} files at once.`);
-      return;
-    }
-
-    // Check for file size and type
-    const validFiles = files.filter(file => {
-      if (file.size > maxSize) {
-        setError(`File ${file.name} exceeds the maximum size limit of ${Math.round(maxSize / 1024 / 1024)}MB.`);
-        return false;
-      }
-
-      if (accept) {
-        const fileType = file.type;
-        let isValidType = false;
-        
-        // Check if the file type is in the accept object
-        for (const [mimeType, extensions] of Object.entries(accept)) {
-          if (fileType === mimeType || fileType.startsWith(`${mimeType}/`)) {
-            isValidType = true;
-            break;
-          }
-          
-          // Check if the file extension is in the list of accepted extensions
-          const fileExtension = `.${file.name.split('.').pop().toLowerCase()}`;
-          if (extensions.includes(fileExtension)) {
-            isValidType = true;
-            break;
-          }
-        }
-        
-        if (!isValidType) {
-          setError(`File type of ${file.name} is not supported.`);
-          return false;
-        }
-      }
-      
-      return true;
-    });
-
-    if (validFiles.length > 0) {
-      onFilesAdded(validFiles);
-    }
-  };
-
+  
   return (
-    <div className="space-y-4">
-      <div 
-        className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer transition-colors
-          ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50'}`}
+    <div className="w-full">
+      {/* Hidden file input */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        className="hidden"
+        accept={accept}
+        multiple={multiple}
+        onChange={handleFileChange}
+      />
+      
+      {/* Drop zone */}
+      <div
+        className={`border-2 border-dashed rounded-lg p-6 ${
+          isDragging ? 'border-primary bg-primary/5' : 'border-muted-foreground/25'
+        } text-center cursor-pointer transition-colors`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        onClick={() => fileInputRef.current?.click()}
+        onClick={handleUploadClick}
       >
-        <input
-          type="file"
-          ref={fileInputRef}
-          className="hidden"
-          onChange={handleFileInputChange}
-          multiple={maxFiles > 1}
-          accept={accept ? Object.keys(accept).join(',') : undefined}
-        />
-        
-        <div className="flex flex-col items-center gap-2 text-center">
-          <div className="p-2 bg-blue-100 rounded-full">
-            <Upload className="h-6 w-6 text-blue-600" />
-          </div>
-          <h3 className="font-medium text-gray-700">{label}</h3>
-          <p className="text-sm text-gray-500">{description}</p>
-          <Button type="button" size="sm" variant="outline" className="mt-2">
-            Browse Files
-          </Button>
+        <UploadCloud className="h-10 w-10 mx-auto mb-2 text-muted-foreground" />
+        <div className="mb-2 text-sm font-medium">
+          <span className="text-primary">Click to upload</span> or drag and drop
         </div>
+        <p className="text-xs text-muted-foreground">
+          {acceptedFileTypesMessage}
+        </p>
+        <p className="text-xs text-muted-foreground mt-1">
+          Maximum file size: {maxSizeMB}MB
+        </p>
       </div>
       
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+      {/* Selected files list */}
+      {selectedFiles.length > 0 && (
+        <div className="mt-4">
+          <h4 className="mb-2 text-sm font-medium">Selected Files ({selectedFiles.length})</h4>
+          <ul className="space-y-2">
+            {selectedFiles.map((file, index) => (
+              <li key={index} className="flex items-center justify-between p-2 bg-muted rounded-md">
+                <div className="flex items-center">
+                  <Upload className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm font-medium truncate max-w-[240px]">{file.name}</p>
+                    <p className="text-xs text-muted-foreground">{getFileSize(file.size)}</p>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoveFile(index);
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                  <span className="sr-only">Remove file</span>
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
     </div>
   );
