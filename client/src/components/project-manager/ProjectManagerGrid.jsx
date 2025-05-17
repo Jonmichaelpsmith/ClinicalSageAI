@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLumenAiAssistant } from '@/contexts/LumenAiAssistantContext';
 import { ChevronRight, Clock, BarChart2, FileText, Database, Search, Beaker, ClipboardList } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -9,7 +10,8 @@ import { Progress } from '@/components/ui/progress';
  * 
  * Displays a grid of projects with their status, progress, and relevant module information.
  */
-const ProjectManagerGrid = ({ projects = [] }) => {
+const ProjectManagerGrid = ({ projects = [], userId, orgId }) => {
+  const { openAssistant, setModuleContext } = useLumenAiAssistant();
   // Get appropriate icon based on module
   const getModuleIcon = (module) => {
     switch (module) {
@@ -146,10 +148,22 @@ const ProjectManagerGrid = ({ projects = [] }) => {
                 </Badge>
               </div>
             </div>
-            <Button variant="ghost" size="sm" className="text-primary">
-              <span>View Details</span>
-              <ChevronRight className="ml-1 h-4 w-4" />
-            </Button>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setModuleContext({ module: 'project-manager', context: { userId, orgId } });
+                  openAssistant();
+                }}
+              >
+                Ask Lumen AI
+              </Button>
+              <Button variant="ghost" size="sm" className="text-primary">
+                <span>View Details</span>
+                <ChevronRight className="ml-1 h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       ))}

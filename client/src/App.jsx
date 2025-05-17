@@ -1,10 +1,9 @@
 // /client/src/App.jsx
-
+import React, { useState, useEffect, lazy, Suspense } from 'react'; // Added React import
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Switch, Route, useLocation } from 'wouter';
-import { useState, useEffect, lazy, Suspense } from 'react';
-import { Button } from '@/components/ui/button';
-import queryClient from './lib/queryClient';
+import { Button } from '@/components/ui/button'; // Assuming this path is correct
+import queryClient from './lib/queryClient'; // Assuming this path is correct
 import { TenantProvider } from './contexts/TenantContext.tsx';
 import { LumenAiAssistantProvider } from './contexts/LumenAiAssistantContext';
 import { LumenAiAssistantContainer } from '@/components/ai/LumenAiAssistantContainer';
@@ -14,8 +13,8 @@ import freezeDetection from '@/utils/freezeDetection';
 import networkResilience from '@/utils/networkResilience';
 import memoryManagement from '@/utils/memoryManagement';
 import StabilityEnabledLayout from '@/components/layout/StabilityEnabledLayout';
-import { initializeMemoryOptimization } from './utils/memoryOptimizer';
-import StabilityEnabler from './components/layout/StabilityEnabler';
+// import { initializeMemoryOptimization } from './utils/memoryOptimizer'; // This was commented out, assuming intentionally
+// import StabilityEnabler from './components/layout/StabilityEnabler'; // This was commented out, assuming intentionally
 
 // Core navigation component (loaded immediately)
 import UnifiedTopNavV3 from './components/navigation/UnifiedTopNavV3';
@@ -34,10 +33,12 @@ const LoadingPage = () => (
 import ClientPortalLanding from './pages/ClientPortalLanding';
 import HomeLanding from './pages/HomeLanding';
 
+// Placeholder import for SubmissionBuilder - REPLACE WITH ACTUAL PATH
+const SubmissionBuilder = lazy(() => import('./modules/SubmissionBuilder')); // Added placeholder
+
 // Lazy load all other pages grouped by related functionality
 // CER-related pages
 const CERPage = lazy(() => import('./pages/CerPage'));
-// Import the original CERV2Page directly, not the wrapper
 const CERV2Page = lazy(() => import('./pages/CERV2Page'));
 const CerGeneratorLandingPage = lazy(() => import('./pages/CerGeneratorLandingPage'));
 const CerGenerator = lazy(() => import('./modules/CerGenerator'));
@@ -52,27 +53,28 @@ const CSRPage = lazy(() => import('./pages/CSRPage'));
 const CSRLibraryPage = lazy(() => import('./pages/CSRLibraryPage'));
 
 // Vault-related pages
-const Vault = lazy(() => import('./modules/Vault'));
+const Vault = lazy(() => import('./modules/Vault')); // This import seems unused, VaultPage is used in routes
 const VaultPage = lazy(() => import('./pages/VaultPage'));
 const VaultTestPage = lazy(() => import('./pages/VaultTestPage'));
-const VaultDocumentViewer = lazy(() => import('./components/vault/VaultDocumentViewer'));
+const VaultDocumentViewer = lazy(() => import('./components/vault/VaultDocumentViewer')); // This import seems unused
 
 // CoAuthor and Canvas-related pages
 const CoAuthor = lazy(() => import('./pages/CoAuthor'));
 const CanvasPage = lazy(() => import('./pages/CanvasPage'));
 const TimelinePage = lazy(() => import('./pages/TimelinePage'));
-const ModuleSectionEditor = lazy(() => import('./components/ModuleSectionEditor'));
+const ModuleSectionEditor = lazy(() => import('./components/ModuleSectionEditor')); // This import seems unused
 
 
 // eCTD Co-Author Module subpages
 const ValidationDashboard = lazy(() => import('./pages/ValidationDashboard'));
 
 const DocumentTemplates = lazy(() => import('./pages/DocumentTemplates'));
-const DocumentViewer = lazy(() => import('./pages/DocumentViewer'));
+const ProjectManagerPage = lazy(() => import('./pages/ProjectManagerPage'));
+const DocumentViewer = lazy(() => import('./pages/DocumentViewer')); // This import seems unused
 
 // Regulatory-related pages (excluding Regulatory Submissions Hub)
 const RegulatoryRiskDashboard = lazy(() => import('./pages/RegulatoryRiskDashboard'));
-const EnhancedRegulatoryDashboard = lazy(() => import('./pages/EnhancedRegulatoryDashboard'));
+const EnhancedRegulatoryDashboard = lazy(() => import('./pages/EnhancedRegulatoryDashboard')); // This import seems unused
 const RegulatoryDashboard = lazy(() => import('./pages/RegulatoryDashboard'));
 const RegulatoryIntelligenceHub = lazy(() => import('./pages/RegulatoryIntelligenceHub'));
 const RegulatoryAITestPage = lazy(() => import('./pages/RegulatoryAITestPage'));
@@ -87,7 +89,7 @@ const Module4NonclinicalPage = lazy(() => import('./modules/Module4NonclinicalPa
 const Module5ClinicalPage = lazy(() => import('./modules/Module5ClinicalPage'));
 
 // Study and Protocol-related pages
-const StudyArchitect = lazy(() => import('./modules/StudyArchitect'));
+const StudyArchitect = lazy(() => import('./modules/StudyArchitect')); // This import seems unused
 const StudyArchitectPage = lazy(() => import('./pages/StudyArchitectPage'));
 const ProtocolDesignerPage = lazy(() => import('./pages/ProtocolDesignerPage'));
 
@@ -155,14 +157,15 @@ function App() {
     return () => {
       freezeDetection.cleanupFreezeDetection();
       networkResilience.cleanupNetworkResilience();
+      // Assuming memoryManagement does not need explicit cleanup or handles it internally
     };
-  }, []);
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   // Check if we're on the landing page, regulatory hub, coauthor pages, or dashboard (which have their own navigation)
   const isLandingPage = location === '/' || location === '/client-portal';
-  const isRegulatoryHub = location === '/regulatory-intelligence-hub' || 
+  const isRegulatoryHub = location === '/regulatory-intelligence-hub' ||
                           location === '/client-portal/regulatory-intel';
-  const isCoAuthorPage = location === '/coauthor' || 
+  const isCoAuthorPage = location === '/coauthor' ||
                          location.startsWith('/coauthor/') ||
                          location === '/canvas' ||
                          location === '/timeline';
@@ -170,12 +173,10 @@ function App() {
   // Ensure CERV2 pages are NOT excluded from the navigation
   const isCERV2Page = location === '/cerv2' || location.startsWith('/cerv2/');
 
-  // Always show navigation for CERV2 pages
+  // Always show navigation for CERV2 pages or if none of the other specific conditions are met
   const shouldShowNav = isCERV2Page || (!isLandingPage && !isRegulatoryHub && !isCoAuthorPage && !isDashboardPage);
 
-  useEffect(() => {
-    console.log('✅ Application stability measures initialized');
-  }, []);
+  // Removed redundant useEffect that only logged "✅ Application stability measures initialized"
 
   return (
     <ModuleErrorBoundary>
@@ -185,7 +186,7 @@ function App() {
             <LumenAiAssistantProvider>
               {/* Wrap the entire application in the StabilityEnabledLayout */}
               <StabilityEnabledLayout>
-              {/* Only show the UnifiedTopNavV3 if we're not on the landing page, regulatory hub, or dashboard */}
+              {/* Only show the UnifiedTopNavV3 if conditions are met */}
               {shouldShowNav && (
                 <UnifiedTopNavV3 activeTab={activeTab} onTabChange={setActiveTab} />
               )}
@@ -194,300 +195,195 @@ function App() {
                 isRegulatoryHub ? "p-0" : 
                 isCoAuthorPage ? "p-0" : // No padding for CoAuthor pages
                 isDashboardPage ? "p-0" : // No padding for Dashboard page
-                "p-4 mt-24"
+                "p-4 mt-24" // Default padding and margin-top for pages with the nav bar
               }>
-              <Switch>
-              {/* Main Landing Page is the default entry point */}
-              <Route path="/" component={HomeLanding} />
-              
-              {/* Client Portal becomes a secondary entry point */}
-              <Route path="/client-portal" component={ClientPortalLanding} />
+              <Suspense fallback={<LoadingPage />}> {/* Moved Suspense to wrap Switch for all lazy routes */}
+                <Switch>
+                  {/* Main Landing Page is the default entry point */}
+                  <Route path="/" component={HomeLanding} />
+                  
+                  {/* Client Portal becomes a secondary entry point */}
+                  <Route path="/client-portal" component={ClientPortalLanding} />
 
-              {/* Client Portal Sub-Pages */}
-              <Route path="/client-portal/vault" component={VaultPage} />
-              <Route path="/client-portal/regulatory-intel" component={RegulatoryIntelligenceHub} />
-              <Route path="/client-portal/cer-generator" component={CERV2Page} />
-              <Route path="/client-portal/cmc-wizard" component={CmcWizard} />
-              <Route path="/client-portal/csr-analyzer" component={CSRPage} />
-              <Route path="/client-portal/study-architect" component={StudyArchitectPage} />
-              <Route path="/client-portal/analytics" component={AnalyticsDashboard} />
-              {/* 510k functionality is now integrated in CERV2Page */}
-              <Route path="/client-portal/510k">
-                {() => <CERV2Page initialDocumentType="510k" initialActiveTab="predicates" />}
-              </Route>
-              <Route path="/client-portal/510k-dashboard">
-                {() => <CERV2Page initialDocumentType="510k" initialActiveTab="predicates" />}
-              </Route>
-              <Route path="/client-portal/client-management">
-                {() => (
-                  <Suspense fallback={<LoadingPage />}>
-                    <ClientManagement />
-                  </Suspense>
-                )}
-              </Route>
+                  {/* Client Portal Sub-Pages */}
+                  <Route path="/client-portal/vault" component={VaultPage} />
+                  <Route path="/client-portal/regulatory-intel" component={RegulatoryIntelligenceHub} />
+                  <Route path="/client-portal/cer-generator" component={CERV2Page} />
+                  <Route path="/client-portal/cmc-wizard" component={CmcWizard} />
+                  <Route path="/client-portal/csr-analyzer" component={CSRPage} />
+                  <Route path="/client-portal/study-architect" component={StudyArchitectPage} />
+                  <Route path="/client-portal/analytics" component={AnalyticsDashboard} />
+                  {/* 510k functionality is now integrated in CERV2Page */}
+                  <Route path="/client-portal/510k">
+                    {() => <CERV2Page initialDocumentType="510k" initialActiveTab="predicates" />}
+                  </Route>
+                  <Route path="/client-portal/510k-dashboard">
+                    {() => <CERV2Page initialDocumentType="510k" initialActiveTab="predicates" />}
+                  </Route>
+                  <Route path="/client-portal/client-management" component={ClientManagement} />
+                  
+                  {/* Module Dashboard */}
+                  <Route path="/dashboard" component={ModuleDashboard} />
 
-              {/* Module Dashboard */}
-              <Route path="/dashboard" component={ModuleDashboard} />
+                  {/* IND Wizard Routes - ALWAYS USE THE INDWIZARDFIXED (VERSION 5.0) IMPLEMENTATION */}
+                  <Route path="/ind-wizard" component={IndWizard} /> {/* Using fixed implementation */}
+                  <Route path="/ind-full-solution" component={INDFullSolution} />
 
-              {/* IND Wizard Routes - ALWAYS USE THE INDWIZARDFIXED (VERSION 5.0) IMPLEMENTATION */}
-              <Route path="/ind-wizard" component={IndWizard} /> {/* Using fixed implementation */}
-              <Route path="/ind-full-solution" component={INDFullSolution} />
+                  {/* Client Portal IND Wizard Route - ALWAYS USE THE INDWIZARDFIXED (VERSION 5.0) IMPLEMENTATION */}
+                  <Route path="/client-portal/ind-wizard" component={IndWizard} /> {/* Using fixed implementation */}
 
-              {/* Client Portal IND Wizard Route - ALWAYS USE THE INDWIZARDFIXED (VERSION 5.0) IMPLEMENTATION */}
-              <Route path="/client-portal/ind-wizard" component={IndWizard} /> {/* Using fixed implementation */}
+                  {/* Other Module Pages */}
+                  <Route path="/cer-generator" component={CERPage} />
+                  <Route path="/cmc-wizard" component={CmcWizard} />
+                  <Route path="/csr-analyzer" component={CSRPage} />
+                  <Route path="/vault" component={VaultPage} /> {/* Use VaultPage which includes VaultDocumentViewer */}
+                  <Route path="/vault-page" component={VaultPage} />
+                  <Route path="/vault-test" component={VaultTestPage} /> {/* Add route for test page */}
+                  <Route path="/context-demo" component={ContextDemoPage} /> {/* Add our context demo page */}
+                  <Route path="/coauthor" component={CoAuthor} /> {/* Add our CoAuthor page */}
+                  <Route path="/coauthor/timeline" component={CoAuthor} /> {/* CoAuthor timeline tab */}
+                  <Route path="/coauthor/ask-lumen" component={CoAuthor} /> {/* CoAuthor Ask Lumen tab */}
+                  <Route path="/coauthor/canvas" component={CoAuthor} /> {/* CoAuthor Canvas Workbench tab */}
+                  
+                  {/* eCTD Co-Author Module Subpages */}
+                  <Route path="/coauthor/validation" component={ValidationDashboard} /> {/* eCTD Validation Dashboard */}
+                  <Route path="/coauthor/templates" component={DocumentTemplates} /> {/* Document Templates Library */}
+                  <Route path="/templates" component={EnhancedDocumentTemplates} /> {/* Enhanced Document Templates Library */}
+                  <Route path="/template-workspace" component={CollaborativeTemplateWorkspace} /> {/* Collaborative Template Workspace */}
+                  <Route path="/client-portal/templates" component={EnhancedDocumentTemplates} /> {/* Client Portal Templates */}
 
-              {/* Other Module Pages */}
-              <Route path="/cer-generator" component={CERPage} />
-              <Route path="/cmc-wizard" component={CmcWizard} />
-              <Route path="/csr-analyzer" component={CSRPage} />
-              <Route path="/vault" component={VaultPage} /> {/* Use VaultPage which includes VaultDocumentViewer */}
-              <Route path="/vault-page" component={VaultPage} />
-              <Route path="/vault-test" component={VaultTestPage} /> {/* Add route for test page */}
-              <Route path="/context-demo" component={ContextDemoPage} /> {/* Add our context demo page */}
-              <Route path="/coauthor" component={CoAuthor} /> {/* Add our CoAuthor page */}
-              <Route path="/coauthor/timeline" component={CoAuthor} /> {/* CoAuthor timeline tab */}
-              <Route path="/coauthor/ask-lumen" component={CoAuthor} /> {/* CoAuthor Ask Lumen tab */}
-              <Route path="/coauthor/canvas" component={CoAuthor} /> {/* CoAuthor Canvas Workbench tab */}
-              
-              {/* eCTD Co-Author Module Subpages */}
+                  <Route path="/canvas" component={CanvasPage} /> {/* Canvas page route */}
+                  <Route path="/timeline" component={TimelinePage} /> {/* Timeline page route */}
+                  <Route path="/protocol" component={ProtocolDesignerPage} /> {/* Protocol Designer page route */}
+                  {/* All 510k functionality is integrated in CERV2Page */}
+                  <Route path="/510k">
+                    {() => <CERV2Page initialDocumentType="510k" initialActiveTab="predicates" />}
+                  </Route>
+                  <Route path="/510k-dashboard">
+                    {() => <CERV2Page initialDocumentType="510k" initialActiveTab="predicates" />}
+                  </Route>
+                  <Route path="/csr" component={CSRPage} /> {/* CSR Deep Intelligence page route */}
+                  <Route path="/csr-library" component={CSRLibraryPage} /> {/* CSR Library page route */}
+                  <Route path="/cmc" component={CMCPage} /> {/* CMC Module page route */}
+                  <Route path="/cer" component={CERPage} /> {/* CER Generator page route */}
+                  <Route path="/cerV2" component={CERV2Page} /> {/* Advanced CER Generator page route */}
+                  <Route path="/cerv2" component={CERV2Page} /> {/* Additional lowercase route for Advanced CER Generator */}
+                  <Route path="/cerv2/info" component={CerGeneratorLandingPage} /> {/* CER Generator Landing page with detailed info */}
+                  <Route path="/blueprint" component={BlueprintPage} /> {/* Blueprint Generator page route */}
+                  <Route path="/citations" component={CitationManagerPage} /> {/* Citation Manager page route */}
+                  <Route path="/audit" component={AuditPage} /> {/* Audit Trail page route */}
+                  <Route path="/signature" component={SignaturePage} /> {/* Digital Signature page route */}
+                  <Route path="/study-architect" component={StudyArchitectPage} />
+                  <Route path="/analytics" component={AnalyticsDashboard} />
+                  
+                  {/* Corrected Merge Conflict: Assuming both routes should exist */}
+                  <Route path="/project-manager" component={ProjectManagerPage} />
+                  <Route path="/submission-storyline" component={SubmissionStorylineDemoPage} />
+                  
+                  <Route path="/regulatory-risk-dashboard" component={RegulatoryRiskDashboard} />
+                  <Route path="/regulatory-intelligence-hub" component={RegulatoryIntelligenceHub} />
+                  <Route path="/regulatory-dashboard" component={RegulatoryDashboard} />
+                  <Route path="/regulatory-ai-test" component={RegulatoryAITestPage} />
+                  {/* Regulatory Submissions Hub removed as requested */}
 
-              <Route path="/coauthor/validation" component={ValidationDashboard} /> {/* eCTD Validation Dashboard */}
-              <Route path="/coauthor/templates" component={DocumentTemplates} /> {/* Document Templates Library */}
-              <Route path="/templates" component={EnhancedDocumentTemplates} /> {/* Enhanced Document Templates Library */}
-              <Route path="/template-workspace" component={CollaborativeTemplateWorkspace} /> {/* Collaborative Template Workspace */}
-              <Route path="/client-portal/templates" component={EnhancedDocumentTemplates} /> {/* Client Portal Templates */}
+                  {/* IND Wizard Module Routes - Now integrated into the unified Submission Builder */}
+                  {/* These direct module routes help users navigate directly to specific CTD modules */}
+                  {/* Note: These routes use SubmissionBuilder which needs to be correctly imported */}
+                  <Route path="/module-1" component={Module1AdminPage} /> {/* Kept original module pages, SubmissionBuilder routes below */}
+                  <Route path="/module-2" component={Module2SummaryPage} />
+                  <Route path="/module-3" component={Module3QualityPage} />
+                  <Route path="/module-4" component={Module4NonclinicalPage} />
+                  <Route path="/module-5" component={Module5ClinicalPage} />
+                  
+                  <Route path="/ind-wizard/module-3" component={Module3QualityPage} />
+                  <Route path="/ind-wizard/module-4" component={Module4NonclinicalPage} />
 
+                  {/* Analytical Control & Method Management Routes */}
+                  <Route path="/analytical" component={AnalyticalMethodsStubPage} />
+                  <Route path="/comparability" component={ComparabilityStudiesStubPage} />
 
-              <Route path="/canvas" component={CanvasPage} /> {/* Canvas page route */}
-              <Route path="/timeline" component={TimelinePage} /> {/* Timeline page route */}
-              <Route path="/protocol" component={ProtocolDesignerPage} /> {/* Protocol Designer page route */}
-              {/* All 510k functionality is integrated in CERV2Page */}
-              <Route path="/510k">
-                {() => <CERV2Page initialDocumentType="510k" initialActiveTab="predicates" />}
-              </Route>
-              <Route path="/510k-dashboard">
-                {() => <CERV2Page initialDocumentType="510k" initialActiveTab="predicates" />}
-              </Route>
-              <Route path="/csr" component={CSRPage} /> {/* CSR Deep Intelligence page route */}
-              <Route path="/csr-library" component={CSRLibraryPage} /> {/* CSR Library page route */}
-              <Route path="/cmc" component={CMCPage} /> {/* CMC Module page route */}
-              <Route path="/cer" component={CERPage} /> {/* CER Generator page route */}
-              <Route path="/cerV2" component={CERV2Page} /> {/* Advanced CER Generator page route */}
-              <Route path="/cerv2" component={CERV2Page} /> {/* Additional lowercase route for Advanced CER Generator */}
-              <Route path="/cerv2/info" component={CerGeneratorLandingPage} /> {/* CER Generator Landing page with detailed info */}
-              <Route path="/blueprint" component={BlueprintPage} /> {/* Blueprint Generator page route */}
-              <Route path="/citations" component={CitationManagerPage} /> {/* Citation Manager page route */}
-              <Route path="/audit" component={AuditPage} /> {/* Audit Trail page route */}
-              <Route path="/signature" component={SignaturePage} /> {/* Digital Signature page route */}
-              <Route path="/study-architect" component={StudyArchitectPage} />
-              <Route path="/analytics" component={AnalyticsDashboard} />
-              <Route path="/submission-storyline">
-                {() => (
-                  <Suspense fallback={<LoadingPage />}>
-                    <SubmissionStorylineDemoPage />
-                  </Suspense>
-                )}
-              </Route> {/* Animated Submission Progress Storyline demo */}
-              <Route path="/regulatory-risk-dashboard" component={RegulatoryRiskDashboard} />
-              <Route path="/regulatory-intelligence-hub" component={RegulatoryIntelligenceHub} />
-              <Route path="/regulatory-dashboard" component={RegulatoryDashboard} />
-              <Route path="/regulatory-ai-test">
-                {() => (
-                  <Suspense fallback={<LoadingPage />}>
-                    <RegulatoryAITestPage />
-                  </Suspense>
-                )}
-              </Route> {/* Test page for Regulatory AI queries */}
-              {/* Regulatory Submissions Hub removed as requested */}
-              {/* Removed Regulatory Submissions Hub as requested */}
+                  {/* Stability Study Management Routes */}
+                  <Route path="/stability" component={StabilityStudiesStubPage} />
+                  <Route path="/stability/shelf-life-predictor" component={ShelfLifePredictorStubPage} />
 
-              {/* IND Wizard Module Routes - Now integrated into the unified Submission Builder */}
-              {/* These direct module routes help users navigate directly to specific CTD modules */}
-              <Route path="/module-1">
-                {() => (
-                  <Suspense fallback={<LoadingPage />}>
-                    <Module1AdminPage />
-                  </Suspense>
-                )}
-              </Route>
-              <Route path="/module-2">
-                {() => (
-                  <Suspense fallback={<LoadingPage />}>
-                    <Module2SummaryPage />
-                  </Suspense>
-                )}
-              </Route>
-              <Route path="/module-3">
-                {() => (
-                  <Suspense fallback={<LoadingPage />}>
-                    <Module3QualityPage />
-                  </Suspense>
-                )}
-              </Route>
-              <Route path="/module-4">
-                {() => (
-                  <Suspense fallback={<LoadingPage />}>
-                    <Module4NonclinicalPage />
-                  </Suspense>
-                )}
-              </Route>
-              <Route path="/module-5">
-                {() => (
-                  <Suspense fallback={<LoadingPage />}>
-                    <Module5ClinicalPage />
-                  </Suspense>
-                )}
-              </Route>
-              <Route path="/ind-wizard/module-3">
-                {() => (
-                  <Suspense fallback={<LoadingPage />}>
-                    <Module3QualityPage />
-                  </Suspense>
-                )}
-              </Route>
-              <Route path="/ind-wizard/module-4">
-                {() => (
-                  <Suspense fallback={<LoadingPage />}>
-                    <Module4NonclinicalPage />
-                  </Suspense>
-                )}
-              </Route>
+                  {/* Reports Module Routes */}
+                  <Route path="/reports" component={ReportsPage} />
+                  <Route path="/cer-reports" component={ReportsPage} />
+                  <Route path="/cerv2/reports" component={ReportsPage} />
 
-              {/* Analytical Control & Method Management Routes */}
-              <Route path="/analytical" component={AnalyticalMethodsStubPage} />
-              <Route path="/comparability" component={ComparabilityStudiesStubPage} />
+                  {/* Tenant Management Route */}
+                  <Route path="/tenant-management" component={TenantManagement} />
 
-              {/* Stability Study Management Routes */}
-              <Route path="/stability" component={StabilityStudiesStubPage} />
-              <Route path="/stability/shelf-life-predictor" component={ShelfLifePredictorStubPage} />
+                  {/* Client Management & Settings Routes */}
+                  <Route path="/client-management" component={ClientManagement} />
+                  <Route path="/settings" component={Settings} />
 
-              {/* Reports Module Routes */}
-              <Route path="/reports" component={ReportsPage} />
-              <Route path="/cer-reports" component={ReportsPage} />
-              <Route path="/cerv2/reports" component={ReportsPage} />
+                  {/* Unified Submission Builder routes (combines eCTD and IND Wizard) */}
+                  {/* Ensure SubmissionBuilder is correctly imported and lazy-loaded */}
+                  <Route path="/ectd-planner">
+                    {() => <SubmissionBuilder initialModule="ectd" />}
+                  </Route>
+                  <Route path="/module-1-sb"> {/* Renamed to avoid conflict with direct module pages if SubmissionBuilder is different */}
+                    {() => <SubmissionBuilder initialModule="m1" />}
+                  </Route>
+                  <Route path="/module-2-sb">
+                    {() => <SubmissionBuilder initialModule="m2" />}
+                  </Route>
+                  <Route path="/module-3-sb">
+                    {() => <SubmissionBuilder initialModule="m3" />}
+                  </Route>
+                  <Route path="/module-4-sb">
+                    {() => <SubmissionBuilder initialModule="m4" />}
+                  </Route>
+                  <Route path="/module-5-sb">
+                    {() => <SubmissionBuilder initialModule="m5" />}
+                  </Route>
+                  <Route path="/ectd-module">
+                    {() => <SubmissionBuilder />}
+                  </Route>
 
-              {/* Tenant Management Route */}
-              <Route path="/tenant-management">
-                {() => (
-                  <Suspense fallback={<LoadingPage />}>
-                    <TenantManagement />
-                  </Suspense>
-                )}
-              </Route>
+                  {/* Error fallback and catch-all routes for specific modules */}
+                  <Route path="/cer-*">
+                    {() => (
+                      <div className="flex flex-col items-center justify-center p-8">
+                        <h2 className="text-2xl font-bold mb-4 text-indigo-700">Redirecting to CER Generator</h2>
+                        <p className="mb-4 text-gray-600">The URL you're trying to access is being redirected to the CER Generator module.</p>
+                        <Button 
+                          onClick={() => window.location.href = '/cerv2'}
+                          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"
+                        >
+                          Go to CER Generator
+                        </Button>
+                      </div>
+                    )}
+                  </Route>
 
-              {/* Client Management & Settings Routes */}
-              <Route path="/client-management">
-                {() => (
-                  <Suspense fallback={<LoadingPage />}>
-                    <ClientManagement />
-                  </Suspense>
-                )}
-              </Route>
-              <Route path="/settings">
-                {() => (
-                  <Suspense fallback={<LoadingPage />}>
-                    <Settings />
-                  </Suspense>
-                )}
-              </Route>
+                  {/* CER Generator catch-all routes */}
+                  <Route path="/cer-generator/*" component={CERV2Page} />
+                  <Route path="/client-portal/cer-generator/*" component={CERV2Page} />
+                  <Route path="/cerv2/*" component={CERV2Page} />
+                  <Route path="/cerV2/*" component={CERV2Page} />
 
-              {/* Unified Submission Builder routes (combines eCTD and IND Wizard) */}
-              <Route path="/ectd-planner">
-                {() => (
-                  <Suspense fallback={<LoadingPage />}>
-                    <SubmissionBuilder initialModule="ectd" />
-                  </Suspense>
-                )}
-              </Route>
-              <Route path="/module-1">
-                {() => (
-                  <Suspense fallback={<LoadingPage />}>
-                    <SubmissionBuilder initialModule="m1" />
-                  </Suspense>
-                )}
-              </Route>
-              <Route path="/module-2">
-                {() => (
-                  <Suspense fallback={<LoadingPage />}>
-                    <SubmissionBuilder initialModule="m2" />
-                  </Suspense>
-                )}
-              </Route>
-              <Route path="/module-3">
-                {() => (
-                  <Suspense fallback={<LoadingPage />}>
-                    <SubmissionBuilder initialModule="m3" />
-                  </Suspense>
-                )}
-              </Route>
-              <Route path="/module-4">
-                {() => (
-                  <Suspense fallback={<LoadingPage />}>
-                    <SubmissionBuilder initialModule="m4" />
-                  </Suspense>
-                )}
-              </Route>
-              <Route path="/module-5">
-                {() => (
-                  <Suspense fallback={<LoadingPage />}>
-                    <SubmissionBuilder initialModule="m5" />
-                  </Suspense>
-                )}
-              </Route>
-              <Route path="/ectd-module">
-                {() => (
-                  <Suspense fallback={<LoadingPage />}>
-                    <SubmissionBuilder />
-                  </Suspense>
-                )}
-              </Route>
-
-              {/* Error fallback and catch-all routes for specific modules */}
-              <Route path="/cer-*">
-                {() => (
-                  <div className="flex flex-col items-center justify-center p-8">
-                    <h2 className="text-2xl font-bold mb-4 text-indigo-700">Redirecting to CER Generator</h2>
-                    <p className="mb-4 text-gray-600">The URL you're trying to access is being redirected to the CER Generator module.</p>
-                    <Button 
-                      onClick={() => window.location.href = '/cerv2'}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"
-                    >
-                      Go to CER Generator
-                    </Button>
-                  </div>
-                )}
-              </Route>
-
-              {/* CER Generator catch-all routes */}
-              <Route path="/cer-generator/*">
-                {() => <CERV2Page />}
-              </Route>
-              <Route path="/client-portal/cer-generator/*">
-                {() => <CERV2Page />}
-              </Route>
-              <Route path="/cerv2/*">
-                {() => <CERV2Page />}
-              </Route>
-              <Route path="/cerV2/*">
-                {() => <CERV2Page />}
-              </Route>
-
-              {/* Default Redirect to Client Portal */}
-              <Route>
-                {() => {
-                  // Automatically redirect to client portal
-                  window.location.href = '/client-portal';
-                  return (
-                    <div className="flex flex-col items-center justify-center p-8">
-                      <h2 className="text-xl font-medium mb-4">Redirecting to Client Portal...</h2>
-                      <div className="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
-                    </div>
-                  );
-                }}
-              </Route>
-            </Switch>
+                  {/* Default Redirect to Client Portal */}
+                  <Route>
+                    {() => {
+                      // Automatically redirect to client portal
+                      // Consider using wouter's <Redirect /> component for cleaner navigation if available/preferred
+                      if (typeof window !== 'undefined') { // Ensure window is defined (for SSR safety, though likely not an issue here)
+                        window.location.href = '/client-portal';
+                      }
+                      return (
+                        <div className="flex flex-col items-center justify-center p-8 h-screen">
+                          <h2 className="text-xl font-medium mb-4">Redirecting to Client Portal...</h2>
+                          <div className="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
+                        </div>
+                      );
+                    }}
+                  </Route>
+                </Switch>
+              </Suspense>
               </div>
-            </StabilityEnabledLayout>
+              </StabilityEnabledLayout>
               
               {/* Global AI Assistant that connects to the context */}
               <LumenAiAssistantContainer />
@@ -500,3 +396,4 @@ function App() {
 }
 
 export default App;
+
