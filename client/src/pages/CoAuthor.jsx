@@ -4990,7 +4990,53 @@ export default function CoAuthor() {
               <TabsContent value="compliance" className="mt-4 space-y-4">
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Regulatory Compliance</h3>
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-medium">Regulatory Compliance</h3>
+                      <div className="flex space-x-2">
+                        <Select 
+                          value={exportRegion} 
+                          onValueChange={setExportRegion}
+                        >
+                          <SelectTrigger className="w-[160px] h-8">
+                            <SelectValue placeholder="Select Region" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              <SelectLabel>Regulatory Regions</SelectLabel>
+                              <SelectItem value="US">🇺🇸 FDA (US)</SelectItem>
+                              <SelectItem value="EU">🇪🇺 EMA (EU)</SelectItem>
+                              <SelectItem value="CA">🇨🇦 Health Canada</SelectItem>
+                              <SelectItem value="JP">🇯🇵 PMDA (Japan)</SelectItem>
+                              <SelectItem value="ICH">🌎 ICH (International)</SelectItem>
+                              <SelectItem value="ALL">🌐 All Regions</SelectItem>
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="h-8"
+                                onClick={() => runMultiRegionComplianceCheck()}
+                              >
+                                {checkingCompliance ? (
+                                  <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full mr-1"></div>
+                                ) : (
+                                  <ClipboardCheck className="h-4 w-4 mr-1" />
+                                )}
+                                Check Compliance
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Run multi-region regulatory compliance check</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    </div>
                     <div className="border rounded-md p-4 space-y-4">
                       <div>
                         <div className="flex justify-between text-sm mb-1">
