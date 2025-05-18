@@ -1,29 +1,24 @@
 /**
- * Fixed routes registration file
+ * Simplified routes registration file
  * 
- * This file registers all API routes with the Express application.
- * It provides a central location to add new routes to the application.
+ * This file registers basic routes with the Express application.
+ * It's a simplified version to get the app running.
  */
 
 import express, { Express, Request, Response } from 'express';
-import { router as estar510kRouter } from './routes/510kEstarRoutes';
-import cerDeviceProfileRoutes from './routes/cerDeviceProfileRoutes';
 
 /**
- * Register all routes with the Express application
+ * Register essential routes with the Express application
  * 
  * @param app Express application instance
  */
 export default function registerRoutes(app: Express): void {
-  // Register FDA 510k eSTAR routes
-  app.use('/api/fda510k/estar', estar510kRouter);
-  
-  // Register CER device profile routes
-  app.use('/api/cer/device-profile', cerDeviceProfileRoutes);
-  console.log('CER Device Profile routes registered');
+  // Set up a basic health check route
+  app.get('/api/health', (req: Request, res: Response) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
   
   // Set up custom route for FDA510k predicate search manually
-  // This is needed because the FDA510kService.js calls '/api/fda510k/predicates'
   app.get('/api/fda510k/predicates', (req: Request, res: Response) => {
     try {
       const searchTerm = req.query.search || '';
@@ -60,6 +55,4 @@ export default function registerRoutes(app: Express): void {
     }
   });
   console.log('FDA 510(k) Predicate search route registered');
-  
-  // Additional routes can be registered here
 }
