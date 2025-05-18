@@ -100,14 +100,14 @@ app.get('/', (req, res) => {
   }
 });
 
-// Client portal and other important UI routes
+// Client portal - serving the actual client portal HTML
 app.get('/client-portal', (req, res) => {
-  console.log('Serving client portal');
-  const landingPath = path.join(process.cwd(), 'clean_landing_page.html');
-  if (fs.existsSync(landingPath)) {
-    res.sendFile(landingPath);
+  console.log('Serving real client portal');
+  const clientPortalPath = path.join(process.cwd(), 'client-portal.html');
+  if (fs.existsSync(clientPortalPath)) {
+    res.sendFile(clientPortalPath);
   } else {
-    res.status(200).send('<h1>TrialSage Client Portal</h1><p>Client portal is running in minimal mode while we fix the path-to-regexp error.</p>');
+    res.status(404).send('Error: Real client portal file not found');
   }
 });
 
