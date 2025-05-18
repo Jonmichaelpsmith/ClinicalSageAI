@@ -34,14 +34,14 @@ const ctqFactors = {
 };
 
 import express from 'express';
-import { tenantContext } from '../middleware/tenantContext';
+import { tenantContextMiddleware } from '../middleware/tenantContext';
 import { db } from '../db';
-import { executeQuery } from '../db/execute';
+import { executeRawQuery as executeQuery } from '../db/execute';
 
 const router = express.Router();
 
 // Apply tenant context middleware to all routes
-router.use(tenantContext);
+router.use(tenantContextMiddleware);
 router.use(authMiddleware);
 
 // Get section gating for a QMP
