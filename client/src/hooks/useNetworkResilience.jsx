@@ -20,7 +20,7 @@ import { NETWORK_CONFIG } from '@/config/stabilityConfig';
  * @param {boolean} options.queueOfflineRequests - Whether to queue requests when offline (default from config)
  * @returns {Object} - Network status and resilient fetch operations
  */
-export function useNetworkResilience(options = {}) {
+export default function useNetworkResilience(options = {}) {
   // Extract configuration with fallbacks to global config
   const {
     maxRetries = NETWORK_CONFIG.maxRetries,
@@ -48,11 +48,7 @@ export function useNetworkResilience(options = {}) {
     // If we're offline and queueing is enabled, queue the request
     if (!navigator.onLine && queueOfflineRequests) {
       return new Promise((resolve, reject) => {
-        // Generate a unique request ID
-        const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        
         requestQueue.current.push({
-          id: requestId,
           url,
           options,
           resolve,
@@ -63,8 +59,10 @@ export function useNetworkResilience(options = {}) {
         // If the request has a timeout option, honor it
         if (options.timeout) {
           setTimeout(() => {
-            // Find and remove the queued request by its unique ID
-            const index = requestQueue.current.findIndex(req => req.id === requestId);
+            // Find and remove the queued request
+            const index = requestQueue.current.findIndex(req => 
+              req.url === url && req.timestamp === timestamp
+            );
             
             if (index !== -1) {
               const request = requestQueue.current.splice(index, 1)[0];
@@ -141,11 +139,7 @@ export function useNetworkResilience(options = {}) {
     // If we're offline and queueing is enabled, queue the request for later
     if (!navigator.onLine && queueOfflineRequests) {
       return new Promise((resolve, reject) => {
-        // Generate a unique request ID
-        const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        
         requestQueue.current.push({
-          id: requestId,
           url,
           options,
           resolve,
@@ -173,15 +167,10 @@ export function useNetworkResilience(options = {}) {
     // Process each request
     for (const request of queueCopy) {
       try {
-        console.log(`Processing queued request with ID: ${request.id}`);
-        // Use resilientFetch instead of direct fetch to get retry benefits
-        // but we need to avoid re-queueing, so we'll use a direct fetch inside
         const response = await fetch(request.url, request.options);
-        console.log(`Successfully processed queued request ID: ${request.id}`);
         request.resolve(response);
         setSucceededRequests(prev => prev + 1);
       } catch (error) {
-        console.error(`Error processing queued request with ID: ${request.id}`, error);
         request.reject(error);
         setFailedRequests(prev => prev + 1);
       }

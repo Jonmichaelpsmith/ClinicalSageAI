@@ -29,7 +29,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Info, CheckCircle, AlertCircle, RefreshCw, FileText, Sparkles, Zap, XCircle, Plus, Shield, BarChart4, ArrowRight, ExternalLink, FileCheck, BookOpen } from 'lucide-react';
 
-export default function ComplianceScorePanel({ sections, title = 'Clinical Evaluation Report', onComplianceChange, onStatusChange, template = 'cer' }) {
+export default function ComplianceScorePanel({ sections, title = 'Clinical Evaluation Report', onComplianceChange, onStatusChange }) {
   const [analyzing, setAnalyzing] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState(null);
@@ -54,36 +54,18 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
   
   // Various regulatory standards for compliance analysis
   const availableStandards = [
-    // CER Standards
-    { id: 'EU_MDR', name: 'EU MDR 2017/745', description: 'European Medical Device Regulation', category: 'cer' },
-    { id: 'ISO_14155', name: 'ISO 14155:2020', description: 'Clinical investigation of medical devices', category: 'cer' },
-    { id: 'FDA_21CFR812', name: 'FDA 21 CFR 812', description: 'Investigational Device Exemptions', category: 'cer' },
-    { id: 'ISO_13485', name: 'ISO 13485:2016', description: 'Quality management systems', category: 'cer' },
-    { id: 'MEDDEV_271', name: 'MEDDEV 2.7/1 Rev 4', description: 'Clinical evaluation guidance', category: 'cer' },
-    { id: 'IVDR_2017746', name: 'EU IVDR 2017/746', description: 'In Vitro Diagnostic Regulation', category: 'cer' },
-    { id: 'FDA_21CFR820', name: 'FDA 21 CFR 820', description: 'Quality System Regulation', category: 'cer' },
-    { id: 'IMDRF_MDCE', name: 'IMDRF MDCE', description: 'Medical Device Clinical Evaluation guidance', category: 'cer' },
-    
-    // 510(k) Standards
-    { id: 'FDA_510K', name: 'FDA 510(k)', description: 'FDA 510(k) Premarket Notification requirements', category: '510k' },
-    { id: 'FDA_ESTAR', name: 'FDA eSTAR Format', description: 'Electronic Submission Template And Resource', category: '510k' },
-    { id: 'FDA_21CFR807', name: 'FDA 21 CFR 807', description: 'Establishment Registration and Device Listing', category: '510k' },
-    { id: 'FDA_SUBSTANTIAL_EQUIVALENCE', name: 'Substantial Equivalence', description: 'FDA guidance on substantial equivalence demonstrations', category: '510k' },
-    { id: 'FDA_SPECIAL_CONTROLS', name: 'FDA Special Controls', description: 'Class II device special controls requirements', category: '510k' },
-    { id: 'FDA_PERFORMANCE_TESTING', name: 'Performance Testing', description: 'FDA device performance testing requirements', category: '510k' }
+    { id: 'EU_MDR', name: 'EU MDR 2017/745', description: 'European Medical Device Regulation' },
+    { id: 'ISO_14155', name: 'ISO 14155:2020', description: 'Clinical investigation of medical devices' },
+    { id: 'FDA_21CFR812', name: 'FDA 21 CFR 812', description: 'Investigational Device Exemptions' },
+    { id: 'ISO_13485', name: 'ISO 13485:2016', description: 'Quality management systems' },
+    { id: 'MEDDEV_271', name: 'MEDDEV 2.7/1 Rev 4', description: 'Clinical evaluation guidance' },
+    { id: 'IVDR_2017746', name: 'EU IVDR 2017/746', description: 'In Vitro Diagnostic Regulation' },
+    { id: 'FDA_21CFR820', name: 'FDA 21 CFR 820', description: 'Quality System Regulation' },
+    { id: 'IMDRF_MDCE', name: 'IMDRF MDCE', description: 'Medical Device Clinical Evaluation guidance' }
   ];
   
-  // Set default selected standards based on template prop
-  const getDefaultStandards = () => {
-    if (props.template === 'fda-510k') {
-      return ['FDA_510K', 'FDA_ESTAR', 'FDA_21CFR807', 'FDA_SUBSTANTIAL_EQUIVALENCE'];
-    } else {
-      return ['EU_MDR', 'ISO_14155', 'FDA_21CFR812'];
-    }
-  };
-  
-  // Selected regulatory standards (set defaults based on template)
-  const [selectedStandards, setSelectedStandards] = useState(getDefaultStandards());
+  // Selected regulatory standards (default to EU MDR, ISO 14155, and FDA)
+  const [selectedStandards, setSelectedStandards] = useState(['EU_MDR', 'ISO_14155', 'FDA_21CFR812']);
   
   // Function to run compliance analysis with optional custom sections
   const runComplianceAnalysis = async (customSections = null) => {
@@ -234,7 +216,7 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = template === 'fda-510k' ? 'fda_510k_compliance_report.pdf' : 'cer_compliance_scorecard.pdf';
+      link.download = 'compliance_scorecard.pdf';
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -341,9 +323,7 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
             <Button
               onClick={runComplianceAnalysis}
               disabled={analyzing || sections.length === 0}
-              className={`${template === 'fda-510k' 
-                ? 'bg-blue-700 hover:bg-blue-800' 
-                : 'bg-[#0F6CBD] hover:bg-[#115EA3]'} text-white`}
+              className="bg-[#0F6CBD] hover:bg-[#115EA3] text-white"
               size="sm"
             >
               {analyzing ? (
@@ -352,13 +332,7 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
                   <span>Analyzing...</span>
                 </>
               ) : (
-                <>
-                  {template === 'fda-510k' 
-                    ? <Shield className="h-3.5 w-3.5 mr-1.5" />
-                    : <BarChart4 className="h-3.5 w-3.5 mr-1.5" />
-                  }
-                  {template === 'fda-510k' ? 'Check FDA Compliance' : 'Check Compliance'}
-                </>
+                <><BarChart4 className="h-3.5 w-3.5 mr-1.5" />Check Compliance</>
               )}
             </Button>
           </div>
@@ -381,13 +355,10 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
             <div className="flex">
               <Info className="h-5 w-5 text-[#0F6CBD] mr-2 flex-shrink-0" />
               <div>
-                <p className="text-sm font-medium text-[#323130]">
-                  {template === 'fda-510k' ? 'FDA 510(k) Compliance Check' : 'Regulatory Compliance Check'}
-                </p>
+                <p className="text-sm font-medium text-[#323130]">Regulatory Compliance Check</p>
                 <p className="text-xs text-[#616161] mt-1">
-                  {template === 'fda-510k' 
-                    ? 'Click "Check Compliance" to analyze your submission against FDA 510(k) and eSTAR requirements. This will evaluate substantial equivalence arguments, technical documentation, and readiness for FDA review.'
-                    : 'Click "Check Compliance" to analyze your report against EU MDR, FDA, and ISO 14155 standards. This will evaluate content quality, completeness, and alignment with regulatory requirements.'}
+                  Click "Check Compliance" to analyze your report against EU MDR, FDA, and ISO 14155 standards.
+                  This will evaluate content quality, completeness, and alignment with regulatory requirements.
                 </p>
               </div>
             </div>
@@ -396,11 +367,7 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
         
         {analyzing && (
           <div className="space-y-4 my-3">
-            <p className="text-sm text-[#616161]">
-              {template === 'fda-510k' 
-                ? 'Analyzing FDA 510(k) compliance against submission requirements...' 
-                : 'Analyzing regulatory compliance against standards...'}
-            </p>
+            <p className="text-sm text-[#616161]">Analyzing regulatory compliance against standards...</p>
             <div className="space-y-3">
               <Skeleton className="h-6 w-full" />
               <Skeleton className="h-24 w-full" />

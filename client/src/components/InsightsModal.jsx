@@ -1,6 +1,5 @@
 // InsightsModal.jsx – detailed cards with filter, tabs & docs links
 import React, { useEffect, useState } from "react";
-import ModalPortal from './ModalPortal';
 import { X } from "lucide-react";
 
 export default function InsightsModal({ onClose }) {
@@ -37,9 +36,8 @@ export default function InsightsModal({ onClose }) {
   );
 
   return (
-    <ModalPortal>
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-        <div className="bg-white dark:bg-slate-800 w-full max-w-4xl rounded-lg shadow-2xl p-6 relative">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-slate-800 w-full max-w-4xl rounded-lg shadow-2xl p-6 relative">
         <button onClick={onClose} className="absolute top-3 right-3 text-gray-500 hover:text-red-500"><X size={20} /></button>
         <h2 className="text-2xl font-semibold mb-4">AI Insight Models ({models.length})</h2>
 
@@ -89,6 +87,5 @@ export default function InsightsModal({ onClose }) {
         )}
       </div>
     </div>
-    </ModalPortal>
   );
 }
