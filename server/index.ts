@@ -2,8 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
 import { createServer as createHttpServer } from 'http';
-// Removing problematic import
-// import registerRoutes from './routes_fixed';
+import registerRoutes from './routes';
 import { setupVite } from './vite';
 import { initializePerformanceOptimizations } from './initializers/performanceOptimizer';
 import { initializeQualityManagementApi } from './initializers/qualityApiInitializer';
@@ -136,9 +135,7 @@ console.log('FDA 510(k) routes registered at /api/fda510k');
 // Import and register health check routes
 app.use('/api', createHealthCheckRouter(dbPool));
 
-// Import and register fixed routes to resolve path-to-regexp error
-import fixedRoutes from './routes/fixed-routes.js';
-app.use('/api', fixedRoutes);
+// Temporarily removed fixed routes import to resolve path errors
 
 // Import and initialize Quality Management API
 // Import database optimizer for 510(k) workflow performance
