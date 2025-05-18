@@ -88,20 +88,20 @@ export const ERROR_CONFIG = {
  * Freeze Detection Configuration
  */
 export const FREEZE_CONFIG = {
-  // Interval in ms for checking UI responsiveness - increased to reduce frequency
-  checkInterval: 15000,
+  // Interval in ms for checking UI responsiveness
+  checkInterval: 5000,
   
-  // Threshold in ms for considering the UI frozen - increased to be less sensitive
-  freezeThreshold: 8000,
+  // Threshold in ms for considering the UI frozen
+  freezeThreshold: 3000,
   
-  // Whether to attempt recovery from freezes - disabled to prevent unnecessary interventions
-  autoRecovery: false,
+  // Whether to attempt recovery from freezes
+  autoRecovery: true,
   
-  // Whether to log freeze events - keeping for diagnostic purposes
+  // Whether to log freeze events
   logFreezeEvents: true,
   
-  // Whether to show notifications about freeze events - disabled to improve UX
-  showFreezeNotifications: false
+  // Whether to show notifications about freeze events
+  showFreezeNotifications: true
 };
 
 /**
@@ -109,7 +109,7 @@ export const FREEZE_CONFIG = {
  */
 export const ERROR_BOUNDARY_CONFIG = {
   // Whether to show detailed error information (dev only)
-  showDetails: import.meta.env.DEV,
+  showDetails: process.env.NODE_ENV === 'development',
   
   // Whether to attempt to recover automatically
   autoRecovery: true,
@@ -132,7 +132,7 @@ export const ERROR_BOUNDARY_CONFIG = {
  */
 export const LOGGING_CONFIG = {
   // Minimum log level to record
-  minLevel: import.meta.env.DEV ? 'debug' : 'warn',
+  minLevel: process.env.NODE_ENV === 'development' ? 'debug' : 'warn',
   
   // Whether to include timestamps in logs
   includeTimestamp: true,
@@ -213,19 +213,19 @@ export const STABILITY_CONFIG = {
   enabled: true,
   
   // Whether to enable detailed error information (for development)
-  showDetailedErrors: import.meta.env.DEV,
+  showDetailedErrors: process.env.NODE_ENV === 'development',
   
   // Whether to show stability status indicators
-  showStatusIndicators: import.meta.env.DEV,
+  showStatusIndicators: process.env.NODE_ENV === 'development',
   
   // Environment-specific settings
-  environment: import.meta.env.MODE || 'development',
+  environment: process.env.NODE_ENV || 'development',
   
   // Whether to collect and report stability metrics
   collectMetrics: true,
   
   // Application version (for error tracking)
-  appVersion: import.meta.env.VITE_APP_VERSION || '1.0.0',
+  appVersion: process.env.REACT_APP_VERSION || '1.0.0',
   
   // Whether to enable maintenance mode automatically when too many errors occur
   autoMaintenanceMode: true,
@@ -234,7 +234,7 @@ export const STABILITY_CONFIG = {
   maintenanceModeErrorThreshold: 10,
   
   // Whether to enable all diagnostic tools
-  enableDiagnosticTools: import.meta.env.DEV
+  enableDiagnosticTools: process.env.NODE_ENV === 'development'
 };
 
 export default {

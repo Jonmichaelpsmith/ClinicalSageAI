@@ -1,202 +1,64 @@
-import React, { useState } from 'react';
-import { BarChart, FileBarChart, PieChart, RefreshCw, Download } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import React from 'react';
+import { BarChart3, FileText, Download, Gauge, Clock } from 'lucide-react';
+import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 /**
  * ReportsQuickWidget Component
  * 
- * Provides a quick interface for accessing and generating reports across all modules.
- * This component is designed to be GLOBALLY CONNECTED to all other modules.
+ * A dashboard widget that provides quick access to the Comprehensive Reports feature.
+ * This widget displays key metrics and a direct access button to the Reports tab.
  */
-const ReportsQuickWidget = ({ clientId }) => {
-  const [reportType, setReportType] = useState('regulatory');
-  const [loading, setLoading] = useState(false);
-  
-  // Mock recent reports that would come from API
-  const recentReports = [
-    {
-      id: 'report-1',
-      title: 'BTX-112 IND Readiness',
-      type: 'regulatory',
-      date: '2025-05-08T14:30:00Z',
-      status: 'complete'
-    },
-    {
-      id: 'report-2',
-      title: 'CMC Documentation Quality',
-      type: 'quality',
-      date: '2025-05-05T09:15:00Z',
-      status: 'complete'
-    },
-    {
-      id: 'report-3',
-      title: 'Clinical Trial Enrollment Trends',
-      type: 'clinical',
-      date: '2025-05-01T11:45:00Z',
-      status: 'complete'
-    }
-  ];
-  
-  // Mock available reports
-  const availableReports = {
-    regulatory: [
-      { id: 'reg-1', name: 'Submission Status Report' },
-      { id: 'reg-2', name: 'Regulatory Timeline Analysis' },
-      { id: 'reg-3', name: 'Compliance Status Report' }
-    ],
-    quality: [
-      { id: 'qual-1', name: 'Document Quality Assessment' },
-      { id: 'qual-2', name: 'SOP Adherence Report' },
-      { id: 'qual-3', name: 'Risk Management Analysis' }
-    ],
-    clinical: [
-      { id: 'clin-1', name: 'Trial Enrollment Report' },
-      { id: 'clin-2', name: 'Protocol Adherence Analysis' },
-      { id: 'clin-3', name: 'Adverse Event Summary' }
-    ],
-    cmc: [
-      { id: 'cmc-1', name: 'Stability Data Report' },
-      { id: 'cmc-2', name: 'Manufacturing Batch Analysis' },
-      { id: 'cmc-3', name: 'Analytical Method Performance' }
-    ]
-  };
-  
-  // Format dates for display
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
-  };
-  
-  // Simulate generating a report
-  const handleGenerateReport = () => {
-    setLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
-      // In a real app, this would display success toast and download the report
-      console.log('Report generated successfully');
-    }, 1500);
+const ReportsQuickWidget = () => {
+  const [, setLocation] = useLocation();
+
+  // Navigate directly to the CER Reports tab
+  const navigateToCerReports = () => {
+    // Navigate to CERV2 page with reports tab
+    window.location.href = window.location.origin + '/cerv2?tab=reports';
   };
 
   return (
-    <Card className="border-pink-200">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <BarChart className="h-5 w-5 mr-2 text-pink-600" />
-            <CardTitle className="text-lg font-medium">Reports Module</CardTitle>
+    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-lg p-5">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-blue-800 flex items-center">
+          <FileText className="h-5 w-5 mr-2 text-blue-600" />
+          Comprehensive Reports
+        </h3>
+        <span className="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full">New</span>
+      </div>
+      
+      <p className="text-gray-600 text-sm mb-4">
+        Access comprehensive reports across all modules with detailed analytics and regulatory compliance metrics.
+      </p>
+      
+      {/* Quick Stats */}
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="bg-white rounded-md p-2 border border-blue-100">
+          <div className="flex items-center mb-1">
+            <Gauge className="h-3.5 w-3.5 text-green-600 mr-1.5" />
+            <span className="text-xs font-medium text-gray-600">Compliance</span>
           </div>
-          <Badge className="bg-pink-100 text-pink-800 hover:bg-pink-200">Global</Badge>
+          <p className="text-lg font-bold text-gray-800">85%</p>
         </div>
-        <CardDescription className="text-gray-600">
-          Generate reports across all modules
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="pb-2">
-        <div className="space-y-4">
-          {/* Report Generator */}
-          <div className="bg-pink-50 p-3 rounded-lg border border-pink-100">
-            <h3 className="text-sm font-medium text-pink-800 mb-2">Quick Report Generator</h3>
-            <div className="space-y-3">
-              <Select 
-                value={reportType} 
-                onValueChange={setReportType}
-              >
-                <SelectTrigger className="w-full bg-white border-pink-200">
-                  <SelectValue placeholder="Select report category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="regulatory">Regulatory Reports</SelectItem>
-                  <SelectItem value="quality">Quality Reports</SelectItem>
-                  <SelectItem value="clinical">Clinical Reports</SelectItem>
-                  <SelectItem value="cmc">CMC Reports</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              <Select>
-                <SelectTrigger className="w-full bg-white border-pink-200">
-                  <SelectValue placeholder="Select specific report" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableReports[reportType].map(report => (
-                    <SelectItem key={report.id} value={report.id}>
-                      {report.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              <Button 
-                className="w-full bg-pink-600 hover:bg-pink-700"
-                onClick={handleGenerateReport}
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <FileBarChart className="h-4 w-4 mr-2" />
-                    Generate Report
-                  </>
-                )}
-              </Button>
-            </div>
+        
+        <div className="bg-white rounded-md p-2 border border-blue-100">
+          <div className="flex items-center mb-1">
+            <Clock className="h-3.5 w-3.5 text-amber-600 mr-1.5" />
+            <span className="text-xs font-medium text-gray-600">Last Report</span>
           </div>
-          
-          {/* Recent Reports */}
-          <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-2">Recent Reports</h3>
-            <div className="space-y-2">
-              {recentReports.map(report => (
-                <div 
-                  key={report.id}
-                  className="flex items-center justify-between p-2 hover:bg-gray-50 rounded-md"
-                >
-                  <div className="flex items-center">
-                    {report.type === 'regulatory' ? (
-                      <div className="bg-blue-100 p-1.5 rounded-md mr-2">
-                        <BarChart className="h-3.5 w-3.5 text-blue-600" />
-                      </div>
-                    ) : report.type === 'quality' ? (
-                      <div className="bg-green-100 p-1.5 rounded-md mr-2">
-                        <PieChart className="h-3.5 w-3.5 text-green-600" />
-                      </div>
-                    ) : (
-                      <div className="bg-purple-100 p-1.5 rounded-md mr-2">
-                        <FileBarChart className="h-3.5 w-3.5 text-purple-600" />
-                      </div>
-                    )}
-                    <div>
-                      <p className="text-xs font-medium">{report.title}</p>
-                      <p className="text-xs text-gray-500">{formatDate(report.date)}</p>
-                    </div>
-                  </div>
-                  <Button variant="ghost" size="icon" className="h-7 w-7">
-                    <Download className="h-3.5 w-3.5 text-gray-500" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
+          <p className="text-sm font-medium text-gray-800">2 days ago</p>
         </div>
-      </CardContent>
-      <CardFooter className="pt-0">
-        <Button variant="outline" className="w-full mt-2 border-pink-200 text-pink-700 hover:bg-pink-50" size="sm">
-          View Reports Dashboard
-        </Button>
-      </CardFooter>
-    </Card>
+      </div>
+      
+      <Button
+        onClick={navigateToCerReports}
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+      >
+        <BarChart3 className="h-4 w-4 mr-2" />
+        Open Reports Dashboard
+      </Button>
+    </div>
   );
 };
 

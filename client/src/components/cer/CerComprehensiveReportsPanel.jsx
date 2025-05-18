@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   BarChart3, FileText, Download, Calendar, Users, 
-  CheckCircle, AlertTriangle, FileBarChart2, FileCheck,
-  Trophy, ShieldCheck
+  CheckCircle, AlertTriangle, FileBarChart2, FileCheck
 } from 'lucide-react';
-// Removed ExecutiveDashboard import to fix stability issues
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -218,8 +216,7 @@ const CerComprehensiveReportsPanel = () => {
     const reportTypes = {
       compliance: "Compliance",
       activity: "Activity",
-      quality: "Quality Management",
-      dashboard: "Executive Dashboard"
+      quality: "Quality Management"
     };
     return reportTypes[reportType] || reportType;
   };
@@ -886,227 +883,6 @@ const CerComprehensiveReportsPanel = () => {
   };
 
   // Render trend report with improved visualizations
-  const renderExecutiveDashboard = () => (
-    <div className="space-y-6">
-      {/* KPI Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-gradient-to-br from-blue-50 to-white border-blue-100 shadow-sm">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center text-blue-700">
-              <FileCheck className="h-5 w-5 mr-2 text-blue-600" />
-              Compliance Score
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-center">
-              <div className="relative h-24 w-24">
-                <svg className="h-full w-full" viewBox="0 0 100 100">
-                  <circle
-                    className="text-gray-200"
-                    strokeWidth="10"
-                    stroke="currentColor"
-                    fill="transparent"
-                    r="40"
-                    cx="50"
-                    cy="50"
-                  />
-                  <circle
-                    className="text-blue-600"
-                    strokeWidth="10"
-                    strokeDasharray={2 * Math.PI * 40}
-                    strokeDashoffset={2 * Math.PI * 40 * (1 - 85 / 100)}
-                    strokeLinecap="round"
-                    stroke="currentColor"
-                    fill="transparent"
-                    r="40"
-                    cx="50"
-                    cy="50"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-3xl font-bold text-blue-700">85%</span>
-                </div>
-              </div>
-            </div>
-            <div className="flex justify-center mt-2">
-              <span className="text-green-600 text-sm font-medium flex items-center">
-                <span className="inline-block h-2 w-2 rounded-full bg-green-500 mr-1"></span>
-                +3% from last quarter
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-green-50 to-white border-green-100 shadow-sm">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center text-green-700">
-              <CheckCircle className="h-5 w-5 mr-2 text-green-600" />
-              Safety Indicators
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col items-center justify-center h-[100px]">
-              <div className="text-3xl font-bold text-green-700">92%</div>
-              <div className="text-sm text-gray-500 mb-2">Safety Requirements Met</div>
-              <div className="w-full bg-gray-200 h-2 rounded-full">
-                <div className="bg-green-500 h-2 rounded-full" style={{ width: '92%' }}></div>
-              </div>
-            </div>
-            <div className="flex justify-center mt-2">
-              <span className="text-green-600 text-sm font-medium flex items-center">
-                <span className="inline-block h-2 w-2 rounded-full bg-green-500 mr-1"></span>
-                Exceeds regulatory threshold
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-purple-50 to-white border-purple-100 shadow-sm">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center text-purple-700">
-              <FileBarChart2 className="h-5 w-5 mr-2 text-purple-600" />
-              Clinical Evidence
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col items-center justify-center h-[100px]">
-              <div className="text-3xl font-bold text-purple-700">78%</div>
-              <div className="text-sm text-gray-500 mb-2">Literature Coverage</div>
-              <div className="w-full bg-gray-200 h-2 rounded-full">
-                <div className="bg-purple-500 h-2 rounded-full" style={{ width: '78%' }}></div>
-              </div>
-            </div>
-            <div className="flex justify-center mt-2">
-              <span className="text-amber-600 text-sm font-medium flex items-center">
-                <span className="inline-block h-2 w-2 rounded-full bg-amber-500 mr-1"></span>
-                Needs 2 more literature sources
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Regulatory Compliance Summary */}
-      <Card className="shadow-sm">
-        <CardHeader className="pb-2 border-b">
-          <CardTitle className="text-lg flex items-center">
-            <ShieldCheck className="h-5 w-5 mr-2 text-blue-600" />
-            Regulatory Framework Compliance
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="font-medium">EU MDR</span>
-                <span className="text-green-600 bg-green-100 px-2 py-0.5 rounded-full text-xs">Compliant</span>
-              </div>
-              <div className="w-full bg-gray-200 h-2 rounded-full">
-                <div className="bg-green-500 h-2 rounded-full" style={{ width: '92%' }}></div>
-              </div>
-              <div className="text-xs text-gray-500">54 of 58 requirements met</div>
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="font-medium">FDA CFR 21</span>
-                <span className="text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full text-xs">In Progress</span>
-              </div>
-              <div className="w-full bg-gray-200 h-2 rounded-full">
-                <div className="bg-amber-500 h-2 rounded-full" style={{ width: '78%' }}></div>
-              </div>
-              <div className="text-xs text-gray-500">42 of 54 requirements met</div>
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="font-medium">ISO 14155</span>
-                <span className="text-green-600 bg-green-100 px-2 py-0.5 rounded-full text-xs">Compliant</span>
-              </div>
-              <div className="w-full bg-gray-200 h-2 rounded-full">
-                <div className="bg-green-500 h-2 rounded-full" style={{ width: '89%' }}></div>
-              </div>
-              <div className="text-xs text-gray-500">32 of 36 requirements met</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Critical to Quality Factors */}
-      <Card className="shadow-sm">
-        <CardHeader className="pb-2 border-b">
-          <CardTitle className="text-lg flex items-center">
-            <Trophy className="h-5 w-5 mr-2 text-amber-500" />
-            Critical-to-Quality Factors
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <h3 className="font-medium mb-2">Risk Level Coverage</h3>
-              <div className="space-y-3">
-                <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-sm">High Risk (8)</span>
-                    <span className="text-sm font-medium">100%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 h-2 rounded-full">
-                    <div className="bg-red-500 h-2 rounded-full" style={{ width: '100%' }}></div>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-sm">Medium Risk (8)</span>
-                    <span className="text-sm font-medium">75%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 h-2 rounded-full">
-                    <div className="bg-amber-500 h-2 rounded-full" style={{ width: '75%' }}></div>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-sm">Low Risk (6)</span>
-                    <span className="text-sm font-medium">67%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 h-2 rounded-full">
-                    <div className="bg-blue-500 h-2 rounded-full" style={{ width: '67%' }}></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div>
-              <h3 className="font-medium mb-2">Top Action Items</h3>
-              <div className="space-y-2">
-                <div className="border rounded p-2 bg-amber-50 border-amber-100">
-                  <div className="flex justify-between">
-                    <span className="font-medium text-sm">Complete Clinical Data Analysis</span>
-                    <span className="text-amber-600 text-xs bg-amber-100 px-1.5 py-0.5 rounded">Medium</span>
-                  </div>
-                  <p className="text-xs text-gray-600 mt-1">2 sections remaining - Performance data needed</p>
-                </div>
-                <div className="border rounded p-2 bg-red-50 border-red-100">
-                  <div className="flex justify-between">
-                    <span className="font-medium text-sm">Document Risk Mitigation</span>
-                    <span className="text-red-600 text-xs bg-red-100 px-1.5 py-0.5 rounded">High</span>
-                  </div>
-                  <p className="text-xs text-gray-600 mt-1">FDA compliance - Due in 5 days</p>
-                </div>
-                <div className="border rounded p-2 bg-blue-50 border-blue-100">
-                  <div className="flex justify-between">
-                    <span className="font-medium text-sm">Update Literature Review</span>
-                    <span className="text-blue-600 text-xs bg-blue-100 px-1.5 py-0.5 rounded">Low</span>
-                  </div>
-                  <p className="text-xs text-gray-600 mt-1">Add 2 recent publications - ISO requirement</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-  
   const renderTrendReport = () => (
     <div className="space-y-6">
       {/* Top KPI cards showing improvement */}
@@ -1215,84 +991,6 @@ const CerComprehensiveReportsPanel = () => {
         return renderQualityReport();
       case 'trends':
         return renderTrendReport();
-      case 'dashboard':
-        return (
-          <div className="space-y-6">
-            <Card className="bg-gradient-to-br from-blue-50 to-white shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg text-blue-700 flex items-center">
-                  <FileCheck className="h-5 w-5 mr-2 text-blue-600" />
-                  Executive Dashboard
-                </CardTitle>
-                <CardDescription>
-                  CER compliance status and regulatory overview
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                  <div className="bg-white rounded-lg border p-4 shadow-sm">
-                    <h3 className="text-lg font-medium mb-2 text-blue-700">Compliance</h3>
-                    <div className="text-3xl font-bold text-blue-700 mb-1">85%</div>
-                    <div className="text-sm text-green-600">+3% from last month</div>
-                  </div>
-                  <div className="bg-white rounded-lg border p-4 shadow-sm">
-                    <h3 className="text-lg font-medium mb-2 text-green-700">Safety</h3>
-                    <div className="text-3xl font-bold text-green-700 mb-1">92%</div>
-                    <div className="text-sm text-green-600">Exceeds requirements</div>
-                  </div>
-                  <div className="bg-white rounded-lg border p-4 shadow-sm">
-                    <h3 className="text-lg font-medium mb-2 text-purple-700">Evidence</h3>
-                    <div className="text-3xl font-bold text-purple-700 mb-1">78%</div>
-                    <div className="text-sm text-amber-600">Needs 2 more sources</div>
-                  </div>
-                </div>
-                
-                <h3 className="font-medium text-lg mb-3">Regulatory Framework Compliance</h3>
-                <div className="space-y-4 mb-6">
-                  <div>
-                    <div className="flex justify-between mb-1">
-                      <span>EU MDR</span>
-                      <span className="text-green-600">92%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 h-2 rounded-full">
-                      <div className="bg-green-500 h-2 rounded-full" style={{ width: '92%' }}></div>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between mb-1">
-                      <span>FDA CFR 21</span>
-                      <span className="text-amber-600">78%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 h-2 rounded-full">
-                      <div className="bg-amber-500 h-2 rounded-full" style={{ width: '78%' }}></div>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between mb-1">
-                      <span>ISO 14155</span>
-                      <span className="text-green-600">89%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 h-2 rounded-full">
-                      <div className="bg-green-500 h-2 rounded-full" style={{ width: '89%' }}></div>
-                    </div>
-                  </div>
-                </div>
-                
-                <h3 className="font-medium text-lg mb-3">Critical Actions</h3>
-                <div className="space-y-2">
-                  <div className="border rounded p-3 bg-amber-50">
-                    <div className="font-medium">Complete Clinical Data Analysis</div>
-                    <p className="text-sm">2 sections remaining - Performance data needed</p>
-                  </div>
-                  <div className="border rounded p-3 bg-red-50">
-                    <div className="font-medium">Document Risk Mitigation</div>
-                    <p className="text-sm">FDA compliance - Due in 5 days</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        );
       default:
         return <div>Select a report type to view</div>;
     }
@@ -1300,14 +998,11 @@ const CerComprehensiveReportsPanel = () => {
 
   return (
     <div className="space-y-8">
-      <div className="p-6 bg-gradient-to-b from-blue-50 to-white rounded-lg border shadow-sm">
+      <div className="p-4 bg-white rounded-lg border">
         <div className="flex flex-col md:flex-row justify-between space-y-4 md:space-y-0 md:items-center mb-6">
           <div>
-            <h2 className="text-2xl font-bold mb-1 text-blue-700 flex items-center">
-              <FileBarChart2 className="h-6 w-6 mr-2 text-blue-600" />
-              Comprehensive Reports
-            </h2>
-            <p className="text-gray-600">
+            <h2 className="text-2xl font-bold mb-1">Comprehensive Reports</h2>
+            <p className="text-gray-500">
               Generate detailed reports to monitor compliance, activity, and quality metrics
             </p>
           </div>
@@ -1316,18 +1011,17 @@ const CerComprehensiveReportsPanel = () => {
             <Button
               onClick={generatePDFReport}
               disabled={isGeneratingReport}
-              className="flex items-center space-x-1 bg-blue-600 hover:bg-blue-700 shadow-sm transition-all hover:shadow"
+              className="flex items-center space-x-1"
             >
               <FileText className="h-4 w-4" />
               <span>Generate PDF Report</span>
-              {isGeneratingReport && <span className="ml-2 animate-spin">⟳</span>}
             </Button>
             
             <Button
               variant="outline"
               onClick={generatePDFReport}
               disabled={isGeneratingReport}
-              className="flex items-center space-x-1 border-blue-200 text-blue-700 hover:bg-blue-50 shadow-sm transition-all hover:shadow"
+              className="flex items-center space-x-1"
             >
               <Download className="h-4 w-4" />
               <span>Export Data</span>
@@ -1342,26 +1036,22 @@ const CerComprehensiveReportsPanel = () => {
             onValueChange={setActiveReportType}
             className="w-full md:w-auto"
           >
-            <TabsList className="bg-blue-50 p-1">
-              <TabsTrigger value="compliance" className="flex items-center data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-sm">
-                <FileCheck className="h-4 w-4 mr-1.5 text-blue-600" />
+            <TabsList>
+              <TabsTrigger value="compliance" className="flex items-center">
+                <FileCheck className="h-4 w-4 mr-1" />
                 Compliance
               </TabsTrigger>
-              <TabsTrigger value="activity" className="flex items-center data-[state=active]:bg-white data-[state=active]:text-green-700 data-[state=active]:shadow-sm">
-                <Users className="h-4 w-4 mr-1.5 text-green-600" />
+              <TabsTrigger value="activity" className="flex items-center">
+                <Users className="h-4 w-4 mr-1" />
                 Activity
               </TabsTrigger>
-              <TabsTrigger value="quality" className="flex items-center data-[state=active]:bg-white data-[state=active]:text-purple-700 data-[state=active]:shadow-sm">
-                <FileBarChart2 className="h-4 w-4 mr-1.5 text-purple-600" />
+              <TabsTrigger value="quality" className="flex items-center">
+                <FileBarChart2 className="h-4 w-4 mr-1" />
                 Quality
               </TabsTrigger>
-              <TabsTrigger value="trends" className="flex items-center data-[state=active]:bg-white data-[state=active]:text-amber-700 data-[state=active]:shadow-sm">
-                <BarChart3 className="h-4 w-4 mr-1.5 text-amber-600" />
+              <TabsTrigger value="trends" className="flex items-center">
+                <BarChart3 className="h-4 w-4 mr-1" />
                 Trends
-              </TabsTrigger>
-              <TabsTrigger value="dashboard" className="flex items-center data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-sm">
-                <Trophy className="h-4 w-4 mr-1.5 text-blue-600" />
-                Executive Dashboard
               </TabsTrigger>
             </TabsList>
           </Tabs>

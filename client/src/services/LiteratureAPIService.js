@@ -46,51 +46,17 @@ export const searchPubMed = async ({ query, manufacturer = '', limit = 20 }) => 
  * @param {number} params.filters.yearFrom - Start year for publication date filter
  * @param {number} params.filters.yearTo - End year for publication date filter
  * @param {string} params.filters.journalType - Journal type filter
- * @param {string} params.filters.journalImpactFactor - Journal impact factor filter
- * @param {string} params.filters.studyType - Study type filter
- * @param {boolean} params.useVectorSearch - Whether to use vector-based semantic search
  * @param {number} params.limit - Maximum number of results to return
- * @param {string} params.organizationId - Optional organization ID for access control
  * @returns {Promise<Object>} Search results
  */
-export const searchLiterature = async ({ 
-  query, 
-  productCode = '',
-  intendedUse = '',
-  deviceClass = '',
-  sources = ['pubmed', 'googleScholar'], 
-  filters = {}, 
-  useVectorSearch = true,
-  limit = 20,
-  organizationId
-}) => {
+export const searchLiterature = async ({ query, sources = ['pubmed', 'googleScholar'], filters = {}, limit = 20 }) => {
   try {
-    // Prepare the search parameters including advanced filtering options
-    const searchParams = {
-      query,
-      productCode,
-      intendedUse,
-      deviceClass,
-      sources,
-      filters,
-      useVectorSearch,
-      limit,
-      organizationId: organizationId || ''
-    };
-    
-    // Log search parameters for debugging
-    console.log('Searching literature with parameters:', {
-      ...searchParams,
-      query: searchParams.query.substring(0, 50) + (searchParams.query.length > 50 ? '...' : ''),
-      intendedUse: searchParams.intendedUse?.substring(0, 50) + (searchParams.intendedUse?.length > 50 ? '...' : '')
-    });
-    
     const response = await fetch('/api/literature/search', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(searchParams),
+      body: JSON.stringify({ query, sources, filters, limit }),
     });
 
     if (!response.ok) {
@@ -98,52 +64,10 @@ export const searchLiterature = async ({
       throw new Error(error.error || 'Failed to search for literature');
     }
 
-    const data = await response.json();
-    
-    // Enhance results with calculated relevance scores if not already present
-    if (data && data.results && Array.isArray(data.results)) {
-      // Ensure all results have a relevance score for consistent UI display
-      data.results = data.results.map(item => ({
-        ...item,
-        relevanceScore: item.relevanceScore || item.similarity || item.score || 0.7
-      }));
-      
-      // Sort by relevance score if vector search was used
-      if (useVectorSearch) {
-        data.results.sort((a, b) => b.relevanceScore - a.relevanceScore);
-      }
-      
-      return {
-        success: true,
-        data: data.results,
-        metadata: {
-          searchTerms: searchParams.query,
-          totalResults: data.results.length,
-          searchDate: new Date().toISOString(),
-          searchType: useVectorSearch ? 'semantic_vector' : 'keyword',
-          dataSources: sources
-        }
-      };
-    }
-    
-    return {
-      success: true,
-      data: [],
-      metadata: {
-        searchTerms: searchParams.query,
-        totalResults: 0,
-        searchDate: new Date().toISOString(),
-        searchType: useVectorSearch ? 'semantic_vector' : 'keyword', 
-        dataSources: sources
-      }
-    };
+    return await response.json();
   } catch (error) {
     console.error('Literature search error:', error);
-    return {
-      success: false,
-      error: error.message,
-      data: []
-    };
+    throw error;
   }
 };
 
@@ -386,8 +310,14 @@ export const generateRelevanceAppraisal = async (study, deviceName, inclusionCri
       return await response.json();
     } catch (backupError) {
       console.error('Backup server appraisal failed:', backupError);
-      // No fallbacks - propagate the error to be handled by UI components
-      throw backupError;
+      // Return a minimal default structure if all else fails
+      return {
+        summary: 'Could not generate automatic appraisal. Please assess manually.',
+        scores: {},
+        criteriaAssessments: {},
+        overallScore: null,
+        timestamp: new Date().toISOString()
+      };
     }
   }
 };

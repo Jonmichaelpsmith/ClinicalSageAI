@@ -1,138 +1,101 @@
-import React from 'react';
-import { Database, Folder, FileText, Search, Plus, Calendar, Clock } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
+import React, { useState } from 'react';
 
-/**
- * VaultQuickAccess Component
- * 
- * Provides quick access to key documents stored in the TrialSage Vault.
- */
-const VaultQuickAccess = ({ clientId }) => {
-  // Sample recent documents - in a real app, these would come from an API call
-  const recentDocuments = [
+const VaultQuickAccess = () => {
+  // Sample documents (in a real app these would come from an API)
+  const [documents] = useState([
     {
       id: 'doc-1',
-      title: 'BTX-112 Clinical Protocol v2.0',
+      title: 'Enzyvant BLA Protocol v2.3',
       type: 'Protocol',
-      dateModified: '2025-05-08T14:30:00Z',
-      icon: 'file-text',
-      status: 'approved'
+      date: '2025-04-15',
+      status: 'Final'
     },
     {
       id: 'doc-2',
-      title: 'CER Report XR-24 Final',
-      type: 'CER',
-      dateModified: '2025-05-07T11:15:00Z',
-      icon: 'file-check',
-      status: 'final'
+      title: 'Merck FDA Response Letter',
+      type: 'Correspondence',
+      date: '2025-04-20',
+      status: 'Draft'
     },
     {
       id: 'doc-3',
-      title: 'CMC Section 3.2.P.3.1',
-      type: 'CMC Document',
-      dateModified: '2025-05-06T09:45:00Z',
-      icon: 'clipboard',
-      status: 'draft'
+      title: 'Axogen CMC Chemistry Data',
+      type: 'Report',
+      date: '2025-04-18',
+      status: 'Final'
+    },
+    {
+      id: 'doc-4',
+      title: 'Novartis IND Form 1571',
+      type: 'Form',
+      date: '2025-04-22',
+      status: 'In Review'
     }
-  ];
-
-  // Get client-specific documents
-  const getClientDocuments = () => {
-    if (!clientId) return recentDocuments;
-    
-    // In a real app, this would filter based on client ID
-    // For demo purposes, we'll just return all documents
-    return recentDocuments;
-  };
-
-  const clientDocuments = getClientDocuments();
-
-  // Format dates for display
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
-  };
+  ]);
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <Database className="h-5 w-5 mr-2 text-slate-600" />
-            <CardTitle className="text-lg font-medium">Vault Quick Access</CardTitle>
-          </div>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <Plus size={16} />
-          </Button>
-        </div>
-        <CardDescription>
-          Recently accessed documents
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="pb-1">
-        <div className="space-y-4">
-          {/* Search Bar */}
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
-            <Input
-              type="text"
-              placeholder="Search vault documents..."
-              className="pl-8 bg-gray-50 border-gray-200 focus:bg-white"
-            />
-          </div>
-          
-          {/* Document List */}
-          <div className="space-y-2">
-            {clientDocuments.map((doc) => (
-              <div
-                key={doc.id}
-                className="flex items-start p-2 hover:bg-gray-50 rounded-md cursor-pointer"
-              >
-                <div className="bg-slate-100 p-2 rounded-md mr-3">
-                  <FileText className="h-5 w-5 text-slate-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-medium text-gray-800 truncate">{doc.title}</h4>
-                    <Badge 
-                      variant={
-                        doc.status === 'approved' ? 'default' :
-                        doc.status === 'final' ? 'success' : 'outline'
-                      }
-                      className="ml-2 text-xs"
-                    >
-                      {doc.status.charAt(0).toUpperCase() + doc.status.slice(1)}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center text-xs text-gray-500 mt-1">
-                    <span className="truncate">{doc.type}</span>
-                    <span className="mx-1.5">•</span>
-                    <div className="flex items-center">
-                      <Calendar className="h-3 w-3 mr-1" />
-                      <span>{formatDate(doc.dateModified)}</span>
-                    </div>
-                  </div>
-                </div>
+    <div>
+      <div className="space-y-3">
+        {documents.map((doc) => (
+          <div key={doc.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+            <div>
+              <div className="font-medium text-sm text-gray-900 truncate max-w-xs">{doc.title}</div>
+              <div className="flex space-x-2 text-xs text-gray-500">
+                <span>{doc.type}</span>
+                <span>•</span>
+                <span>{formatDate(doc.date)}</span>
               </div>
-            ))}
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(doc.status)}`}>
+                {doc.status}
+              </span>
+              <button className="p-1 text-indigo-600 hover:text-indigo-800">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+              </button>
+            </div>
           </div>
-        </div>
-      </CardContent>
-      <CardFooter className="pt-0">
-        <Button variant="outline" className="w-full mt-2" size="sm">
-          <Folder className="h-4 w-4 mr-2" />
-          View All Documents
-        </Button>
-      </CardFooter>
-    </Card>
+        ))}
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        <button className="p-2 bg-indigo-50 text-indigo-700 rounded-lg text-sm hover:bg-indigo-100 transition flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+          Upload
+        </button>
+        <button className="p-2 bg-gray-50 text-gray-700 rounded-lg text-sm hover:bg-gray-100 transition flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          Search
+        </button>
+      </div>
+    </div>
   );
+};
+
+// Helper function to get appropriate status color
+const getStatusColor = (status) => {
+  switch (status) {
+    case 'Final':
+      return 'bg-green-100 text-green-800';
+    case 'Draft':
+      return 'bg-yellow-100 text-yellow-800';
+    case 'In Review':
+      return 'bg-blue-100 text-blue-800';
+    default:
+      return 'bg-gray-100 text-gray-800';
+  }
+};
+
+// Format date to be more readable
+const formatDate = (dateString) => {
+  const options = { month: 'short', day: 'numeric' };
+  return new Date(dateString).toLocaleDateString(undefined, options);
 };
 
 export default VaultQuickAccess;

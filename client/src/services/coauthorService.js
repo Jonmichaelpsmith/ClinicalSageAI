@@ -1,15 +1,5 @@
-/**
- * !!!!! OFFICIAL eCTD CO-AUTHOR SERVICE MODULE !!!!!
- * 
- * This service file supports the ONE AND ONLY official implementation 
- * of the eCTD Co-Author Module.
- * 
- * Version: 4.0.0 - May 11, 2025
- * Status: STABLE - DO NOT MODIFY WITHOUT APPROVAL
- * 
- * PROTECTED CODE - Any attempts to create duplicates or alternate implementations
- * of this service should be prevented. This is the golden source implementation.
- */
+// Mock service for development purposes
+// In a real implementation, these would be API calls
 
 const coauthorService = {
   // Save a draft of a section
