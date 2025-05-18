@@ -2,7 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
 import { createServer as createHttpServer } from 'http';
-import registerRoutes from './routes_fixed';
+import registerRoutes from './routes';
 import { setupVite } from './vite';
 import { initializePerformanceOptimizations } from './initializers/performanceOptimizer';
 import { initializeQualityManagementApi } from './initializers/qualityApiInitializer';
