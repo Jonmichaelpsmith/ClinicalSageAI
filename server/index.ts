@@ -2,7 +2,8 @@ import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
 import { createServer as createHttpServer } from 'http';
-import registerRoutes from './routes';
+// Temporarily disabling routes to fix path-to-regexp error
+// import registerRoutes from './routes';
 import { setupVite } from './vite';
 import { initializePerformanceOptimizations } from './initializers/performanceOptimizer';
 import { initializeQualityManagementApi } from './initializers/qualityApiInitializer';
@@ -85,7 +86,7 @@ app.use(
 );
 app.use('/public', express.static(path.join(process.cwd(), 'public')));
 
-// Register API routes
+// Register API routes - disabled to fix path-to-regexp error
 // registerRoutes(app);
 
 // Import and register QMP routes
