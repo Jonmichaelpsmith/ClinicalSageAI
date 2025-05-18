@@ -11,10 +11,21 @@ import { eq, and, sql } from 'drizzle-orm';
 import { authMiddleware } from '../auth';
 import { 
   qmpSectionGating, 
-  ctqFactors,
   qualityManagementPlans,
-  // Note: cerSections is not exported from the schema yet, will be added later
+  // cerSections will be imported separately when available
 } from '../../shared/schema';
+
+// Temporary solution until ctqFactors is properly exported from schema
+const ctqFactors = {
+  id: 'id',
+  organizationId: 'organization_id',
+  name: 'name',
+  description: 'description',
+  category: 'category',
+  riskLevel: 'risk_level',
+  validationRule: 'validation_rule',
+  applicableSection: 'applicable_section'
+};
 import { requireOrganizationContext } from '../middleware/tenantContext';
 import { getDb } from '../db/tenantDbHelper';
 import { createScopedLogger } from '../utils/logger';
