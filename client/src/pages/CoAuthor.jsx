@@ -68,7 +68,6 @@ import {
   Eye,
   ChevronDown,
   ChevronRight,
-  FilePdf,
   FileSpreadsheet,
   ChevronLeft,
   Table,
@@ -5511,7 +5510,7 @@ export default function CoAuthor() {
                               className="h-7 text-xs" 
                               onClick={() => exportComplianceReport('pdf')}
                             >
-                              <FilePdf className="h-3 w-3 mr-1" />
+                              <FileText className="h-3 w-3 mr-1" />
                               Export PDF
                             </Button>
                             <Button 
