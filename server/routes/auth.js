@@ -16,8 +16,7 @@ router.get('/google/callback', (req, res) => {
   // that directly processes the token in the browser
   
   // Render an HTML page that will close the popup and pass data back to the opener
-  res.send(`
-    <!DOCTYPE html>
+  res.send(`<!DOCTYPE html>
     <html>
     <head>
       <title>Authentication Successful</title>
@@ -35,7 +34,7 @@ router.get('/google/callback', (req, res) => {
               
               // Get user info with the token
               fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-                headers: { 'Authorization': `Bearer ${accessToken}` }
+                headers: { 'Authorization': 'Bearer ' + accessToken }
               })
               .then(response => response.json())
               .then(userInfo => {
@@ -104,8 +103,7 @@ router.get('/google/callback', (req, res) => {
       <h2>Authentication Successful</h2>
       <p>This window will close automatically.</p>
     </body>
-    </html>
-  `);
+    </html>`);
 });
 
 // Exchange authorization code for tokens (server-side flow)
