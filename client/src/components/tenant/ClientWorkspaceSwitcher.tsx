@@ -66,7 +66,7 @@ export function ClientWorkspaceSwitcher() {
 
   const handleManageClients = () => {
     setOpen(false);
-    navigate('/client-management');
+    navigate('/client-portal/admin?tab=clients');
   };
 
   return (
@@ -122,7 +122,7 @@ export function ClientWorkspaceSwitcher() {
             <CommandGroup>
               <CommandItem onSelect={handleManageClients} className="py-2 px-3">
                 <Settings className="mr-2 h-4 w-4" />
-                <span>Manage Clients</span>
+                <span>Admin Panel</span>
               </CommandItem>
             </CommandGroup>
           </CommandList>

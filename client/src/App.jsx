@@ -16,6 +16,7 @@ import memoryManagement from '@/utils/memoryManagement';
 import StabilityEnabledLayout from '@/components/layout/StabilityEnabledLayout';
 import { initializeMemoryOptimization } from './utils/memoryOptimizer';
 import StabilityEnabler from './components/layout/StabilityEnabler';
+import securityService from './services/SecurityService';
 
 // Core navigation component (loaded immediately)
 import UnifiedTopNavV3 from './components/navigation/UnifiedTopNavV3';
@@ -115,6 +116,7 @@ const ReportsPage = lazy(() => import('./pages/ReportsPage'));
 const TenantManagement = lazy(() => import('./pages/TenantManagement'));
 const ClientManagement = lazy(() => import('./pages/ClientManagement'));
 const Settings = lazy(() => import('./pages/Settings'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 
 // 510(k) Automation is now fully integrated into CERV2Page
 // Standalone FDA510k pages have been permanently removed
@@ -213,6 +215,20 @@ function App() {
                   <Suspense fallback={<LoadingPage />}>
                     <ClientTemplatesPage />
                   </Suspense>
+                )}
+              </Route>
+              <Route path="/client-portal/admin">
+                {() => (
+                  securityService.getUserRoles().includes('admin') ? (
+                    <Suspense fallback={<LoadingPage />}>
+                      <AdminDashboard />
+                    </Suspense>
+                  ) : (
+                    <div className="p-8">
+                      <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
+                      <p>You do not have permission to view this page.</p>
+                    </div>
+                  )
                 )}
               </Route>
               {/* 510k functionality is now integrated in CERV2Page */}
