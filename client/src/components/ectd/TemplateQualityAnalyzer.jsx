@@ -956,6 +956,133 @@ export default function TemplateQualityAnalyzer({ template, onFixIssues }) {
               </div>
             </div>
             
+            {/* Compliance Analytics Dashboard */}
+            {analysisResults && (
+              <div className="border rounded-lg p-4">
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="font-medium text-gray-900 flex items-center">
+                    <BarChart4 className="h-5 w-5 text-blue-600 mr-2" />
+                    Compliance Analytics
+                  </h3>
+                  <Badge variant="outline" className="text-xs">
+                    Last updated: {new Date().toLocaleString()}
+                  </Badge>
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                  {/* Analytics Cards */}
+                  <div className="border rounded-md p-3 bg-slate-50">
+                    <div className="text-sm text-gray-500 mb-1">Total Issues</div>
+                    <div className="text-2xl font-bold">{analysisResults.issues.length}</div>
+                    <div className="flex items-center mt-1 text-xs text-gray-500">
+                      <div className="flex space-x-1">
+                        <Badge variant="outline" className="text-xs bg-red-50 text-red-700">
+                          {analysisResults.issues.filter(i => i.severity === 'high').length} High
+                        </Badge>
+                        <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700">
+                          {analysisResults.issues.filter(i => i.severity === 'medium').length} Medium
+                        </Badge>
+                        <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
+                          {analysisResults.issues.filter(i => i.severity === 'low').length} Low
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="border rounded-md p-3 bg-slate-50">
+                    <div className="text-sm text-gray-500 mb-1">Auto-Fixable</div>
+                    <div className="text-2xl font-bold">
+                      {analysisResults.issues.filter(issue => issue.autoFixable).length}
+                    </div>
+                    <div className="flex items-center mt-1 text-xs text-gray-500">
+                      <span>{Math.round((analysisResults.issues.filter(issue => issue.autoFixable).length / analysisResults.issues.length) * 100)}% of issues</span>
+                    </div>
+                  </div>
+                  
+                  <div className="border rounded-md p-3 bg-slate-50">
+                    <div className="text-sm text-gray-500 mb-1">Regions Analyzed</div>
+                    <div className="text-2xl font-bold">{selectedRegions.length}</div>
+                    <div className="flex items-center mt-1 text-xs text-gray-500">
+                      <div className="flex space-x-1">
+                        {selectedRegions.map(r => (
+                          <span key={r} className="text-xs">{regulatoryAuthorities[r].icon}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="border rounded-md p-3 bg-slate-50">
+                    <div className="text-sm text-gray-500 mb-1">Compliance Score</div>
+                    <div className={`text-2xl font-bold ${getScoreColor(analysisResults.score)}`}>
+                      {analysisResults.score}%
+                    </div>
+                    <div className="flex items-center mt-1 text-xs text-gray-500">
+                      <span>{analysisResults.score >= 90 ? 'Ready for submission' : 'Needs attention'}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Issues by Category */}
+                  <div className="border rounded-md p-3">
+                    <h4 className="text-sm font-medium mb-2">Issues by Category</h4>
+                    <div className="space-y-2">
+                      {Object.entries(
+                        analysisResults.issues.reduce((acc, issue) => {
+                          acc[issue.category] = (acc[issue.category] || 0) + 1;
+                          return acc;
+                        }, {})
+                      ).map(([category, count]) => (
+                        <div key={category} className="flex items-center">
+                          <div className="w-32 text-sm">{category}</div>
+                          <div className="flex-1">
+                            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full ${
+                                  category === 'regulatory' ? 'bg-red-500' : 
+                                  category === 'technical' ? 'bg-blue-500' : 
+                                  category === 'formatting' ? 'bg-green-500' : 'bg-gray-400'
+                                }`}
+                                style={{ width: `${(count / analysisResults.issues.length) * 100}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                          <div className="w-8 text-right text-sm ml-2">{count}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Regional Comparison */}
+                  <div className="border rounded-md p-3">
+                    <h4 className="text-sm font-medium mb-2">Regional Compliance Comparison</h4>
+                    <div className="space-y-2">
+                      {analysisResults.regionScores.map(region => (
+                        <div key={region.region} className="flex items-center">
+                          <div className="w-32 text-sm flex items-center">
+                            <span className="mr-1">{region.icon}</span>
+                            <span>{regulatoryAuthorities[region.region].name.split(' ')[0]}</span>
+                          </div>
+                          <div className="flex-1">
+                            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full ${
+                                  region.score >= 90 ? 'bg-green-500' : 
+                                  region.score >= 75 ? 'bg-amber-500' : 'bg-red-500'
+                                }`}
+                                style={{ width: `${region.score}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                          <div className="w-10 text-right text-sm ml-2 font-medium">{region.score}%</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <div className="flex flex-col md:flex-row gap-4">
               <div className="md:w-1/2 border rounded-lg p-4">
                 <h3 className="font-medium text-gray-900 mb-2 flex items-center">
