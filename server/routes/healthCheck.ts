@@ -9,6 +9,8 @@
 
 import { Router } from 'express';
 import { Pool } from 'pg';
+
+// Import health check utility
 import applicationHealth from '../utils/applicationHealthCheck';
 
 /**

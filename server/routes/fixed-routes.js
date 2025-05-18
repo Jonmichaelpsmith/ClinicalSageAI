@@ -6,8 +6,8 @@ const router = express.Router();
 // This is a fixed implementation that removes the malformed URL pattern
 // that was causing the path-to-regexp error
 
-// Fix for any problematic git routes
-router.get('/git/new', (req, res) => {
+// Fix for any problematic git routes - updated path format
+router.get('/git-new', (req, res) => {
   res.json({
     success: true,
     message: 'Git route accessed successfully',

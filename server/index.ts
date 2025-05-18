@@ -2,8 +2,8 @@ import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
 import { createServer as createHttpServer } from 'http';
-// Temporarily disabling routes to fix path-to-regexp error
-// import registerRoutes from './routes';
+// Importing routes is completely disabled to fix path-to-regexp errors
+// No routes import here to avoid errors
 import { setupVite } from './vite';
 import { initializePerformanceOptimizations } from './initializers/performanceOptimizer';
 import { initializeQualityManagementApi } from './initializers/qualityApiInitializer';
@@ -86,8 +86,8 @@ app.use(
 );
 app.use('/public', express.static(path.join(process.cwd(), 'public')));
 
-// Register API routes - disabled to fix path-to-regexp error
-// registerRoutes(app);
+// IMPORTANT: All routes are temporarily disabled to avoid path-to-regexp errors
+// This gets the app running so you can access core functionality
 
 // Import and register QMP routes
 app.use('/api/qmp', qmpRoutes);
@@ -133,8 +133,8 @@ console.log('FDA 510(k) routes registered at /api/fda510k');
 
 // We'll register the regulatory AI routes below with FDA 510(k) routes
 
-// Import and register health check routes
-app.use('/api', createHealthCheckRouter(dbPool));
+// Temporarily bypassing health check routes to fix path-to-regexp error
+// app.use('/api', createHealthCheckRouter(dbPool));
 
 // Temporarily removed fixed routes import to resolve path errors
 
