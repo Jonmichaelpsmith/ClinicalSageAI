@@ -103,3 +103,6 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm run dev"
+
+[env]
+NODE_OPTIONS = "--max-old-space-size=512"

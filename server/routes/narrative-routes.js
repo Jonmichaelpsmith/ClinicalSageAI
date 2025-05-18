@@ -2,7 +2,8 @@ import express from 'express';
 const router = express.Router();
 import fs from 'fs';
 import path from 'path';
-import { spawn } from 'child_process';
+// Use process manager instead of direct child_process usage
+import processManager from '../utils/process-manager.js';
 
 // Helper function to generate random trend data
 function generateTrendData(startDate, endDate, periods, code) {
@@ -179,9 +180,8 @@ router.get('/faers/:code/pdf', async (req, res) => {
     // Output PDF file path
     const outputFile = path.join(exportsDir, `FAERS_${code}_${Date.now()}.pdf`);
     
-    // Try to use the Python-based enhanced PDF generator
+    // Try to use the Python-based enhanced PDF generator with resource management
     try {
-      const { spawn } = require('child_process');
       // First, create a JSON file with the analysis data for the Python script
       const analysisData = {
         source: "FAERS",
@@ -194,14 +194,16 @@ router.get('/faers/:code/pdf', async (req, res) => {
       const dataFile = path.join(exportsDir, `faers_data_${code}_${Date.now()}.json`);
       fs.writeFileSync(dataFile, JSON.stringify(analysisData, null, 2));
       
-      console.log('Attempting to use enhanced PDF generation...');
-      const pythonProcess = spawn('python3', [
+      console.log('Attempting to use enhanced PDF generation with resource management...');
+      
+      // Use process manager to spawn the process with resource limits
+      const pythonProcess = await processManager.spawnProcess('python3', [
         path.join(process.cwd(), 'server', 'narrative.py'),
         '--mode', 'pdf',
         '--input', tempFile,
         '--data', dataFile,
         '--output', outputFile
-      ]);
+      ], {}, 45000); // 45 second timeout
       
       let pythonError = '';
       pythonProcess.stderr.on('data', (data) => {
@@ -212,6 +214,9 @@ router.get('/faers/:code/pdf', async (req, res) => {
       // Wait for Python process to finish
       const success = await new Promise((resolve) => {
         pythonProcess.on('close', (code) => {
+          // Make sure to release resources
+          pythonProcess.releaseResources();
+          
           if (code === 0 && fs.existsSync(outputFile) && fs.statSync(outputFile).size > 0) {
             console.log('Enhanced PDF generation successful');
             try { fs.unlinkSync(dataFile); } catch(e) { /* ignore cleanup errors */ }
@@ -320,9 +325,8 @@ router.get('/device/:code/pdf', async (req, res) => {
     // Output PDF file path
     const outputFile = path.join(exportsDir, `MDR_${code}_${Date.now()}.pdf`);
     
-    // Try to use the Python-based enhanced PDF generator
+    // Try to use the Python-based enhanced PDF generator with resource management
     try {
-      const { spawn } = require('child_process');
       // First, create a JSON file with the analysis data for the Python script
       const analysisData = {
         source: "MAUDE",
@@ -335,14 +339,16 @@ router.get('/device/:code/pdf', async (req, res) => {
       const dataFile = path.join(exportsDir, `device_data_${code}_${Date.now()}.json`);
       fs.writeFileSync(dataFile, JSON.stringify(analysisData, null, 2));
       
-      console.log('Attempting to use enhanced PDF generation for device...');
-      const pythonProcess = spawn('python3', [
+      console.log('Attempting to use enhanced PDF generation for device with resource management...');
+      
+      // Use process manager to spawn the process with resource limits
+      const pythonProcess = await processManager.spawnProcess('python3', [
         path.join(process.cwd(), 'server', 'narrative.py'),
         '--mode', 'pdf',
         '--input', tempFile,
         '--data', dataFile,
         '--output', outputFile
-      ]);
+      ], {}, 45000); // 45 second timeout
       
       let pythonError = '';
       pythonProcess.stderr.on('data', (data) => {

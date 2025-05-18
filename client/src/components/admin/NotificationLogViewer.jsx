@@ -1,16 +1,16 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-export default function ClientManagement() {
+export default function NotificationLogViewer() {
   return (
     <div>
       <Card>
         <CardHeader>
-          <CardTitle>Client Workspace Management</CardTitle>
-          <CardDescription>Manage client workspaces and permissions</CardDescription>
+          <CardTitle>Notification Log Viewer</CardTitle>
+          <CardDescription>View system notification logs</CardDescription>
         </CardHeader>
         <CardContent>
-          <p>Client workspace management interface will be displayed here.</p>
+          <p>Notification logs will be displayed here.</p>
         </CardContent>
       </Card>
     </div>
