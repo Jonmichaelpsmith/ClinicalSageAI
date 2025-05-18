@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Folder, FolderOpen, FileText, ChevronRight, ChevronDown,
   ListFilter, Search, X, EyeOff, Eye, Clock, User, Tag,
-  Star, StarOff, FileText as FileWordIcon, FileText as PdfIcon, 
+  Star, StarOff, FileText as FileWordIcon, FilePdf, 
   FileSpreadsheet, FilePresentation, FileJson, FileCode,
   Image, FileArchive, Zap, Plus
 } from 'lucide-react';
@@ -10,7 +10,7 @@ import { useDocuShare } from '../../contexts/DocuShareContext';
 
 // Icon mapping for different file types
 const FILE_ICONS = {
-  pdf: { icon: PdfIcon, color: 'text-red-500' },
+  pdf: { icon: FilePdf, color: 'text-red-500' },
   docx: { icon: FileWordIcon, color: 'text-blue-600' },
   doc: { icon: FileWordIcon, color: 'text-blue-600' },
   xlsx: { icon: FileSpreadsheet, color: 'text-green-600' },
