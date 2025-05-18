@@ -34,7 +34,7 @@ export const DialogContextProvider = ({ children }) => {
     }, 300);
   };
 
-  // Helper to fully reset dialog state without delay
+  // Immediately close any open dialog and clear its state
   const resetDialogs = () => {
     setIsOpen(false);
     setDialogType(null);
