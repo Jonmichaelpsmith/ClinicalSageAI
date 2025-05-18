@@ -21,7 +21,7 @@ const CONFIG = {
   // Environment variables to set
   ENV_VARS: {
     UV_THREADPOOL_SIZE: '4',
-    NODE_OPTIONS: '--max-old-space-size=512'
+    NODE_OPTIONS: `--max-old-space-size=${process.env.NODE_MEMORY_LIMIT || '512'}`
   },
   
   // Application settings

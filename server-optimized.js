@@ -21,7 +21,7 @@ dotenv.config();
 
 // Configure resource limits
 process.env.UV_THREADPOOL_SIZE = '4';
-process.env.NODE_OPTIONS = '--max-old-space-size=512';
+process.env.NODE_OPTIONS = `--max-old-space-size=${process.env.NODE_MEMORY_LIMIT || '512'}`;
 
 // Initialize Express app
 const app = express();

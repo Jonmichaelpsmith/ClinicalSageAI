@@ -6,7 +6,7 @@
 echo "Optimizing TrialSage application for resource-constrained environments..."
 
 # 1. Set optimal Node.js environment variables
-export NODE_OPTIONS="--max-old-space-size=512 --no-warnings"
+export NODE_OPTIONS="--max-old-space-size=${NODE_MEMORY_LIMIT:-512} --no-warnings"
 export UV_THREADPOOL_SIZE=4
 
 # 2. Remove any temporary files that might be consuming resources

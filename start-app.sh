@@ -8,7 +8,7 @@ echo "Starting TrialSage with optimized resource configuration..."
 
 # Set resource limits
 export UV_THREADPOOL_SIZE=4
-export NODE_OPTIONS="--max-old-space-size=512 --trace-warnings"
+export NODE_OPTIONS="--max-old-space-size=${NODE_MEMORY_LIMIT:-512} --trace-warnings"
 
 # Clean up any resources that might cause issues
 echo "Cleaning environment..."

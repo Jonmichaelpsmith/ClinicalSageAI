@@ -6,7 +6,7 @@
 export UV_THREADPOOL_SIZE=4
 
 # Set memory limits
-export NODE_OPTIONS="--max-old-space-size=512 --trace-warnings"
+export NODE_OPTIONS="--max-old-space-size=${NODE_MEMORY_LIMIT:-512} --trace-warnings"
 
 # Run the application
 echo "Starting application with memory optimizations..."

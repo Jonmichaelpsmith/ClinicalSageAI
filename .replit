@@ -105,4 +105,4 @@ task = "shell.exec"
 args = "npm run dev"
 
 [env]
-NODE_OPTIONS = "--max-old-space-size=512"
+NODE_OPTIONS = "--max-old-space-size=${NODE_MEMORY_LIMIT:-512}"

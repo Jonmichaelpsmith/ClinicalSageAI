@@ -35,6 +35,17 @@ TrialSage™ is an advanced multi-tenant AI-powered regulatory document manageme
 3. Set up environment variables (see `.env.example`)
 4. Run the development server with `npm run dev`
 
+### Memory Configuration
+Startup scripts read the `NODE_MEMORY_LIMIT` environment variable to control
+Node.js heap usage. Set this variable before running a script to adjust the
+maximum memory (in MB):
+
+```bash
+export NODE_MEMORY_LIMIT=1024
+./start-optimized.sh
+```
+If omitted, the scripts default to `512` MB.
+
 ## Architecture
 
 The platform uses a multi-tenant architecture similar to Salesforce's model, with strict tenant isolation at both application and database levels. All tables include organization_id columns enforced through Row-Level Security policies, and API requests pass through tenant context middleware.
