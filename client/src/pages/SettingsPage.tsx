@@ -29,14 +29,14 @@ function ResearchCompanionSettings() {
     if (apiKey) {
       navigator.clipboard.writeText(apiKey);
       // toast call replaced
-  // Original: toast({
-        title: "Copied to clipboard",
-        description: "API key copied to clipboard",
-      })
-  console.log('Toast would show:', {
-        title: "Copied to clipboard",
-        description: "API key copied to clipboard",
-      });
+    // Original: toast({
+    //   title: "Copied to clipboard",
+    //   description: "API key copied to clipboard"
+    // });
+    console.log('Toast would show:', {
+      title: "Copied to clipboard",
+      description: "API key copied to clipboard"
+    });
     }
   };
   
