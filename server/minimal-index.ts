@@ -100,15 +100,34 @@ app.get('/', (req, res) => {
   }
 });
 
-// Client portal - serving the direct client portal HTML (the real one)
+// Client portal - try to find the most robust implementation available
 app.get('/client-portal', (req, res) => {
-  console.log('Serving direct client portal');
-  const clientPortalPath = path.join(process.cwd(), 'client-portal-direct.html');
-  if (fs.existsSync(clientPortalPath)) {
-    res.sendFile(clientPortalPath);
-  } else {
-    res.status(404).send('Error: Real client portal file not found');
+  console.log('Serving client portal - trying all available versions');
+  
+  // Try paths in order of potential completeness
+  const possiblePaths = [
+    path.join(process.cwd(), 'client/public/client-portal-direct.html'),
+    path.join(process.cwd(), 'no-login-client-portal.html'),
+    path.join(process.cwd(), 'client-portal-direct.html'),
+    path.join(process.cwd(), 'direct-client-portal.html'),
+    path.join(process.cwd(), 'direct-standalone-portal.html')
+  ];
+  
+  // Find the first existing file
+  for (const portalPath of possiblePaths) {
+    if (fs.existsSync(portalPath)) {
+      console.log(`Found client portal at: ${portalPath}`);
+      return res.sendFile(portalPath);
+    }
   }
+  
+  // If no file is found, send an error
+  res.status(404).send(`
+    <h1>Client Portal Not Found</h1>
+    <p>Could not locate any valid client portal implementation.</p>
+    <p>Tried these paths:</p>
+    <ul>${possiblePaths.map(p => `<li>${p}</li>`).join('')}</ul>
+  `);
 });
 
 // CER V2 page route
