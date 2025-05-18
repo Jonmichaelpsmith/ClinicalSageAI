@@ -291,11 +291,11 @@ app.use('/api/next-actions', actionsRoutes);
 app.use('/api/google-docs', googleDocsRoutes); // Google Docs API routes
 app.use('/api/test', testApiRoutes); // Test API routes for development
 
-// Vault and Analytics routes (CommonJS imports) - using specific paths
+// Vault and Analytics routes
 const vaultRoutesNew = require('./routes/vault');
-const analyticsRoutesCommon = require('./routes/analytics');
-app.use('/api/vault-common', vaultRoutesNew);
-app.use('/api/analytics-common', analyticsRoutesCommon);
+const analyticsRoutes = require('./routes/analytics');
+app.use('/api', vaultRoutesNew);
+app.use('/api', analyticsRoutes);
 
 // CommonJS test routes - Simplified direct API approach
 const directApi = require('./direct-api');
