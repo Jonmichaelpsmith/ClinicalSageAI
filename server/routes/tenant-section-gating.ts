@@ -48,7 +48,7 @@ router.use(authMiddleware);
 router.get('/api/tenant-section-gating/:qmpId', async (req, res) => {
   try {
     const { qmpId } = req.params;
-    const { organizationId } = req.tenant;
+    const { organizationId } = req.tenantContext;
 
     if (!organizationId) {
       return res.status(400).json({ error: 'Organization ID is required' });
@@ -83,7 +83,7 @@ router.get('/api/tenant-section-gating/:qmpId', async (req, res) => {
 router.post('/api/tenant-section-gating/:qmpId/update', async (req, res) => {
   try {
     const { qmpId } = req.params;
-    const { organizationId } = req.tenant;
+    const { organizationId } = req.tenantContext;
     const { sectionKey, requiredLevel, active } = req.body;
 
     if (!organizationId) {
@@ -168,7 +168,7 @@ router.post('/api/tenant-section-gating/:qmpId/update', async (req, res) => {
 router.get('/api/tenant-ctq-factors/:section', async (req, res) => {
   try {
     const { section } = req.params;
-    const { organizationId } = req.tenant;
+    const { organizationId } = req.tenantContext;
 
     if (!organizationId) {
       return res.status(400).json({ error: 'Organization ID is required' });
@@ -203,7 +203,7 @@ router.get('/api/tenant-ctq-factors/:section', async (req, res) => {
 router.post('/api/tenant-ctq-factors', async (req, res) => {
   try {
     const { id, name, description, riskLevel, mitigationStrategy, applicableSection, category } = req.body;
-    const { organizationId } = req.tenant;
+    const { organizationId } = req.tenantContext;
 
     if (!organizationId) {
       return res.status(400).json({ error: 'Organization ID is required' });
@@ -276,7 +276,7 @@ router.post('/api/tenant-ctq-factors', async (req, res) => {
 router.delete('/api/tenant-ctq-factors/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { organizationId } = req.tenant;
+    const { organizationId } = req.tenantContext;
 
     if (!organizationId) {
       return res.status(400).json({ error: 'Organization ID is required' });
