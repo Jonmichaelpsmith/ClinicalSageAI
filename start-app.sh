@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # TrialSage Optimized Startup Script
 # This script configures the environment and starts the application
 # with proper resource limits to prevent thread exhaustion
@@ -13,7 +12,7 @@ export NODE_OPTIONS="--max-old-space-size=512 --trace-warnings"
 # Clean up any resources that might cause issues
 echo "Cleaning environment..."
 rm -rf ./.vite 2>/dev/null
-find ./tmp -name "*.tmp" -delete 2>/dev/null 2>/dev/null
+find ./tmp -name "*.tmp" -delete 2>/dev/null
 
 # Create directories if they don't exist
 mkdir -p logs
@@ -21,4 +20,6 @@ mkdir -p tmp
 
 # Run the application
 echo "Launching application..."
-node cleanup-toastify.js && node server/index.js
+# You can choose one of these depending on your setup:
+# node cleanup-toastify.js && node server/index.js
+node trialsage-app.cjs
