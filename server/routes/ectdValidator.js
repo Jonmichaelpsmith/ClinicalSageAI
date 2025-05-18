@@ -7,6 +7,7 @@ import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import fsPromises from 'fs/promises';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 
@@ -67,9 +68,16 @@ router.post('/validate', upload.single('file'), async (req, res) => {
     
     // Check file type
     if (fileExt !== '.zip') {
-      // Remove uploaded file if not a zip
-      fs.unlinkSync(filePath);
-      
+      // Remove uploaded file if not a zip using async unlink
+      try {
+        await fsPromises.unlink(filePath);
+      } catch (unlinkError) {
+        return res.status(500).json({
+          success: false,
+          error: `Failed to remove uploaded file: ${unlinkError.message}`
+        });
+      }
+
       return res.status(400).json({
         success: false,
         error: 'Only ZIP files are supported'
