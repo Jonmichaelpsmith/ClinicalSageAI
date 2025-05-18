@@ -236,6 +236,39 @@ const ClientPortalLanding = () => {
                 </div>
               </div>
               
+              {/* Template Feature Highlight */}
+              <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500 mt-6">
+                <div className="flex flex-col md:flex-row items-start">
+                  <div className="flex-1">
+                    <h2 className="text-xl font-semibold text-indigo-700 mb-2 flex items-center">
+                      New Feature: Document Templates
+                      <span className="ml-2 bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">NEW</span>
+                    </h2>
+                    <p className="text-gray-600 mb-4">
+                      Create, manage, and use personalized templates for your regulatory submissions. 
+                      Ensure consistency across documents and compliance with regulatory standards.
+                    </p>
+                    <Button 
+                      onClick={() => setLocation('/client-portal/templates')}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      Explore Document Templates
+                    </Button>
+                  </div>
+                  <div className="hidden md:block ml-6 bg-green-50 p-3 rounded-lg mt-4 md:mt-0">
+                    <div className="text-sm text-green-800">
+                      <p className="font-medium mb-2">Features:</p>
+                      <ul className="list-disc pl-5 space-y-1">
+                        <li>Client-specific template library</li>
+                        <li>Template version control</li>
+                        <li>Regulatory compliance checking</li>
+                        <li>eCTD-compliant formatting</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
               {/* Module Cards */}
               <div className="bg-white rounded-xl shadow-md p-6">
                 <div className="flex justify-between items-center mb-4">
