@@ -4,7 +4,7 @@
  * This component analyzes document templates for quality and compliance with
  * regulatory standards, providing feedback and improvement suggestions.
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -13,15 +13,52 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { Check, X, AlertTriangle, HelpCircle, BookOpen, FileCheck, CircleSlash, CheckCircle, Award, Shield, ArrowRight } from 'lucide-react';
+import { Check, X, AlertTriangle, HelpCircle, BookOpen, FileCheck, CircleSlash, CheckCircle, Award, Shield, ArrowRight, Download, FileSpreadsheet, FileText, BarChart4, Settings } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 export default function TemplateQualityAnalyzer({ template, onFixIssues }) {
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisResults, setAnalysisResults] = useState(null);
   const [activeTab, setActiveTab] = useState('issues');
   const [selectedRegions, setSelectedRegions] = useState(['us']); // Default to US/FDA
+  const [exporting, setExporting] = useState(false);
+  const [showRequirements, setShowRequirements] = useState(false);
+  const [analyticsTracking, setAnalyticsTracking] = useState({
+    totalAnalysesRun: 0,
+    regionsChecked: {},
+    issuesByCategory: {},
+    lastRunTimestamp: null
+  });
   const { toast } = useToast();
+  
+  // Track analytics data
+  useEffect(() => {
+    if (analysisResults && !analyzing) {
+      // Update analytics tracking
+      setAnalyticsTracking(prev => {
+        const newTracking = {
+          totalAnalysesRun: prev.totalAnalysesRun + 1,
+          regionsChecked: { ...prev.regionsChecked },
+          issuesByCategory: { ...prev.issuesByCategory },
+          lastRunTimestamp: new Date().toISOString()
+        };
+        
+        // Track regions used
+        selectedRegions.forEach(region => {
+          newTracking.regionsChecked[region] = (newTracking.regionsChecked[region] || 0) + 1;
+        });
+        
+        // Track issues by category
+        analysisResults.issues.forEach(issue => {
+          newTracking.issuesByCategory[issue.category] = 
+            (newTracking.issuesByCategory[issue.category] || 0) + 1;
+        });
+        
+        return newTracking;
+      });
+    }
+  }, [analysisResults, analyzing]);
   
   const runAnalysis = async () => {
     if (!template) {
@@ -82,6 +119,49 @@ export default function TemplateQualityAnalyzer({ template, onFixIssues }) {
     } else {
       setSelectedRegions([...selectedRegions, region]);
     }
+  };
+  
+  // Export analysis results as PDF or CSV
+  const exportAnalysisReport = (format) => {
+    if (!analysisResults) {
+      toast({
+        title: "No Analysis Results",
+        description: "Please run an analysis before exporting results",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setExporting(true);
+    
+    // In a real implementation, this would call your API to generate a PDF or CSV
+    // Example:
+    // const response = await fetch('/api/templates/export-report', {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify({
+    //     templateId: template.id,
+    //     analysisResults,
+    //     format,
+    //     regions: selectedRegions,
+    //   }),
+    // });
+    
+    // For demo purposes, simulate an API call with a delay
+    setTimeout(() => {
+      setExporting(false);
+      
+      // Format is either 'pdf' or 'csv'
+      toast({
+        title: "Report Generated",
+        description: `Your ${format.toUpperCase()} report has been downloaded`,
+      });
+      
+      // In a real implementation, this would download the file
+      // window.open(URL.createObjectURL(response.blob()), '_blank');
+    }, 1500);
   };
   
   const handleFixIssue = (issueId) => {
@@ -159,31 +239,84 @@ export default function TemplateQualityAnalyzer({ template, onFixIssues }) {
       name: 'FDA (United States)',
       icon: '🇺🇸',
       key: 'us',
-      color: 'bg-blue-100 text-blue-800'
+      color: 'bg-blue-100 text-blue-800',
+      specificRequirements: [
+        'Electronic signatures (21 CFR Part 11)',
+        'Module 1 US-specific document format',
+        'FDA guidances for specific submission types',
+        'FDA eCTD Technical Conformance Guide compliance',
+        'FDA-specific PDF/A version requirements'
+      ],
+      documentLinks: [
+        { name: 'FDA eCTD Guidance', url: 'https://www.fda.gov/regulatory-information/search-fda-guidance-documents/providing-regulatory-submissions-electronic-format-certain-human-pharmaceutical-product-applications' },
+        { name: 'FDA Technical Conformance Guide', url: 'https://www.fda.gov/media/153097/download' }
+      ]
     },
     eu: {
       name: 'EMA (European Union)',
       icon: '🇪🇺',
       key: 'eu',
-      color: 'bg-yellow-100 text-yellow-800'
+      color: 'bg-yellow-100 text-yellow-800',
+      specificRequirements: [
+        'EU Module 1 specification',
+        'EU QRD template compliance',
+        'EMA eSubmission Gateway requirements',
+        'Multi-language content requirements',
+        'EU-specific metadata requirements'
+      ],
+      documentLinks: [
+        { name: 'EMA eSubmission Guidance', url: 'https://www.ema.europa.eu/en/human-regulatory/marketing-authorisation/electronic-submission' },
+        { name: 'EU M1 Specification', url: 'https://www.ema.europa.eu/en/human-regulatory/marketing-authorisation/common-technical-document/ectd/module-1-administrative-information' }
+      ]
     },
     ca: {
       name: 'Health Canada',
       icon: '🇨🇦',
       key: 'ca',
-      color: 'bg-red-100 text-red-800'
+      color: 'bg-red-100 text-red-800',
+      specificRequirements: [
+        'Bilingual content (English/French)',
+        'Health Canada Module 1 specifications',
+        'Canadian regulatory transactions',
+        'Therapeutic Products Directorate guidance compliance',
+        'Health Canada eCTD validation criteria'
+      ],
+      documentLinks: [
+        { name: 'Health Canada Guidance', url: 'https://www.canada.ca/en/health-canada/services/drugs-health-products/drug-products/applications-submissions/guidance-documents/common-technical-document/updated-guidance-document-preparation-drug-regulatory-activities-electronic-common-technical-document.html' }
+      ]
     },
     jp: {
       name: 'PMDA (Japan)',
       icon: '🇯🇵',
       key: 'jp',
-      color: 'bg-rose-100 text-rose-800'
+      color: 'bg-rose-100 text-rose-800',
+      specificRequirements: [
+        'Japanese character encoding compliance',
+        'PMDA Module 1 requirements',
+        'Japan-specific eCTD validation rules',
+        'Specific document naming conventions',
+        'PMDA Gateway transmission requirements'
+      ],
+      documentLinks: [
+        { name: 'PMDA eCTD Guidance', url: 'https://www.pmda.go.jp/english/review-services/regulatory-submissions/0003.html' }
+      ]
     },
     intl: {
       name: 'ICH (International)',
       icon: '🌎',
       key: 'intl',
-      color: 'bg-green-100 text-green-800'
+      color: 'bg-green-100 text-green-800',
+      specificRequirements: [
+        'ICH M8 eCTD specification v4.0',
+        'ICH M2 Electronic Standards',
+        'ICH E3 Clinical Study Report structure',
+        'ICH Common Technical Document format',
+        'ICH E6(R2) GCP compliance references'
+      ],
+      documentLinks: [
+        { name: 'ICH M8 Guidelines', url: 'https://ich.org/page/m8-ectd' },
+        { name: 'ICH CTD Organization', url: 'https://www.ich.org/page/ctd' }
+      ]
     }
   };
   
@@ -669,7 +802,130 @@ export default function TemplateQualityAnalyzer({ template, onFixIssues }) {
           <div className="space-y-6">
             {/* Region selector remains available after analysis */}
             <div className="border rounded-lg p-4">
-              <h3 className="font-medium text-gray-900 mb-2">Regulatory Regions</h3>
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="font-medium text-gray-900">Regulatory Regions</h3>
+                
+                {/* Export buttons */}
+                {analysisResults && (
+                  <div className="flex space-x-2">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => exportAnalysisReport('pdf')}
+                            disabled={exporting}
+                            className="flex items-center space-x-1"
+                          >
+                            {exporting ? (
+                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></div>
+                            ) : (
+                              <FileText className="h-3.5 w-3.5" />
+                            )}
+                            <span>PDF</span>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Export compliance report as PDF</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => exportAnalysisReport('csv')}
+                            disabled={exporting}
+                            className="flex items-center space-x-1"
+                          >
+                            {exporting ? (
+                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></div>
+                            ) : (
+                              <FileSpreadsheet className="h-3.5 w-3.5" />
+                            )}
+                            <span>CSV</span>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Export compliance data as CSV</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                className="flex items-center space-x-1"
+                              >
+                                <Settings className="h-3.5 w-3.5" />
+                                <span>Requirements</span>
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+                              <DialogHeader>
+                                <DialogTitle>Regulatory Requirements by Region</DialogTitle>
+                                <DialogDescription>
+                                  Detailed regulatory requirements for each selected region
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                {selectedRegions.map(regionKey => {
+                                  const region = regulatoryAuthorities[regionKey];
+                                  return (
+                                    <div key={regionKey} className={`border rounded-lg p-4 ${region.color}`}>
+                                      <div className="flex items-center mb-3 font-medium">
+                                        <span className="text-lg mr-2">{region.icon}</span>
+                                        <h4 className="text-md">{region.name} Requirements</h4>
+                                      </div>
+                                      <ul className="space-y-2 text-sm">
+                                        {region.specificRequirements.map((req, idx) => (
+                                          <li key={idx} className="flex items-start">
+                                            <Check className="h-4 w-4 mt-0.5 mr-2 flex-shrink-0" />
+                                            <span>{req}</span>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                      {region.documentLinks && region.documentLinks.length > 0 && (
+                                        <div className="mt-4 pt-3 border-t">
+                                          <h5 className="text-sm font-medium mb-2">Reference Documentation:</h5>
+                                          <ul className="space-y-1 text-sm">
+                                            {region.documentLinks.map((link, idx) => (
+                                              <li key={idx}>
+                                                <a href={link.url} target="_blank" rel="noopener noreferrer" 
+                                                   className="text-blue-600 hover:underline flex items-center">
+                                                  <BookOpen className="h-3.5 w-3.5 mr-1" />
+                                                  {link.name}
+                                                </a>
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>View detailed regulatory requirements</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                )}
+              </div>
+              
               <p className="text-sm text-gray-600 mb-3">
                 Select regions to analyze compliance with different regulatory authorities:
               </p>
