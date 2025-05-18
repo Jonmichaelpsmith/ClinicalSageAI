@@ -353,20 +353,12 @@ const ClientPortalLanding = () => {
                 
                 <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
                   <Button
-                    onClick={() => setLocation('/client-portal/client-management')}
-                    variant="outline"
-                    className="w-full justify-center"
-                  >
-                    <Users className="mr-2 h-4 w-4" />
-                    Manage Clients
-                  </Button>
-                  <Button
-                    onClick={() => setLocation('/tenant-management')}
+                    onClick={() => setLocation('/client-portal/admin')}
                     variant="outline"
                     className="w-full justify-center"
                   >
                     <Settings className="mr-2 h-4 w-4" />
-                    Manage Organizations
+                    Admin Panel
                   </Button>
                 </div>
               </div>
