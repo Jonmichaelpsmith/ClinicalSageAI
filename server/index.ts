@@ -2,8 +2,8 @@ import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
 import { createServer as createHttpServer } from 'http';
-// Importing routes is completely disabled to fix path-to-regexp errors
-// No routes import here to avoid errors
+// Import minimal routes to get the application running
+import registerBasicRoutes from './routes_minimal';
 import { setupVite } from './vite';
 import { initializePerformanceOptimizations } from './initializers/performanceOptimizer';
 import { initializeQualityManagementApi } from './initializers/qualityApiInitializer';
@@ -86,8 +86,9 @@ app.use(
 );
 app.use('/public', express.static(path.join(process.cwd(), 'public')));
 
-// IMPORTANT: All routes are temporarily disabled to avoid path-to-regexp errors
-// This gets the app running so you can access core functionality
+// Register minimal routes to get basic functionality working
+registerBasicRoutes(app);
+console.log('Basic routes registered successfully');
 
 // Import and register QMP routes
 app.use('/api/qmp', qmpRoutes);
