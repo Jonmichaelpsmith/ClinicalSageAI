@@ -20,6 +20,7 @@ export default function TemplateQualityAnalyzer({ template, onFixIssues }) {
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisResults, setAnalysisResults] = useState(null);
   const [activeTab, setActiveTab] = useState('issues');
+  const [selectedRegions, setSelectedRegions] = useState(['us']); // Default to US/FDA
   const { toast } = useToast();
   
   const runAnalysis = async () => {
@@ -46,14 +47,15 @@ export default function TemplateQualityAnalyzer({ template, onFixIssues }) {
       //     templateId: template.id,
       //     content: template.content,
       //     category: template.category,
+      //     regions: selectedRegions, // Include selected regulatory regions
       //   }),
       // });
       // const results = await response.json();
       
       // For demo purposes, simulate an API call with a delay
       setTimeout(() => {
-        // Generate results based on template category
-        const results = generateAnalysisResults(template);
+        // Generate results based on template category and selected regions
+        const results = generateAnalysisResults(template, selectedRegions);
         setAnalysisResults(results);
         setAnalyzing(false);
       }, 1500);
@@ -67,6 +69,18 @@ export default function TemplateQualityAnalyzer({ template, onFixIssues }) {
         description: "There was an error analyzing your template",
         variant: "destructive"
       });
+    }
+  };
+  
+  // Toggle region selection
+  const toggleRegion = (region) => {
+    if (selectedRegions.includes(region)) {
+      // Don't allow deselecting all regions
+      if (selectedRegions.length > 1) {
+        setSelectedRegions(selectedRegions.filter(r => r !== region));
+      }
+    } else {
+      setSelectedRegions([...selectedRegions, region]);
     }
   };
   
@@ -139,8 +153,43 @@ export default function TemplateQualityAnalyzer({ template, onFixIssues }) {
     }
   };
   
-  // Generate mock analysis results based on template category
-  const generateAnalysisResults = (template) => {
+  // Define regulatory authorities and their requirements
+  const regulatoryAuthorities = {
+    us: {
+      name: 'FDA (United States)',
+      icon: '🇺🇸',
+      key: 'us',
+      color: 'bg-blue-100 text-blue-800'
+    },
+    eu: {
+      name: 'EMA (European Union)',
+      icon: '🇪🇺',
+      key: 'eu',
+      color: 'bg-yellow-100 text-yellow-800'
+    },
+    ca: {
+      name: 'Health Canada',
+      icon: '🇨🇦',
+      key: 'ca',
+      color: 'bg-red-100 text-red-800'
+    },
+    jp: {
+      name: 'PMDA (Japan)',
+      icon: '🇯🇵',
+      key: 'jp',
+      color: 'bg-rose-100 text-rose-800'
+    },
+    intl: {
+      name: 'ICH (International)',
+      icon: '🌎',
+      key: 'intl',
+      color: 'bg-green-100 text-green-800'
+    }
+  };
+  
+  // Generate analysis results based on template category and selected regions
+  const generateAnalysisResults = (template, regions = ['us']) => {
+    // Common issues for all regions
     const baseIssues = [
       {
         id: 1,
@@ -149,7 +198,8 @@ export default function TemplateQualityAnalyzer({ template, onFixIssues }) {
         message: 'Inconsistent heading structure may affect eCTD navigation',
         location: 'throughout document',
         autoFixable: true,
-        status: 'active'
+        status: 'active',
+        regions: ['us', 'eu', 'ca', 'jp', 'intl'] // Affects all regions
       },
       {
         id: 2,
@@ -158,9 +208,99 @@ export default function TemplateQualityAnalyzer({ template, onFixIssues }) {
         message: 'Consider using approved terminology for consistency',
         location: 'multiple sections',
         autoFixable: false,
-        status: 'active'
+        status: 'active',
+        regions: ['us', 'eu', 'ca', 'jp', 'intl'] // Affects all regions
       }
     ];
+    
+    // Region-specific issues
+    const regionSpecificIssues = {
+      us: [
+        {
+          id: 101,
+          severity: 'high',
+          category: 'regulatory',
+          message: 'Missing FDA-required electronic signatures and certifications',
+          location: 'document metadata',
+          autoFixable: true,
+          status: 'active',
+          regions: ['us']
+        },
+        {
+          id: 102,
+          severity: 'medium',
+          category: 'technical',
+          message: 'PDF format does not meet FDA PDF/A requirements for archiving',
+          location: 'document properties',
+          autoFixable: true,
+          status: 'active',
+          regions: ['us'] 
+        }
+      ],
+      eu: [
+        {
+          id: 201,
+          severity: 'high',
+          category: 'regulatory',
+          message: 'Missing EMA-required product information template sections',
+          location: 'section 1.3',
+          autoFixable: true,
+          status: 'active',
+          regions: ['eu']
+        },
+        {
+          id: 202,
+          severity: 'medium',
+          category: 'formatting',
+          message: 'EMA submission requires multilingual content placeholders',
+          location: 'multiple sections',
+          autoFixable: true,
+          status: 'active',
+          regions: ['eu']
+        }
+      ],
+      ca: [
+        {
+          id: 301,
+          severity: 'high',
+          category: 'regulatory',
+          message: 'Missing bilingual English/French content required by Health Canada',
+          location: 'patient information sections',
+          autoFixable: false,
+          status: 'active',
+          regions: ['ca']
+        }
+      ],
+      jp: [
+        {
+          id: 401,
+          severity: 'high',
+          category: 'technical',
+          message: 'PMDA submission requires Japanese character encoding support',
+          location: 'document properties',
+          autoFixable: true,
+          status: 'active',
+          regions: ['jp']
+        }
+      ],
+      intl: [
+        {
+          id: 501,
+          severity: 'medium',
+          category: 'regulatory',
+          message: 'Missing ICH E2C-compliant safety reporting structure',
+          location: 'safety sections',
+          autoFixable: true,
+          status: 'active',
+          regions: ['intl']
+        }
+      ]
+    };
+    
+    // Add region-specific issues based on selected regions
+    const regionIssues = regions.flatMap(region => 
+      regionSpecificIssues[region] ? regionSpecificIssues[region] : []
+    );
     
     let categorySpecificIssues = [];
     let baseScore = 80;
@@ -261,7 +401,11 @@ export default function TemplateQualityAnalyzer({ template, onFixIssues }) {
         baseScore = 80;
     }
     
-    const allIssues = [...baseIssues, ...categorySpecificIssues];
+    // Combine all applicable issues
+    const allIssues = [...baseIssues, ...regionIssues, ...categorySpecificIssues].filter(issue => 
+      // Only include issues for the selected regions
+      issue.regions.some(r => regions.includes(r))
+    );
     
     // Base recommendations applicable to all templates
     const baseRecommendations = [
@@ -270,17 +414,102 @@ export default function TemplateQualityAnalyzer({ template, onFixIssues }) {
       'Add appropriate document history table'
     ];
     
-    return {
-      score: baseScore,
-      issues: allIssues,
-      recommendations: [...baseRecommendations, ...categoryRecommendations],
-      complianceStatus: baseScore >= 90 ? 'compliant' : 'needs-review',
-      regulatoryStandards: [
-        { name: 'eCTD Structure', status: 'pass' },
-        { name: 'ICH Guidelines', status: baseScore >= 80 ? 'pass' : 'warning' },
-        { name: 'FDA Requirements', status: baseScore >= 85 ? 'pass' : 'warning' },
-        { name: 'EMA Requirements', status: baseScore >= 75 ? 'pass' : 'warning' }
+    // Region-specific recommendations
+    const regionRecommendations = {
+      us: [
+        'Include a 21 CFR Part 11 compliance statement',
+        'Ensure all FDA-specific templates have form field validation'
+      ],
+      eu: [
+        'Include translations for pivotal EU member states',
+        'Follow EMA electronic submission gateway requirements'
+      ],
+      ca: [
+        'Include both English and French versions for Health Canada',
+        'Follow Health Canada Module 1 format requirements'
+      ],
+      jp: [
+        'Ensure font compatibility with Japanese character sets',
+        'Follow PMDA-specific region Module 1 organization'
+      ],
+      intl: [
+        'Apply ICH E3 and E6 guidelines for structure compliance',
+        'Ensure proper CTD granularity as per ICH M8 guidance'
       ]
+    };
+    
+    // Add region-specific recommendations
+    const selectedRegionRecommendations = regions.flatMap(region => 
+      regionRecommendations[region] || []
+    );
+    
+    // Calculate scores for each selected region
+    const regionScores = regions.map(region => {
+      const regIssues = allIssues.filter(issue => issue.regions.includes(region));
+      const highCount = regIssues.filter(i => i.severity === 'high').length;
+      const mediumCount = regIssues.filter(i => i.severity === 'medium').length;
+      
+      // Adjust score based on issue severity
+      let score = 95 - (highCount * 7) - (mediumCount * 3);
+      
+      // Minimum score floor
+      score = Math.max(60, score);
+      
+      return {
+        region,
+        score,
+        name: regulatoryAuthorities[region].name,
+        icon: regulatoryAuthorities[region].icon,
+        status: score >= 90 ? 'compliant' : (score >= 75 ? 'needs-revisions' : 'non-compliant')
+      };
+    });
+    
+    // Calculate overall score as weighted average of regional scores
+    const overallScore = Math.round(
+      regionScores.reduce((total, reg) => total + reg.score, 0) / regionScores.length
+    );
+    
+    // Generate regulatory standards status
+    const regulatoryStandards = [
+      { name: 'eCTD Structure', status: 'pass' },
+      { name: 'ICH Guidelines', status: regions.includes('intl') && overallScore >= 80 ? 'pass' : 'warning' }
+    ];
+    
+    // Add region-specific standards
+    regions.forEach(region => {
+      if (region === 'us') {
+        regulatoryStandards.push({ 
+          name: 'FDA Requirements', 
+          status: regionScores.find(r => r.region === 'us')?.score >= 85 ? 'pass' : 'warning' 
+        });
+      }
+      if (region === 'eu') {
+        regulatoryStandards.push({ 
+          name: 'EMA Requirements', 
+          status: regionScores.find(r => r.region === 'eu')?.score >= 80 ? 'pass' : 'warning' 
+        });
+      }
+      if (region === 'ca') {
+        regulatoryStandards.push({ 
+          name: 'Health Canada Requirements', 
+          status: regionScores.find(r => r.region === 'ca')?.score >= 80 ? 'pass' : 'warning' 
+        });
+      }
+      if (region === 'jp') {
+        regulatoryStandards.push({ 
+          name: 'PMDA Requirements', 
+          status: regionScores.find(r => r.region === 'jp')?.score >= 80 ? 'pass' : 'warning' 
+        });
+      }
+    });
+    
+    return {
+      score: overallScore,
+      issues: allIssues,
+      recommendations: [...baseRecommendations, ...selectedRegionRecommendations, ...categoryRecommendations],
+      complianceStatus: overallScore >= 90 ? 'compliant' : 'needs-review',
+      regulatoryStandards,
+      regionScores
     };
   };
   
@@ -335,6 +564,53 @@ export default function TemplateQualityAnalyzer({ template, onFixIssues }) {
     }
   };
 
+  // Region selector component
+  const RegionSelector = () => (
+    <div className="mb-4">
+      <h3 className="text-sm font-medium text-gray-700 mb-2">Select Regulatory Regions:</h3>
+      <div className="flex flex-wrap gap-2">
+        {Object.entries(regulatoryAuthorities).map(([key, region]) => (
+          <Button
+            key={key}
+            type="button"
+            size="sm"
+            variant={selectedRegions.includes(key) ? "default" : "outline"}
+            className={selectedRegions.includes(key) ? "" : "border-dashed"}
+            onClick={() => toggleRegion(key)}
+          >
+            <span className="mr-1">{region.icon}</span>
+            {region.name}
+          </Button>
+        ))}
+      </div>
+    </div>
+  );
+
+  // Region scores component
+  const RegionScores = ({ regionScores }) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 mt-4">
+      {regionScores.map((region) => (
+        <div 
+          key={region.region} 
+          className={`border rounded-md p-2 ${region.score >= 90 ? 'bg-green-50' : (region.score >= 75 ? 'bg-amber-50' : 'bg-red-50')}`}
+        >
+          <div className="flex justify-between items-center">
+            <div className="flex items-center">
+              <span className="mr-1 text-lg">{region.icon}</span>
+              <span className="text-sm font-medium">{region.name}</span>
+            </div>
+            <span className={`font-bold ${getScoreColor(region.score)}`}>{region.score}%</span>
+          </div>
+          <Badge 
+            className={`mt-1 ${region.score >= 90 ? 'bg-green-100 text-green-800' : (region.score >= 75 ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800')}`}
+          >
+            {region.status === 'compliant' ? 'Compliant' : (region.status === 'needs-revisions' ? 'Needs Revisions' : 'Non-Compliant')}
+          </Badge>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -359,15 +635,21 @@ export default function TemplateQualityAnalyzer({ template, onFixIssues }) {
       
       <CardContent>
         {!analysisResults ? (
-          <div className="text-center py-8">
+          <div className="text-center py-6">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-50 mb-4">
               <FileCheck className="h-8 w-8 text-blue-600" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">Ready to Analyze</h3>
-            <p className="text-gray-500 mb-6 max-w-md mx-auto">
+            <p className="text-gray-500 mb-4 max-w-md mx-auto">
               Run a quality analysis to check your template against regulatory standards, 
               formatting best practices, and content completeness.
             </p>
+            
+            {/* Region selector */}
+            <div className="mb-6 max-w-md mx-auto">
+              <RegionSelector />
+            </div>
+            
             <Button 
               onClick={runAnalysis}
               disabled={analyzing || !template}
@@ -385,6 +667,39 @@ export default function TemplateQualityAnalyzer({ template, onFixIssues }) {
           </div>
         ) : (
           <div className="space-y-6">
+            {/* Region selector remains available after analysis */}
+            <div className="border rounded-lg p-4">
+              <h3 className="font-medium text-gray-900 mb-2">Regulatory Regions</h3>
+              <p className="text-sm text-gray-600 mb-3">
+                Select regions to analyze compliance with different regulatory authorities:
+              </p>
+              <RegionSelector />
+              
+              {/* Only show if analysis complete and has region scores */}
+              {analysisResults.regionScores && (
+                <RegionScores regionScores={analysisResults.regionScores} />
+              )}
+              
+              {/* Re-analyze button */}
+              <div className="mt-4 text-center">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={runAnalysis}
+                  disabled={analyzing}
+                >
+                  {analyzing ? (
+                    <>
+                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current mr-1"></div>
+                      Re-analyzing...
+                    </>
+                  ) : (
+                    'Re-analyze with Selected Regions'
+                  )}
+                </Button>
+              </div>
+            </div>
+            
             <div className="flex flex-col md:flex-row gap-4">
               <div className="md:w-1/2 border rounded-lg p-4">
                 <h3 className="font-medium text-gray-900 mb-2 flex items-center">
