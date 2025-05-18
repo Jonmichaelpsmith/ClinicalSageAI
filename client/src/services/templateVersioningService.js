@@ -1,287 +1,203 @@
 /**
- * Template Versioning Service
+ * Template Versioning Service for eCTD Module
  * 
- * This service provides version control functionality for client templates
- * in the eCTD module, including creating new versions, retrieving version history,
- * and restoring previous versions.
+ * This service manages versioning for document templates in the eCTD module.
+ * It provides functionality for version tracking, comparison, and history.
  */
 
 /**
- * Create a new version of an existing template
- * @param {string} templateId - The ID of the template to version
- * @param {object} changes - The changes being made to the template
- * @param {string} userId - The ID of the user making the changes
- * @returns {Promise<object>} The newly created version
+ * Get version history for a template
+ * @param {string} templateId - The template ID
+ * @returns {Promise<Array>} - Array of version history objects
  */
-export async function createNewVersion(templateId, changes, userId) {
-  try {
-    // In a production environment, this would be an API call
-    // Example implementation with a real API:
-    /*
-    const response = await fetch(`/api/templates/${templateId}/versions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        changes,
-        userId,
-        timestamp: new Date().toISOString(),
-      }),
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to create new version');
+export async function getTemplateVersionHistory(templateId) {
+  // In a real implementation, this would make an API call
+  // For now, returning mock data for demonstration
+  return Promise.resolve([
+    {
+      versionId: "v3.0",
+      createdAt: new Date(2025, 4, 15),
+      createdBy: "Sarah Johnson",
+      changeDescription: "Updated for May 2025 FDA guideline changes",
+      status: "current"
+    },
+    {
+      versionId: "v2.5",
+      createdAt: new Date(2025, 3, 2),
+      createdBy: "John Smith",
+      changeDescription: "Minor formatting updates per client request",
+      status: "archived"
+    },
+    {
+      versionId: "v2.0",
+      createdAt: new Date(2025, 2, 10),
+      createdBy: "Sarah Johnson",
+      changeDescription: "Major revision for Q1 2025 regulatory changes",
+      status: "archived"
+    },
+    {
+      versionId: "v1.0",
+      createdAt: new Date(2025, 0, 5),
+      createdBy: "Michael Wong",
+      changeDescription: "Initial template creation",
+      status: "archived"
     }
-    
-    return await response.json();
-    */
-    
-    // Mock implementation for demo purposes
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          id: `v${Date.now()}`,
-          templateId,
-          version: Math.floor(Math.random() * 10) + 1,
-          changes,
-          createdBy: userId,
-          createdAt: new Date().toISOString(),
-          status: 'active'
-        });
-      }, 500);
-    });
-  } catch (error) {
-    console.error('Error creating new template version:', error);
-    throw error;
-  }
+  ]);
 }
 
 /**
- * Get all versions of a template
- * @param {string} templateId - The ID of the template
- * @returns {Promise<Array>} The template versions
+ * Create a new version of a template
+ * @param {string} templateId - The template ID
+ * @param {Object} templateData - The updated template data
+ * @param {string} changeDescription - Description of changes
+ * @returns {Promise<Object>} - The new version object
  */
-export async function getVersionHistory(templateId) {
-  try {
-    // In a production environment, this would be an API call
-    // Example implementation with a real API:
-    /*
-    const response = await fetch(`/api/templates/${templateId}/versions`);
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch version history');
-    }
-    
-    return await response.json();
-    */
-    
-    // Mock implementation for demo purposes
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const mockVersions = [
-          {
-            id: 'v3',
-            templateId,
-            version: 3,
-            changes: {
-              name: 'Updated Template Name',
-              description: 'Updated with regulatory compliance improvements',
-              content: '<p>Updated content with regulatory references</p>'
-            },
-            createdBy: 'user123',
-            createdName: 'John Smith',
-            createdAt: '2025-05-10T14:30:00Z',
-            status: 'active'
-          },
-          {
-            id: 'v2',
-            templateId,
-            version: 2,
-            changes: {
-              description: 'Added validation rules',
-              content: '<p>Content with validation rules</p>'
-            },
-            createdBy: 'user456',
-            createdName: 'Maria Johnson',
-            createdAt: '2025-04-25T10:15:00Z',
-            status: 'archived'
-          },
-          {
-            id: 'v1',
-            templateId,
-            version: 1,
-            changes: {
-              name: 'Original Template Name',
-              description: 'Initial template creation',
-              content: '<p>Initial content</p>'
-            },
-            createdBy: 'user789',
-            createdName: 'Robert Chen',
-            createdAt: '2025-04-01T09:00:00Z',
-            status: 'archived'
-          }
-        ];
-        resolve(mockVersions);
-      }, 500);
-    });
-  } catch (error) {
-    console.error('Error fetching template versions:', error);
-    throw error;
-  }
+export async function createTemplateVersion(templateId, templateData, changeDescription) {
+  // In a real implementation, this would make an API call
+  // For now, returning mock data for demonstration
+  const newVersion = {
+    versionId: generateVersionId(),
+    createdAt: new Date(),
+    createdBy: "Current User", // Would be fetched from auth context
+    changeDescription,
+    status: "current",
+    templateData
+  };
+  
+  return Promise.resolve(newVersion);
 }
 
 /**
- * Restore a previous version of a template
- * @param {string} templateId - The ID of the template
- * @param {string} versionId - The ID of the version to restore
- * @returns {Promise<object>} The restored template
+ * Get a specific version of a template
+ * @param {string} templateId - The template ID
+ * @param {string} versionId - The version ID
+ * @returns {Promise<Object>} - The template version data
  */
-export async function restoreVersion(templateId, versionId) {
-  try {
-    // In a production environment, this would be an API call
-    // Example implementation with a real API:
-    /*
-    const response = await fetch(`/api/templates/${templateId}/restore/${versionId}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+export async function getTemplateVersion(templateId, versionId) {
+  // In a real implementation, this would make an API call
+  // For now, returning mock data for demonstration
+  return Promise.resolve({
+    templateId,
+    versionId,
+    data: {
+      name: "Sample Template",
+      content: "Template content for version " + versionId,
+      metadata: {
+        regulatoryRegion: "US",
+        eCTDSection: "m2.3",
+        documentType: "Quality Overall Summary"
       }
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to restore version');
     }
-    
-    return await response.json();
-    */
-    
-    // Mock implementation for demo purposes
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          id: templateId,
-          name: 'Restored Template Name',
-          description: 'This template was restored from a previous version',
-          category: 'm3',
-          content: '<p>Restored content from previous version</p>',
-          tags: ['Restored', 'Module 3', 'Quality'],
-          lastModified: new Date().toISOString(),
-          restoredFromVersion: versionId,
-          status: 'active'
-        });
-      }, 500);
-    });
-  } catch (error) {
-    console.error('Error restoring template version:', error);
-    throw error;
-  }
+  });
 }
 
 /**
  * Compare two versions of a template
- * @param {string} templateId - The ID of the template
- * @param {string} versionId1 - The ID of the first version
- * @param {string} versionId2 - The ID of the second version
- * @returns {Promise<object>} The differences between the versions
+ * @param {string} templateId - The template ID
+ * @param {string} versionA - The first version ID
+ * @param {string} versionB - The second version ID
+ * @returns {Promise<Object>} - Comparison results
  */
-export async function compareVersions(templateId, versionId1, versionId2) {
-  try {
-    // In a production environment, this would be an API call
-    // Example implementation with a real API:
-    /*
-    const response = await fetch(`/api/templates/${templateId}/compare`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        versionId1,
-        versionId2
-      })
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to compare versions');
+export async function compareTemplateVersions(templateId, versionA, versionB) {
+  // In a real implementation, this would fetch both versions and compare them
+  // For now, returning mock comparison data
+  return Promise.resolve({
+    addedSections: ["2.3.5", "2.3.6"],
+    removedSections: ["2.3.2.1"],
+    modifiedSections: ["2.3.1", "2.3.4"],
+    regulatoryImpact: "Minor updates to reflect recent guidance changes",
+    wordCount: {
+      added: 250,
+      removed: 125,
+      net: 125
     }
-    
-    return await response.json();
-    */
-    
-    // Mock implementation for demo purposes
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          templateId,
-          versionId1,
-          versionId2,
-          differences: {
-            name: {
-              from: 'Original Template Name',
-              to: 'Updated Template Name'
-            },
-            description: {
-              from: 'Initial template creation',
-              to: 'Updated with regulatory compliance improvements'
-            },
-            content: {
-              additions: 2,
-              deletions: 1,
-              changes: 3
-            }
-          }
-        });
-      }, 500);
-    });
-  } catch (error) {
-    console.error('Error comparing template versions:', error);
-    throw error;
-  }
+  });
 }
 
 /**
- * Export a template version as a document
- * @param {string} templateId - The ID of the template
- * @param {string} versionId - The ID of the version to export
- * @param {string} format - The format to export (pdf, docx, etc.)
- * @returns {Promise<object>} The export result with download URL
+ * Revert to a previous version
+ * @param {string} templateId - The template ID
+ * @param {string} versionId - The version to revert to
+ * @returns {Promise<Object>} - The reverted version data
  */
-export async function exportVersion(templateId, versionId, format = 'pdf') {
-  try {
-    // In a production environment, this would be an API call
-    // Example implementation with a real API:
-    /*
-    const response = await fetch(`/api/templates/${templateId}/export/${versionId}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        format
-      })
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to export version');
-    }
-    
-    return await response.json();
-    */
-    
-    // Mock implementation for demo purposes
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          templateId,
-          versionId,
-          format,
-          downloadUrl: `#/download/${templateId}/${versionId}.${format}`,
-          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-        });
-      }, 500);
-    });
-  } catch (error) {
-    console.error('Error exporting template version:', error);
-    throw error;
-  }
+export async function revertToVersion(templateId, versionId) {
+  // In a real implementation, this would make an API call
+  // For now, returning mock data
+  return Promise.resolve({
+    templateId,
+    versionId: generateVersionId(),
+    previousVersionId: versionId,
+    revertedAt: new Date(),
+    revertedBy: "Current User", // Would be fetched from auth context
+    status: "current"
+  });
+}
+
+/**
+ * Archive a template version
+ * @param {string} templateId - The template ID
+ * @param {string} versionId - The version ID to archive
+ * @returns {Promise<Object>} - The archive operation result
+ */
+export async function archiveTemplateVersion(templateId, versionId) {
+  // In a real implementation, this would make an API call
+  return Promise.resolve({
+    success: true,
+    templateId,
+    versionId,
+    archivedAt: new Date(),
+    status: "archived"
+  });
+}
+
+/**
+ * Generate a new version ID
+ * @returns {string} - New version ID
+ */
+function generateVersionId() {
+  // Simple version generator - in production would use a more sophisticated approach
+  const now = new Date();
+  const major = now.getFullYear() - 2020; // Simplified major version
+  const minor = now.getMonth(); // Month as minor version
+  const patch = now.getDate(); // Day as patch version
+  
+  return `v${major}.${minor}.${patch}`;
+}
+
+/**
+ * Get regulatory compliance status for a template version
+ * @param {string} templateId - The template ID
+ * @param {string} versionId - The version ID
+ * @returns {Promise<Object>} - Compliance status information
+ */
+export async function getTemplateComplianceStatus(templateId, versionId) {
+  // In a real implementation, this would make an API call
+  // For now, returning mock data
+  return Promise.resolve({
+    compliant: true,
+    lastCheckedAt: new Date(),
+    regulatoryStandard: "ICH eCTD v4.0",
+    issues: [],
+    recommendations: [
+      "Consider adding additional references to Section 2.3.6",
+      "Update formatting to latest FDA guidance specifications"
+    ]
+  });
+}
+
+/**
+ * Export template version to different format (PDF, Word, etc.)
+ * @param {string} templateId - The template ID
+ * @param {string} versionId - The version ID
+ * @param {string} format - The export format (pdf, docx, etc.)
+ * @returns {Promise<Object>} - Export result with document URL
+ */
+export async function exportTemplateVersion(templateId, versionId, format) {
+  // In a real implementation, this would make an API call
+  return Promise.resolve({
+    success: true,
+    documentUrl: `/api/templates/${templateId}/versions/${versionId}/export.${format}`,
+    format,
+    exportedAt: new Date()
+  });
 }
