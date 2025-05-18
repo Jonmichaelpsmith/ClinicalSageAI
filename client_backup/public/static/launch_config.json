@@ -1,0 +1,42 @@
+{
+  "ceo": {
+    "study_id": "ceo_strategy_trial",
+    "route": "/planning?persona=ceo"
+  },
+  "biostats": {
+    "study_id": "biostats_simulation",
+    "route": "/planning?persona=biostats"
+  },
+  "ops": {
+    "study_id": "clinical_ops_forecast",
+    "route": "/planning?persona=ops"
+  },
+  "planner": {
+    "study_id": "trial_planner_guide",
+    "route": "/planning?persona=planner"
+  },
+  "writer": {
+    "study_id": "medical_writer_draft",
+    "route": "/planning?persona=writer"
+  },
+  "regulatory": {
+    "study_id": "regulatory_submission_01",
+    "route": "/planning?persona=regulatory"
+  },
+  "investor": {
+    "study_id": "investor_due_diligence",
+    "route": "/planning?persona=investor"
+  },
+  "pi": {
+    "study_id": "pi_rare_disease_study",
+    "route": "/planning?persona=pi"
+  },
+  "intelligence": {
+    "study_id": "oracle_insight_mode",
+    "route": "/planning?persona=intelligence"
+  },
+  "cxo": {
+    "study_id": "cxo_team_strategy",
+    "route": "/planning?persona=cxo"
+  }
+}

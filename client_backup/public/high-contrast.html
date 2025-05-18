@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CMC Module - High Contrast View</title>
+  <style>
+    /* High Contrast Styles */
+    :root {
+      --text-color: white;
+      --bg-color: black;
+      --border-color: white;
+      --heading-color: yellow;
+      --link-color: cyan;
+      --contrast-bg: #222;
+    }
+    
+    body {
+      font-family: Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      line-height: 1.6;
+      padding: 20px;
+      margin: 0;
+      font-size: 16px;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--heading-color);
+      margin-top: 24px;
+      margin-bottom: 16px;
+    }
+    
+    h1 {
+      font-size: 32px;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+    
+    h2 {
+      font-size: 24px;
+    }
+    
+    h3 {
+      font-size: 20px;
+    }
+    
+    a {
+      color: var(--link-color);
+      text-decoration: underline;
+    }
+    
+    a:hover {
+      color: var(--heading-color);
+    }
+    
+    button {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      border: 2px solid var(--border-color);
+      padding: 8px 16px;
+      cursor: pointer;
+      font-weight: bold;
+      margin: 5px;
+    }
+    
+    button:hover {
+      background-color: var(--text-color);
+      color: var(--bg-color);
+    }
+    
+    .card {
+      border: 2px solid var(--border-color);
+      margin-bottom: 20px;
+      padding: 15px;
+    }
+    
+    .section-heading {
+      background-color: var(--contrast-bg);
+      padding: 10px;
+      border-left: 5px solid var(--heading-color);
+    }
+    
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    
+    .table th, .table td {
+      border: 2px solid var(--border-color);
+      padding: 12px;
+      text-align: left;
+    }
+    
+    .table th {
+      background-color: var(--contrast-bg);
+      color: var(--heading-color);
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border: 1px solid var(--border-color);
+      margin-right: 5px;
+      font-weight: bold;
+    }
+    
+    .badge-success {
+      background-color: darkgreen;
+      color: white;
+    }
+    
+    .badge-warning {
+      background-color: darkgoldenrod;
+      color: white;
+    }
+    
+    .badge-danger {
+      background-color: darkred;
+      color: white;
+    }
+    
+    .section {
+      margin-bottom: 30px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      margin-bottom: 30px;
+    }
+
+    .header-actions {
+      margin-top: 20px;
+      margin-bottom: 20px;
+    }
+    
+    /* High visibility accessible grid system */
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      margin: -10px;
+    }
+    
+    .grid-item {
+      flex: 1 1 100%;
+      padding: 10px;
+    }
+    
+    @media (min-width: 768px) {
+      .grid-item {
+        flex: 0 0 calc(50% - 20px);
+      }
+    }
+    
+    /* Print friendly settings */
+    @media print {
+      body {
+        background-color: white;
+        color: black;
+      }
+      
+      .card {
+        border: 1px solid black;
+        break-inside: avoid;
+      }
+      
+      button {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Chemistry, Manufacturing, and Controls (CMC) Module</h1>
+      <p>High-contrast accessibility view for regulatory documentation</p>
+      
+      <div class="header-actions">
+        <button onclick="window.print()">Print This Page</button>
+        <button onclick="window.location.href='/'">Return to Standard View</button>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2 class="section-heading">CMC Sections</h2>
+      
+      <div class="grid">
+        <div class="grid-item">
+          <div class="card">
+            <h3>Drug Substance Manufacturing Process</h3>
+            <p><strong>Section:</strong> S.2.2</p>
+            <p><strong>Status:</strong> <span class="badge badge-success">Approved</span></p>
+            <p>The active pharmaceutical ingredient (API) is manufactured via a six-step synthetic process. The process begins with the reaction of Compound A with Compound B in the presence of a palladium catalyst to form the key intermediate C. After purification by recrystallization, Intermediate C undergoes further transformations including reduction, protection, coupling, and deprotection steps. Quality is ensured through in-process controls at critical steps, with special attention to impurity profiles and stereochemical purity.</p>
+            <p><strong>Next Revision:</strong> June 15, 2025</p>
+          </div>
+        </div>
+        
+        <div class="grid-item">
+          <div class="card">
+            <h3>Manufacturing Process Controls</h3>
+            <p><strong>Section:</strong> S.2.4</p>
+            <p><strong>Status:</strong> <span class="badge badge-warning">In Review</span></p>
+            <p>Critical process parameters have been identified through risk assessment and design of experiments (DoE). Temperature control during the coupling reaction (Step 4) is maintained at 55±2°C, as higher temperatures lead to formation of Impurity X, while lower temperatures reduce yield. Reaction time is controlled between 4-6 hours with in-process testing to ensure completion. Catalyst concentration impacts both yield and impurity profile, with optimal range established as 0.2-0.3 mol%. Process validation has demonstrated that these controls ensure consistent quality across multiple batches.</p>
+            <p><strong>Next Revision:</strong> May 10, 2025</p>
+            <p><strong>Comments:</strong> 3</p>
+          </div>
+        </div>
+        
+        <div class="grid-item">
+          <div class="card">
+            <h3>Control of Drug Product</h3>
+            <p><strong>Section:</strong> P.5</p>
+            <p><strong>Status:</strong> <span class="badge badge-warning">Draft</span></p>
+            <p>The drug product specification includes tests for identity, assay, impurities, dissolution, content uniformity, and microbial limits. The analytical methods have been validated according to ICH Q2(R1) guidelines for specificity, linearity, accuracy, precision, range, detection limit, quantitation limit, and robustness as appropriate for each test. Chromatographic methods include HPLC with UV detection for assay and impurities, with method transfers completed to quality control laboratories at all manufacturing sites. Stability-indicating methods have been developed and validated to monitor potential degradation products.</p>
+            <p><strong>Next Revision:</strong> May 25, 2025</p>
+            <p><strong>Comments:</strong> 5</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2 class="section-heading">Manufacturing Processes</h2>
+      
+      <div class="grid">
+        <div class="grid-item">
+          <div class="card">
+            <h3>API Synthesis - Route B</h3>
+            <p><strong>Description:</strong> Multi-step organic synthesis including critical catalytic hydrogenation</p>
+            <p><strong>Status:</strong> <span class="badge badge-success">Validated</span></p>
+            <p><strong>Progress:</strong> 100%</p>
+            <p><strong>Linked Records:</strong></p>
+            <ul>
+              <li>Process Validation Report PVR-2025-003 (Validation)</li>
+              <li>CAPA-2024-112: Catalyst Purity Issue (CAPA)</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="grid-item">
+          <div class="card">
+            <h3>Tablet Compression Process</h3>
+            <p><strong>Description:</strong> Direct compression method with in-line PAT monitoring</p>
+            <p><strong>Status:</strong> <span class="badge badge-warning">In Review</span></p>
+            <p><strong>Progress:</strong> 67%</p>
+            <p><strong>Linked Records:</strong></p>
+            <ul>
+              <li>Equipment Qualification EQ-2024-108 (Qualification)</li>
+              <li>Method Validation MV-2024-092 (Validation)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2 class="section-heading">Risk Analysis</h2>
+      
+      <div class="grid">
+        <div class="grid-item">
+          <div class="card">
+            <h3>Impurity Control Strategy</h3>
+            <p><strong>Risk Level:</strong> <span class="badge badge-danger">High Risk</span></p>
+            <p><strong>Description:</strong> Analysis of potential impurities arising from synthetic route and control strategy effectiveness</p>
+            <p><strong>Severity:</strong> 4/5</p>
+            <p><strong>Probability:</strong> 5/5</p>
+            <p><strong>Impact:</strong> Product Quality, Patient Safety</p>
+            <p><strong>Recommendations:</strong></p>
+            <ul>
+              <li>Implement additional purification step to reduce Impurity A below ICH threshold</li>
+              <li>Validate improved analytical method with lower detection limit for genotoxic impurities</li>
+              <li>Conduct forced degradation studies under broader stress conditions</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="grid-item">
+          <div class="card">
+            <h3>Process Variability Assessment</h3>
+            <p><strong>Risk Level:</strong> <span class="badge badge-warning">Medium Risk</span></p>
+            <p><strong>Description:</strong> Evaluation of manufacturing process robustness and potential variability sources</p>
+            <p><strong>Severity:</strong> 3/5</p>
+            <p><strong>Probability:</strong> 3/5</p>
+            <p><strong>Impact:</strong> Batch Consistency, Manufacturing Efficiency</p>
+            <p><strong>Recommendations:</strong></p>
+            <ul>
+              <li>Tighten process parameters for crystallization step to improve yield consistency</li>
+              <li>Implement statistical process control for critical quality attributes</li>
+              <li>Qualify backup raw material suppliers to mitigate supply chain risks</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2 class="section-heading">Regulatory Compliance</h2>
+      
+      <div class="grid">
+        <div class="grid-item">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Requirement</th>
+                <th>Region</th>
+                <th>Status</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Starting Material Justification</td>
+                <td>EMA</td>
+                <td><span class="badge badge-success">Compliant</span></td>
+                <td>Detailed justification provided with full synthetic route description</td>
+              </tr>
+              <tr>
+                <td>Residual Solvents Testing</td>
+                <td>ICH Q3C</td>
+                <td><span class="badge badge-success">Compliant</span></td>
+                <td>All Class 2 and 3 solvents tested with validated GC method</td>
+              </tr>
+              <tr>
+                <td>Process Validation Approach</td>
+                <td>FDA</td>
+                <td><span class="badge badge-success">Compliant</span></td>
+                <td>Lifecycle approach implemented with continued process verification</td>
+              </tr>
+              <tr>
+                <td>Elemental Impurities Assessment</td>
+                <td>ICH Q3D</td>
+                <td><span class="badge badge-danger">Non-Compliant</span></td>
+                <td>Risk assessment does not address potential catalyst residues adequately</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2 class="section-heading">Global Readiness Status</h2>
+      
+      <div class="grid">
+        <div class="grid-item">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Market</th>
+                <th>Readiness</th>
+                <th>Critical Gaps</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>FDA (US)</td>
+                <td><span class="badge badge-success">82%</span></td>
+                <td>Nitrosamine risk assessment needs updating</td>
+              </tr>
+              <tr>
+                <td>EMA (EU)</td>
+                <td><span class="badge badge-warning">65%</span></td>
+                <td>Elemental impurities assessment incomplete</td>
+              </tr>
+              <tr>
+                <td>PMDA (Japan)</td>
+                <td><span class="badge badge-danger">43%</span></td>
+                <td>API starting material documentation insufficient</td>
+              </tr>
+              <tr>
+                <td>NMPA (China)</td>
+                <td><span class="badge badge-warning">51%</span></td>
+                <td>Manufacturing process validation incomplete</td>
+              </tr>
+              <tr>
+                <td>Health Canada</td>
+                <td><span class="badge badge-success">78%</span></td>
+                <td>Quality overall summary needs updating</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2 class="section-heading">Critical Action Items</h2>
+      
+      <div class="grid">
+        <div class="grid-item">
+          <div class="card">
+            <h3>API Starting Material Documentation (PMDA)</h3>
+            <p><strong>Priority:</strong> <span class="badge badge-danger">High</span></p>
+            <p>Additional documentation required for API starting material selection and justification, including synthetic route options and impurity profiles.</p>
+            <p><strong>Due:</strong> May 15, 2025</p>
+          </div>
+        </div>
+        
+        <div class="grid-item">
+          <div class="card">
+            <h3>Elemental Impurities Assessment (EMA)</h3>
+            <p><strong>Priority:</strong> <span class="badge badge-danger">High</span></p>
+            <p>Elemental impurities assessment does not meet ICH Q3D requirements for risk assessment of potential catalyst residues.</p>
+            <p><strong>Due:</strong> June 3, 2025</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="section">
+      <div class="header-actions">
+        <button onclick="window.print()">Print This Page</button>
+        <button onclick="window.location.href='/'">Return to Standard View</button>
+      </div>
+    </div>
+    
+    <footer style="margin-top: 40px; border-top: 1px solid var(--border-color); padding-top: 20px; text-align: center;">
+      <p>&copy; 2025 Concept2Cure.AI TrialSage™ | Accessibility View</p>
+    </footer>
+  </div>
+</body>
+</html>
