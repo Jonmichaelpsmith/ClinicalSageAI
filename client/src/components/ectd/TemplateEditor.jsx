@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { createNewVersion } from '../../services/templateVersioningService';
+import { createTemplateVersion } from '../../services/templateVersioningService';
 import { useTenant } from '../../contexts/TenantContext';
 import { Save, Eye, FileText, Clock, ArrowLeft, CheckCircle, Book, Table, ListOrdered, List, Image, Bold, Italic, Underline, Heading1, Heading2, Heading3, AlignLeft, AlignCenter, AlignRight, AlertTriangle } from 'lucide-react';
 
