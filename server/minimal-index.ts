@@ -100,10 +100,10 @@ app.get('/', (req, res) => {
   }
 });
 
-// Client portal - serving the actual client portal HTML
+// Client portal - serving the direct client portal HTML (the real one)
 app.get('/client-portal', (req, res) => {
-  console.log('Serving real client portal');
-  const clientPortalPath = path.join(process.cwd(), 'client-portal.html');
+  console.log('Serving direct client portal');
+  const clientPortalPath = path.join(process.cwd(), 'client-portal-direct.html');
   if (fs.existsSync(clientPortalPath)) {
     res.sendFile(clientPortalPath);
   } else {
