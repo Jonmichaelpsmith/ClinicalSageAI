@@ -16,6 +16,7 @@ import memoryManagement from '@/utils/memoryManagement';
 import StabilityEnabledLayout from '@/components/layout/StabilityEnabledLayout';
 import { initializeMemoryOptimization } from './utils/memoryOptimizer';
 import StabilityEnabler from './components/layout/StabilityEnabler';
+import securityService from './services/SecurityService';
 
 // Core navigation component (loaded immediately)
 import UnifiedTopNavV3 from './components/navigation/UnifiedTopNavV3';
@@ -37,6 +38,8 @@ import HomeLanding from './pages/HomeLanding';
 // Lazy load all other pages grouped by related functionality
 // Client Portal features
 const ClientTemplatesPage = lazy(() => import('./pages/ClientTemplatesPage'));
+// Admin Dashboard
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 // CER-related pages
 const CERPage = lazy(() => import('./pages/CerPage'));
 // Import the original CERV2Page directly, not the wrapper

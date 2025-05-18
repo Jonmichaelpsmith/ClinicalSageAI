@@ -1,0 +1,171 @@
+Below is a summary of how to merge the two branches so that:
+
+* **App.jsx** picks up the new `AdminDashboard` route under `/client-portal/admin` (with the security check).
+* Both flavors of your “Manage…” switchers (in `client-portal` and `tenant`) now point at `/client-portal/admin?tab=…` and show “Admin Panel.”
+* The old `/tenant-management` and bare `/client-management` links are removed in favor of the consolidated Admin panel.
+
+---
+
+### 1. `client/src/App.jsx`
+
+```diff
+@@ top of file
+-import StabilityEnabler from './components/layout/StabilityEnabler';
++import StabilityEnabler from './components/layout/StabilityEnabler';
++import securityService from './services/SecurityService';
+@@
+ // Lazy load the admin dashboard
+-// nothing here yet
++import AdminDashboard from './pages/AdminDashboard';
+
+@@ <Switch> … </Switch> area
+               {/* Admin dashboard */}
+               <Route path="/client-portal/admin">
+-                {() => <div>…unresolved conflict…</div>}
++                {() =>
++                  securityService.getUserRoles().includes('admin') ? (
++                    <Suspense fallback={<LoadingPage />}>
++                      <AdminDashboard />
++                    </Suspense>
++                  ) : (
++                    <div className="p-8">
++                      <h2 className="text-xl font-semibold mb-2">
++                        Access Denied
++                      </h2>
++                      <p>You do not have permission to view this page.</p>
++                    </div>
++                  )
++                }
+               </Route>
+```
+
+---
+
+### 2. `client/src/components/client-portal/OrganizationSwitcher.jsx`
+
+```diff
+           <div className="mt-4 pt-4 border-t text-center">
+-            <a href="#manage-organizations" className="text-sm text-primary hover:text-primary-dark">
+-              Manage Organizations
++            <a
++              href="/client-portal/admin?tab=organizations"
++              className="text-sm text-primary hover:text-primary-dark"
++            >
++              Admin Panel
+             </a>
+           </div>
+```
+
+---
+
+### 3. `client/src/components/tenant/ClientWorkspaceSwitcher.tsx`
+
+```diff
+   const handleManageClients = () => {
+     setOpen(false);
+-    navigate('/client-management');
++    navigate('/client-portal/admin?tab=clients');
+   };
+…
+           <CommandItem onSelect={handleManageClients} className="py-2 px-3">
+             <Settings className="mr-2 h-4 w-4" />
+-            <span>Manage Clients</span>
++            <span>Admin Panel</span>
+           </CommandItem>
+```
+
+---
+
+### 4. `client/src/components/tenant/OrganizationSwitcher.tsx`
+
+```diff
+   const handleManageOrganizations = () => {
+     setOpen(false);
+-    navigate('/tenant-management');
++    navigate('/client-portal/admin?tab=organizations');
+   };
+…
+           <CommandItem onSelect={handleManageOrganizations} className="py-2 px-3">
+             <Settings className="mr-2 h-4 w-4" />
+-            <span>Manage Organizations</span>
++            <span>Admin Panel</span>
+           </CommandItem>
+```
+
+---
+
+### 5. `client/src/pages/ClientPortalLanding.jsx`
+
+```diff
+                   <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
+                     <Button
+-                      onClick={() => setLocation('/client-portal/client-management')}
++                      onClick={() => setLocation('/client-portal/admin')}
+                       variant="outline"
+                       className="w-full justify-center"
+                     >
+                       <Settings className="mr-2 h-4 w-4" />
+-                      Manage Organizations
++                      Admin Panel
+                     </Button>
+                   </div>
+```
+
+---
+
+### 6. `client/src/pages/AdminDashboard.tsx`
+
+Just add the new file exactly as in the diff:
+
+```tsx
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'wouter';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import TenantManagement from './TenantManagement';
+import ClientManagement from './ClientManagement';
+import SettingsPage from './SettingsPage';
+import AdminPanel from '@/components/admin/AdminPanel';
+
+export default function AdminDashboard() {
+  const [tab, setTab] = useState('organizations');
+  const [location] = useLocation();
+
+  useEffect(() => {
+    const query = location.split('?')[1];
+    if (query) {
+      const params = new URLSearchParams(query);
+      const initial = params.get('tab');
+      if (initial) setTab(initial);
+    }
+  }, [location]);
+
+  return (
+    <div className="container mx-auto py-8">
+      <Tabs value={tab} onValueChange={setTab}>
+        <TabsList className="mb-4">
+          <TabsTrigger value="organizations">Organizations</TabsTrigger>
+          <TabsTrigger value="clients">Client Workspaces</TabsTrigger>
+          <TabsTrigger value="settings">Platform Settings</TabsTrigger>
+          <TabsTrigger value="tools">Advanced Tools</TabsTrigger>
+        </TabsList>
+        <TabsContent value="organizations">
+          <TenantManagement />
+        </TabsContent>
+        <TabsContent value="clients">
+          <ClientManagement />
+        </TabsContent>
+        <TabsContent value="settings">
+          <SettingsPage />
+        </TabsContent>
+        <TabsContent value="tools">
+          <AdminPanel />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+```
+
+---
+
+Once you apply the above patches (removing any `<<<<<<<`, `=======`, `>>>>>>>` markers), re-run your tests/build, commit, and push. That fully resolves the merge conflicts and wires in your new Admin Dashboard everywhere.
