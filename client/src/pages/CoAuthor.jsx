@@ -332,6 +332,12 @@ export default function CoAuthor() {
   const [exportInProgress, setExportInProgress] = useState(false);
   const [exportFormat, setExportFormat] = useState('html');
   const [exportRegion, setExportRegion] = useState('US');
+  
+  // Multi-region regulatory compliance checking state
+  const [checkingCompliance, setCheckingCompliance] = useState(false);
+  const [multiRegionResults, setMultiRegionResults] = useState(null);
+  const [selectedRegions, setSelectedRegions] = useState(['US']);
+  const [complianceReportReady, setComplianceReportReady] = useState(false);
   const [exportOptions, setExportOptions] = useState({
     includeToc: true,
     includeValidationReport: true,
