@@ -10,6 +10,10 @@ Key features:
 - Supports document lifecycle operations (new, replace, delete)
 - Generates UUIDs for documents and validates checksums
 - Follows Part 11 compliance with full traceability
+
+The main interface ``write_ectd_xml()`` accepts an optional ``base_dir``
+parameter which controls where sequence folders are created.  By default
+this is ``/mnt/data/ectd``.
 """
 
 import os
@@ -42,22 +46,23 @@ def calculate_md5(file_path: str) -> str:
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
 
-def write_ectd_xml(sequence_number: str, doc_models: List[Any]) -> str:
+def write_ectd_xml(sequence_number: str, doc_models: List[Any], base_dir: str = "/mnt/data/ectd") -> str:
     """
     Generate eCTD XML backbone files for a sequence.
     
     Args:
         sequence_number: The sequence number (e.g., "0001")
         doc_models: List of INDSequenceDoc objects with document metadata
+        base_dir: Base directory where the sequence folder should be created
         
     Returns:
         Path to the generated index.xml file
     """
     try:
         # Determine paths
-        base_dir = os.path.join("/mnt/data/ectd", sequence_number)
-        index_path = os.path.join(base_dir, "index.xml")
-        us_regional_path = os.path.join(base_dir, "m1", "us", "us-regional.xml")
+        sequence_dir = os.path.join(base_dir, sequence_number)
+        index_path = os.path.join(sequence_dir, "index.xml")
+        us_regional_path = os.path.join(sequence_dir, "m1", "us", "us-regional.xml")
         
         # Create document registry for XML generation
         documents = []
@@ -65,7 +70,7 @@ def write_ectd_xml(sequence_number: str, doc_models: List[Any]) -> str:
             doc_info = {
                 'id': doc.doc_id,
                 'title': get_doc_title(doc),
-                'path': os.path.relpath(doc.file_path, base_dir),
+                'path': os.path.relpath(doc.file_path, sequence_dir),
                 'module': doc.module,
                 'operation': doc.op,
                 'checksum': calculate_md5(doc.file_path)
@@ -81,7 +86,7 @@ def write_ectd_xml(sequence_number: str, doc_models: List[Any]) -> str:
             generate_us_regional_xml(us_regional_path, m1_docs, sequence_number)
         
         # Create DTD directory and copy standard DTDs if needed
-        ensure_dtd_files(base_dir)
+        ensure_dtd_files(sequence_dir)
         
         # Generate MD5 checksum for index.xml
         index_md5 = calculate_md5(index_path)
