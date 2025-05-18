@@ -67,6 +67,25 @@ curl -X POST http://localhost:3000/api/ind/sequence/create-region \
   -d '{"base": "0000", "region": "FDA", "plan": []}'
 ```
 
+## Resource Configuration
+
+The default startup scripts allocate **512&nbsp;MB** of memory for Node.js and
+limit the libuv thread pool to **4** threads. These values help keep the server
+lightweight on smaller machines.
+
+You can override these limits with environment variables:
+
+```bash
+export NODE_MEMORY_LIMIT=1024       # memory in MB
+export UV_THREADPOOL_SIZE=8
+```
+
+Start the application with custom limits by prefixing the startup script:
+
+```bash
+NODE_MEMORY_LIMIT=1024 UV_THREADPOOL_SIZE=8 ./start-trialsage.sh
+```
+
 ## License
 
 Proprietary software - All rights reserved
