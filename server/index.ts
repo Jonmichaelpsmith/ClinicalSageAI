@@ -2,7 +2,8 @@ import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
 import { createServer as createHttpServer } from 'http';
-import registerRoutes from './routes_fixed';
+// Removing problematic import
+// import registerRoutes from './routes_fixed';
 import { setupVite } from './vite';
 import { initializePerformanceOptimizations } from './initializers/performanceOptimizer';
 import { initializeQualityManagementApi } from './initializers/qualityApiInitializer';
@@ -86,7 +87,7 @@ app.use(
 app.use('/public', express.static(path.join(process.cwd(), 'public')));
 
 // Register API routes
-registerRoutes(app);
+// registerRoutes(app);
 
 // Import and register QMP routes
 app.use('/api/qmp', qmpRoutes);
