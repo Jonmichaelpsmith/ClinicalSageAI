@@ -9,7 +9,7 @@ import { useLocation } from 'wouter';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Plus, BookOpen, BarChart, FileUp, Activity } from 'lucide-react';
+import { ArrowLeft, Plus, BookOpen, BarChart, FileImport, Activity } from 'lucide-react';
 import { useTenant } from '../contexts/TenantContext';
 
 // Import template components
@@ -135,7 +135,7 @@ export default function ClientTemplatesPage() {
                   className="flex items-center"
                   onClick={() => setActiveView('import')}
                 >
-                  <FileUp size={16} className="mr-1" />
+                  <FileImport size={16} className="mr-1" />
                   Import
                 </Button>
               )}

@@ -153,7 +153,7 @@ const ClientPortalLanding = () => {
                 
                 <div className="flex gap-2">
                   <button 
-                    onClick={() => setLocation('/client-portal/admin')}
+                    onClick={() => setLocation('/client-portal/client-management')}
                     className="flex items-center gap-2 border border-gray-200 rounded-lg p-2 bg-gray-50 hover:bg-gray-100 transition-all duration-150"
                   >
                     <Users className="h-5 w-5 text-indigo-600" />

@@ -38,8 +38,6 @@ import HomeLanding from './pages/HomeLanding';
 // Lazy load all other pages grouped by related functionality
 // Client Portal features
 const ClientTemplatesPage = lazy(() => import('./pages/ClientTemplatesPage'));
-// Admin Dashboard - Used in the client portal admin route
-const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 // CER-related pages
 const CERPage = lazy(() => import('./pages/CerPage'));
 // Import the original CERV2Page directly, not the wrapper
@@ -118,6 +116,7 @@ const ReportsPage = lazy(() => import('./pages/ReportsPage'));
 const TenantManagement = lazy(() => import('./pages/TenantManagement'));
 const ClientManagement = lazy(() => import('./pages/ClientManagement'));
 const Settings = lazy(() => import('./pages/Settings'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 
 // 510(k) Automation is now fully integrated into CERV2Page
 // Standalone FDA510k pages have been permanently removed
@@ -239,24 +238,6 @@ function App() {
               <Route path="/client-portal/510k-dashboard">
                 {() => <CERV2Page initialDocumentType="510k" initialActiveTab="predicates" />}
               </Route>
-              {/* Admin dashboard */}
-              <Route path="/client-portal/admin">
-                {() =>
-                  securityService.getUserRoles().includes('admin') ? (
-                    <Suspense fallback={<LoadingPage />}>
-                      <AdminDashboard />
-                    </Suspense>
-                  ) : (
-                    <div className="p-8">
-                      <h2 className="text-xl font-semibold mb-2">
-                        Access Denied
-                      </h2>
-                      <p>You do not have permission to view this page.</p>
-                    </div>
-                  )
-                }
-              </Route>
-              
               <Route path="/client-portal/client-management">
                 {() => (
                   <Suspense fallback={<LoadingPage />}>
