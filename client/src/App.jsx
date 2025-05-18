@@ -225,6 +225,24 @@ function App() {
               <Route path="/client-portal/510k-dashboard">
                 {() => <CERV2Page initialDocumentType="510k" initialActiveTab="predicates" />}
               </Route>
+              {/* Admin dashboard */}
+              <Route path="/client-portal/admin">
+                {() =>
+                  securityService.getUserRoles().includes('admin') ? (
+                    <Suspense fallback={<LoadingPage />}>
+                      <AdminDashboard />
+                    </Suspense>
+                  ) : (
+                    <div className="p-8">
+                      <h2 className="text-xl font-semibold mb-2">
+                        Access Denied
+                      </h2>
+                      <p>You do not have permission to view this page.</p>
+                    </div>
+                  )
+                }
+              </Route>
+              
               <Route path="/client-portal/client-management">
                 {() => (
                   <Suspense fallback={<LoadingPage />}>

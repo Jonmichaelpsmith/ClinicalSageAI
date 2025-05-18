@@ -111,10 +111,13 @@ const OrganizationSwitcher = ({ onClose, onSwitchOrg }) => {
             )}
           </div>
           
-          {/* Manage organizations link */}
+          {/* Admin panel link */}
           <div className="mt-4 pt-4 border-t text-center">
-            <a href="#manage-organizations" className="text-sm text-primary hover:text-primary-dark">
-              Manage Organizations
+            <a
+              href="/client-portal/admin?tab=organizations"
+              className="text-sm text-primary hover:text-primary-dark"
+            >
+              Admin Panel
             </a>
           </div>
         </div>
