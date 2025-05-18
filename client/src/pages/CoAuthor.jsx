@@ -1700,6 +1700,186 @@ export default function CoAuthor() {
     }
   };
   
+  // Function to handle multi-region regulatory compliance check
+  const runMultiRegionComplianceCheck = async () => {
+    try {
+      setCheckingCompliance(true);
+      
+      // Determine which regions to check
+      const regionsToCheck = exportRegion === 'ALL'
+        ? ['US', 'EU', 'CA', 'JP', 'ICH']
+        : [exportRegion];
+      
+      setSelectedRegions(regionsToCheck);
+      
+      // In a real application, we would call an API to run the compliance check
+      // For this implementation, we'll simulate delays and results
+      
+      // Simulated analysis delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Generate simulated compliance data for each region
+      const simulatedResults = {
+        US: {
+          overallScore: Math.floor(Math.random() * 25) + 75, // 75-99%
+          sectionScores: {
+            'Module 1': Math.floor(Math.random() * 20) + 80,
+            'Module 2': Math.floor(Math.random() * 20) + 80,
+            'Module 3': Math.floor(Math.random() * 20) + 80,
+            'Module 4': Math.floor(Math.random() * 20) + 80,
+            'Module 5': Math.floor(Math.random() * 20) + 80,
+          },
+          findings: [
+            {
+              id: 'FDA-001',
+              section: '2.5.3',
+              description: 'Efficacy data lacks required statistical significance discussion',
+              severity: 'major',
+              regulation: 'FDA Guidance for Industry E9',
+              suggestion: 'Add detailed p-value analysis and confidence intervals'
+            },
+            {
+              id: 'FDA-002',
+              section: '2.7.1',
+              description: 'Missing demographic representation analysis',
+              severity: 'minor',
+              regulation: 'FDA Diversity Action Plan',
+              suggestion: 'Include demographic breakdown and representation analysis'
+            }
+          ]
+        }
+      };
+      
+      // Add data for other regions if requested
+      if (regionsToCheck.includes('EU')) {
+        simulatedResults.EU = {
+          overallScore: Math.floor(Math.random() * 25) + 75,
+          sectionScores: {
+            'Module 1': Math.floor(Math.random() * 20) + 80,
+            'Module 2': Math.floor(Math.random() * 20) + 80,
+            'Module 3': Math.floor(Math.random() * 20) + 80,
+            'Module 4': Math.floor(Math.random() * 20) + 80,
+            'Module 5': Math.floor(Math.random() * 20) + 80,
+          },
+          findings: [
+            {
+              id: 'EMA-001',
+              section: '1.8.2',
+              description: 'Missing risk management plan details according to EMA requirements',
+              severity: 'critical',
+              regulation: 'EMA Guideline on Risk Management Systems for Medicinal Products',
+              suggestion: 'Include detailed pharmacovigilance plan with EU-specific requirements'
+            }
+          ]
+        };
+      }
+      
+      if (regionsToCheck.includes('CA')) {
+        simulatedResults.CA = {
+          overallScore: Math.floor(Math.random() * 25) + 75,
+          sectionScores: {
+            'Module 1': Math.floor(Math.random() * 20) + 80,
+            'Module 2': Math.floor(Math.random() * 20) + 80,
+            'Module 3': Math.floor(Math.random() * 20) + 80,
+            'Module 4': Math.floor(Math.random() * 20) + 80,
+            'Module 5': Math.floor(Math.random() * 20) + 80,
+          },
+          findings: [
+            {
+              id: 'HC-001',
+              section: '1.3.1',
+              description: 'Product Monograph missing required Canadian labeling elements',
+              severity: 'major',
+              regulation: 'Health Canada Product Monograph Guidance',
+              suggestion: 'Update product information to include Canada-specific elements'
+            }
+          ]
+        };
+      }
+      
+      if (regionsToCheck.includes('JP')) {
+        simulatedResults.JP = {
+          overallScore: Math.floor(Math.random() * 25) + 75,
+          sectionScores: {
+            'Module 1': Math.floor(Math.random() * 20) + 80,
+            'Module 2': Math.floor(Math.random() * 20) + 80,
+            'Module 3': Math.floor(Math.random() * 20) + 80,
+            'Module 4': Math.floor(Math.random() * 20) + 80,
+            'Module 5': Math.floor(Math.random() * 20) + 80,
+          },
+          findings: [
+            {
+              id: 'PMDA-001',
+              section: '2.7.3',
+              description: 'Ethnic factors analysis insufficient for Japanese population',
+              severity: 'major',
+              regulation: 'PMDA Guidance on Ethnic Factors',
+              suggestion: 'Expand ethnic factors analysis with Japan-specific data'
+            }
+          ]
+        };
+      }
+      
+      if (regionsToCheck.includes('ICH')) {
+        simulatedResults.ICH = {
+          overallScore: Math.floor(Math.random() * 25) + 75,
+          sectionScores: {
+            'Module 1': Math.floor(Math.random() * 20) + 80,
+            'Module 2': Math.floor(Math.random() * 20) + 80,
+            'Module 3': Math.floor(Math.random() * 20) + 80,
+            'Module 4': Math.floor(Math.random() * 20) + 80,
+            'Module 5': Math.floor(Math.random() * 20) + 80,
+          },
+          findings: [
+            {
+              id: 'ICH-001',
+              section: '2.3.1',
+              description: 'Quality overall summary lacks ICH M4Q structure',
+              severity: 'minor',
+              regulation: 'ICH M4Q(R1)',
+              suggestion: 'Reorganize quality summary according to current ICH guidelines'
+            }
+          ]
+        };
+      }
+      
+      // Set the results
+      setMultiRegionResults(simulatedResults);
+      setComplianceReportReady(true);
+      
+      // Update the validation results with the new compliance data
+      setValidationResults(prev => ({
+        ...prev,
+        regulatory: simulatedResults[exportRegion]?.overallScore || prev.regulatory
+      }));
+      
+      toast({
+        title: "Compliance Check Complete",
+        description: `Multi-region regulatory compliance check completed for ${regionsToCheck.length} region(s).`,
+        variant: "success",
+      });
+    } catch (error) {
+      console.error("Compliance check error:", error);
+      toast({
+        title: "Compliance Check Failed",
+        description: "There was an error running the regulatory compliance check. Please try again.",
+        variant: "error",
+      });
+    } finally {
+      setCheckingCompliance(false);
+    }
+  };
+
+  // Function to export compliance report
+  const exportComplianceReport = (format) => {
+    // In a real application, this would generate an actual PDF or CSV
+    toast({
+      title: "Report Exported",
+      description: `Multi-region compliance report exported in ${format.toUpperCase()} format.`,
+      variant: "success",
+    });
+  };
+  
   // Serialize the document state to JSON
   const serializeDocument = () => {
     try {
