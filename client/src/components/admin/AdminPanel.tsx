@@ -32,15 +32,15 @@ export default function AdminPanel() {
     },
     onSuccess: (data) => {
       // toast call replaced
-  // Original: toast({
+      // Original: toast({
+      //   title: "Export Successful",
+      //   description: `Exported ${data.results.exported} new CSR files. Total available: ${data.results.filesInDir}`,
+      //   variant: "default",
+      // });
+      console.log('Toast would show:', {
         title: "Export Successful",
         description: `Exported ${data.results.exported} new CSR files. Total available: ${data.results.filesInDir}`,
-        variant: "default",
-      })
-  console.log('Toast would show:', {
-        title: "Export Successful",
-        description: `Exported ${data.results.exported} new CSR files. Total available: ${data.results.filesInDir}`,
-        variant: "default",
+        variant: "default"
       });
     },
     onError: (error: Error) => {
