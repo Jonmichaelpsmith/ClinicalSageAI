@@ -21,4 +21,4 @@ mkdir -p tmp
 
 # Run the application
 echo "Launching application..."
-node cleanup-toastify.js && NODE_OPTIONS="--trace-warnings" node server/index.js
+node cleanup-toastify.js && node server/index.js
