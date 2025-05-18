@@ -433,7 +433,7 @@ export default function CoAuthor() {
     checkGoogleAuth();
   }, []);
   
-  const [validationResults] = useState({
+  const [validationResults, setValidationResults] = useState({
     completeness: 78,
     consistency: 92,
     references: 65,
