@@ -39,6 +39,7 @@ import HomeLanding from './pages/HomeLanding';
 // Client Portal features
 const ClientTemplatesPage = lazy(() => import('./pages/ClientTemplatesPage'));
 // Admin Dashboard - Used in the client portal admin route
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 // CER-related pages
 const CERPage = lazy(() => import('./pages/CerPage'));
 // Import the original CERV2Page directly, not the wrapper
