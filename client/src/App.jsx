@@ -38,7 +38,7 @@ import HomeLanding from './pages/HomeLanding';
 // Lazy load all other pages grouped by related functionality
 // Client Portal features
 const ClientTemplatesPage = lazy(() => import('./pages/ClientTemplatesPage'));
-// Admin Dashboard
+// Admin Dashboard - Used in the client portal admin route
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 // CER-related pages
 const CERPage = lazy(() => import('./pages/CerPage'));
@@ -216,6 +216,20 @@ function App() {
                   <Suspense fallback={<LoadingPage />}>
                     <ClientTemplatesPage />
                   </Suspense>
+                )}
+              </Route>
+              <Route path="/client-portal/admin">
+                {() => (
+                  securityService.getUserRoles().includes('admin') ? (
+                    <Suspense fallback={<LoadingPage />}>
+                      <AdminDashboard />
+                    </Suspense>
+                  ) : (
+                    <div className="p-8">
+                      <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
+                      <p>You do not have permission to view this page.</p>
+                    </div>
+                  )
                 )}
               </Route>
               {/* 510k functionality is now integrated in CERV2Page */}
