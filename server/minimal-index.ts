@@ -34,11 +34,29 @@ app.use((req, res, next) => {
   next();
 });
 
-// Minimal health check endpoint
+// Health check endpoints
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     status: 'ok',
     message: 'TrialSage minimal server is running',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// API endpoints for core functionality
+app.get('/api/cerv2/status', (req, res) => {
+  res.status(200).json({
+    status: 'available',
+    message: 'CER V2 module is available',
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get('/api/qmp/data', (req, res) => {
+  res.status(200).json({
+    status: 'available',
+    message: 'QMP data is available',
+    data: [],
     timestamp: new Date().toISOString()
   });
 });
@@ -51,6 +69,17 @@ app.get('/', (req, res) => {
     res.sendFile(landingPath);
   } else {
     res.status(200).send('<h1>TrialSage Minimal Server</h1><p>Application is running in minimal mode while we fix the path-to-regexp error.</p>');
+  }
+});
+
+// Client portal route
+app.get('/client-portal', (req, res) => {
+  console.log('Serving client portal');
+  const landingPath = path.join(process.cwd(), 'clean_landing_page.html');
+  if (fs.existsSync(landingPath)) {
+    res.sendFile(landingPath);
+  } else {
+    res.status(200).send('<h1>TrialSage Client Portal</h1><p>Client portal is running in minimal mode while we fix the path-to-regexp error.</p>');
   }
 });
 
