@@ -136,6 +136,10 @@ console.log('FDA 510(k) routes registered at /api/fda510k');
 // Import and register health check routes
 app.use('/api', createHealthCheckRouter(dbPool));
 
+// Import and register fixed routes to resolve path-to-regexp error
+import fixedRoutes from './routes/fixed-routes.js';
+app.use('/api', fixedRoutes);
+
 // Import and initialize Quality Management API
 // Import database optimizer for 510(k) workflow performance
 
