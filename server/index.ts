@@ -2,8 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
 import { createServer as createHttpServer } from 'http';
-// Import minimal routes to get the application running
-import registerBasicRoutes from './routes_minimal';
+import registerRoutes from './routes_fixed';
 import { setupVite } from './vite';
 import { initializePerformanceOptimizations } from './initializers/performanceOptimizer';
 import { initializeQualityManagementApi } from './initializers/qualityApiInitializer';
@@ -86,9 +85,8 @@ app.use(
 );
 app.use('/public', express.static(path.join(process.cwd(), 'public')));
 
-// Register minimal routes to get basic functionality working
-registerBasicRoutes(app);
-console.log('Basic routes registered successfully');
+// Register API routes
+registerRoutes(app);
 
 // Import and register QMP routes
 app.use('/api/qmp', qmpRoutes);
@@ -134,10 +132,8 @@ console.log('FDA 510(k) routes registered at /api/fda510k');
 
 // We'll register the regulatory AI routes below with FDA 510(k) routes
 
-// Temporarily bypassing health check routes to fix path-to-regexp error
-// app.use('/api', createHealthCheckRouter(dbPool));
-
-// Temporarily removed fixed routes import to resolve path errors
+// Import and register health check routes
+app.use('/api', createHealthCheckRouter(dbPool));
 
 // Import and initialize Quality Management API
 // Import database optimizer for 510(k) workflow performance

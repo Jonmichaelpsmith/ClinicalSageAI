@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
+import ModalPortal from './ModalPortal';
 import { X, Download, Search, TrendingUp } from "lucide-react";
 import { SparklineChart, SparkLine, SparkPoint } from "recharts";
 import Fuse from "fuse.js";
@@ -59,8 +60,9 @@ export default function BenchmarksModal({ onClose }) {
   }, [benchmarks]);
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-slate-800 max-w-4xl w-full rounded-lg shadow-xl p-6 relative">
+    <ModalPortal>
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-white dark:bg-slate-800 max-w-4xl w-full rounded-lg shadow-xl p-6 relative">
         <button onClick={onClose} className="absolute top-3 right-3 text-gray-500 hover:text-red-500">
           <X size={20} />
         </button>
@@ -194,5 +196,6 @@ export default function BenchmarksModal({ onClose }) {
         )}
       </div>
     </div>
+    </ModalPortal>
   );
 }

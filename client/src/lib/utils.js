@@ -1,9 +1,11 @@
+import { clsx } from "clsx"
+import { twMerge } from "tailwind-merge"
+
 /**
- * Utility function to combine class names
- * 
- * @param  {...string} classes - Class names to combine
- * @returns {string} - Combined class names
+ * Merges class names with Tailwind CSS classes
+ * @param {...any} inputs - Class name inputs to merge
+ * @returns {string} - Merged class names
  */
-export function cn(...classes) {
-  return classes.filter(Boolean).join(' ');
+export function cn(...inputs) {
+  return twMerge(clsx(inputs))
 }

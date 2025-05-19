@@ -4,7 +4,8 @@ import React from 'react';
 import { useLocation, Link } from 'wouter';
 import { OrganizationSwitcher } from '../tenant/OrganizationSwitcher';
 import { ClientWorkspaceSwitcher } from '../tenant/ClientWorkspaceSwitcher';
-import { Settings, Users, Building2, SwitchCamera } from 'lucide-react';
+import { Settings, Users, Building2, SwitchCamera, Sparkles } from 'lucide-react';
+import { useLumenAiAssistant } from '../../contexts/LumenAiAssistantContext';
 import {
   Tooltip,
   TooltipContent,
@@ -14,6 +15,7 @@ import {
 
 export default function UnifiedTopNavV3({ activeTab, onTabChange, breadcrumbs = [] }) {
   const [, navigate] = useLocation();
+  const { openAssistant } = useLumenAiAssistant();
 
   // Format tab names for display
   const formatTabName = (name) => {
@@ -163,14 +165,25 @@ export default function UnifiedTopNavV3({ activeTab, onTabChange, breadcrumbs = 
         {['Risk Heatmap', 'Timeline Simulator', 'Ask Lumen AI'].map((tabKey) => (
           <button
             key={tabKey}
-            onClick={() => onTabChange(tabKey.replace(/ /g, ''))}
+            onClick={() => {
+              if (tabKey === 'Ask Lumen AI') {
+                // Open the AI assistant instead of changing tabs
+                openAssistant();
+              } else {
+                onTabChange(tabKey.replace(/ /g, ''));
+              }
+            }}
             className={`text-sm font-semibold px-3 py-1 rounded ${
               activeTab === tabKey.replace(/ /g, '')
                 ? 'text-indigo-600 border-b-2 border-indigo-600'
                 : 'text-gray-600 hover:text-indigo-600 hover:bg-indigo-50'
             } transition-all duration-200 ease-in-out focus:ring-2 focus:ring-indigo-300 active:scale-95`}
           >
-            {tabKey}
+            {tabKey === 'Ask Lumen AI' ? (
+              <span className="flex items-center">
+                <Sparkles className="w-4 h-4 mr-1" /> {tabKey}
+              </span>
+            ) : tabKey}
           </button>
         ))}
       </div>

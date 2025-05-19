@@ -28,17 +28,22 @@ import { useLocation } from 'wouter';
 import { Skeleton } from '../ui/skeleton';
 
 export function OrganizationSwitcher() {
+  const tenantContext = useTenant();
+  
+  // If tenant context is undefined, return early
+  if (!tenantContext) return null;
+  
   const { 
     currentOrganization, 
     setCurrentOrganization, 
-    organizations, 
-    isLoading 
-  } = useTenant();
+    organizations = [], // Provide default empty array
+    isLoading = false   // Provide default value
+  } = tenantContext;
   
   const [open, setOpen] = useState(false);
   const [, navigate] = useLocation();
 
-  // If there are no organizations available and we're not loading, we don't show the switcher
+  // If no organizations available and we're not loading, don't show the switcher
   if (organizations.length === 0 && !isLoading) return null;
 
   if (isLoading) {
@@ -60,13 +65,7 @@ export function OrganizationSwitcher() {
 
   const handleManageOrganizations = () => {
     setOpen(false);
-    
-    // Navigation path for organization management
-    // This path should match the route defined in App.jsx
-    navigate('/tenant-management');
-    
-    // Log navigation for debugging purposes
-    console.log('Navigating to tenant management page');
+    navigate('/client-portal/admin?tab=organizations');
   };
 
   return (
@@ -138,7 +137,7 @@ export function OrganizationSwitcher() {
             <CommandGroup>
               <CommandItem onSelect={handleManageOrganizations} className="py-2 px-3">
                 <Settings className="mr-2 h-4 w-4" />
-                <span>Manage Organizations</span>
+                <span>Admin Panel</span>
               </CommandItem>
             </CommandGroup>
           </CommandList>

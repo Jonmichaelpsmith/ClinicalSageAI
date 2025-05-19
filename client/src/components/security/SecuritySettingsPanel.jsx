@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useToast } from '../../hooks/use-toast';
-import { TenantContext } from '../../contexts/TenantContext';
+import { TenantContext } from '../../contexts/TenantContext.tsx';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { Alert, AlertTitle, AlertDescription } from '../../components/ui/alert';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';

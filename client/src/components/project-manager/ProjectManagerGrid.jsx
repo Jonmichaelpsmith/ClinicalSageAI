@@ -1,186 +1,158 @@
-/**
- * Project Manager Grid Component
- * 
- * This component displays a grid of active projects with their statuses,
- * completion percentages, missing parts, and deadlines.
- * It leverages the RegulatoryProjectMap brain for intelligent project tracking.
- */
-
-import React, { useState, useEffect } from 'react';
-import { Link } from 'wouter';
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card';
+import React from 'react';
+import { ChevronRight, Clock, BarChart2, FileText, Database, Search, Beaker, ClipboardList } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
-import { 
-  AlertCircle, 
-  Calendar, 
-  ChevronRight, 
-  ClipboardList,
-  FileText,
-  Info,
-  PlusCircle
-} from 'lucide-react';
-
-// Import project service
-import ProjectService from '../../services/ProjectService';
 
 /**
- * Project Manager Grid Component
+ * ProjectManagerGrid Component
  * 
- * @param {Object} props Component props
- * @param {string} props.userId Current user ID
- * @param {string} props.orgId Current organization ID
- * @param {Function} props.onProjectSelect Callback when a project is selected
+ * Displays a grid of projects with their status, progress, and relevant module information.
  */
-const ProjectManagerGrid = ({ userId, orgId, onProjectSelect }) => {
-  const [projects, setProjects] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Load projects when component mounts
-  useEffect(() => {
-    const init = async () => {
-      try {
-        const response = await fetch('/api/projects');
-        const data = await response.json();
-        setProjects(data.data);
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Error loading projects:', error);
-        setIsLoading(false);
-      }
-    };
-    init();
-  }, []);
-
-  // Render loading state
-  if (isLoading) {
-    return (
-      <Card className="min-h-[240px] flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-      </Card>
-    );
-  }
-
-  // Render empty state if no projects
-  if (projects.length === 0) {
-    return (
-      <Card className="min-h-[240px] flex flex-col items-center justify-center p-6 text-center">
-        <Info className="h-10 w-10 text-muted-foreground mb-2" />
-        <h3 className="text-lg font-medium">No Active Projects</h3>
-        <p className="text-sm text-muted-foreground mt-1 mb-4">
-          Get started by creating your first regulatory project
-        </p>
-        <Button>
-          <PlusCircle className="h-4 w-4 mr-2" />
-          New Project
-        </Button>
-      </Card>
-    );
-  }
-
-  // Helper to determine project status badge variant and label
-  const getStatusBadge = (project) => {
-    const { progress, issues } = project;
-    
-    if (progress < 25) {
-      return { label: 'Starting', variant: 'outline' };
-    } else if (issues > 0) {
-      return { label: 'Issues', variant: 'destructive' };
-    } else if (progress === 100) {
-      return { label: 'Complete', variant: 'success' };
-    } else if (progress >= 75) {
-      return { label: 'Near Complete', variant: 'default' };
-    } else {
-      return { label: 'In Progress', variant: 'secondary' };
+const ProjectManagerGrid = ({ projects = [] }) => {
+  // Get appropriate icon based on module
+  const getModuleIcon = (module) => {
+    switch (module) {
+      case 'cer-generator':
+      case 'cer2v':
+        return <FileText className="h-4 w-4 text-green-600" />;
+      case 'ind-wizard':
+        return <FileText className="h-4 w-4 text-blue-600" />;
+      case 'cmc-wizard':
+      case 'cmc-module':
+        return <Beaker className="h-4 w-4 text-amber-600" />;
+      case 'study-architect':
+        return <ClipboardList className="h-4 w-4 text-orange-600" />;
+      case 'csr-intelligence':
+        return <Search className="h-4 w-4 text-teal-600" />;
+      case 'analytics':
+        return <BarChart2 className="h-4 w-4 text-indigo-600" />;
+      case 'trial-vault':
+      case 'vault':
+        return <Database className="h-4 w-4 text-slate-600" />;
+      default:
+        return <FileText className="h-4 w-4 text-gray-600" />;
     }
   };
 
-  return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold tracking-tight">Project Manager</h2>
-        <Button variant="outline" size="sm">
-          <PlusCircle className="h-4 w-4 mr-2" />
-          New Project
-        </Button>
-      </div>
+  // Get badge variant based on status
+  const getBadgeVariant = (status) => {
+    switch (status) {
+      case 'completed':
+        return 'success';
+      case 'in_progress':
+        return 'default';
+      case 'pending':
+        return 'secondary';
+      case 'not_started':
+        return 'outline';
+      case 'at_risk':
+        return 'destructive';
+      default:
+        return 'outline';
+    }
+  };
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {projects.map((project) => {
-          const status = getStatusBadge(project);
-          const moduleLink = ProjectService.getProjectModuleLink(project.type);
-          
-          return (
-            <Card key={project.id} className="overflow-hidden">
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg">{project.id}</CardTitle>
-                  <Badge variant={status.variant}>{status.label}</Badge>
-                </div>
-                <CardDescription>{project.name}</CardDescription>
-              </CardHeader>
-              
-              <CardContent className="pb-2">
-                <div className="mb-2">
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>Progress</span>
-                    <span>{project.progress}%</span>
-                  </div>
-                  <Progress value={project.progress} className="h-2" />
-                </div>
-                
-                <div className="space-y-2 mt-4">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground flex items-center">
-                      <Calendar className="h-3.5 w-3.5 mr-1" />
-                      Due Date
-                    </span>
-                    <span>{new Date(project.dueDate).toLocaleDateString()}</span>
-                  </div>
-                  
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground flex items-center">
-                      <FileText className="h-3.5 w-3.5 mr-1" />
-                      Status
-                    </span>
-                    <span>{project.phase.replace(/_/g, ' ')}</span>
-                  </div>
-                  
-                  {project.issues > 0 && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-destructive flex items-center">
-                        <AlertCircle className="h-3.5 w-3.5 mr-1" />
-                        Issues
-                      </span>
-                      <span className="text-destructive">{project.issues} to resolve</span>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-              
-              <Separator />
-              
-              <CardFooter className="pt-2">
-                <Button asChild variant="ghost" className="w-full justify-between" size="sm">
-                  <Link to={moduleLink}>
-                    Work on Project
-                    <ChevronRight className="h-4 w-4 ml-1" />
-                  </Link>
-                </Button>
-              </CardFooter>
-            </Card>
-          );
-        })}
+  // Status display text
+  const getStatusDisplay = (status) => {
+    switch (status) {
+      case 'completed':
+        return 'Completed';
+      case 'in_progress':
+        return 'In Progress';
+      case 'pending':
+        return 'Pending';
+      case 'not_started':
+        return 'Not Started';
+      case 'at_risk':
+        return 'At Risk';
+      default:
+        return status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ');
+    }
+  };
+
+  // Calculate days remaining
+  const getDaysRemaining = (dueDate) => {
+    const today = new Date();
+    const due = new Date(dueDate);
+    const diffTime = due - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  if (!projects || projects.length === 0) {
+    return (
+      <div className="text-center p-8">
+        <FileText className="h-12 w-12 mx-auto text-gray-300" />
+        <h3 className="mt-4 text-lg font-medium text-gray-600">No Projects Found</h3>
+        <p className="mt-1 text-gray-500">There are no projects to display.</p>
       </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {projects.map((project) => (
+        <div
+          key={project.id}
+          className="bg-white border rounded-lg shadow-sm hover:shadow transition-shadow p-4"
+        >
+          <div className="flex items-start justify-between mb-3">
+            <div>
+              <div className="flex items-center">
+                {getModuleIcon(project.module)}
+                <h3 className="ml-2 font-medium text-gray-800">{project.name}</h3>
+              </div>
+              <div className="flex items-center mt-1 text-xs text-gray-500">
+                <Clock className="h-3.5 w-3.5 mr-1" />
+                <span>
+                  Due: {new Date(project.dueDate).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                  })}
+                </span>
+                <span className="mx-2">•</span>
+                <span>{getDaysRemaining(project.dueDate)} days remaining</span>
+              </div>
+            </div>
+            <Badge variant={getBadgeVariant(project.status)}>
+              {getStatusDisplay(project.status)}
+            </Badge>
+          </div>
+
+          <div className="mb-4">
+            <div className="flex justify-between items-center text-xs mb-1">
+              <span>Progress</span>
+              <span>{project.progress}%</span>
+            </div>
+            <Progress value={project.progress} className="h-2" />
+          </div>
+
+          <div className="flex justify-between items-center">
+            <div className="flex items-center">
+              <div className="flex items-center space-x-1">
+                <Badge
+                  variant="outline"
+                  className={
+                    project.priority === 'high'
+                      ? 'text-red-700 border-red-200 bg-red-50'
+                      : project.priority === 'medium'
+                      ? 'text-amber-700 border-amber-200 bg-amber-50'
+                      : 'text-green-700 border-green-200 bg-green-50'
+                  }
+                >
+                  {project.priority.charAt(0).toUpperCase() + project.priority.slice(1)} Priority
+                </Badge>
+              </div>
+            </div>
+            <Button variant="ghost" size="sm" className="text-primary">
+              <span>View Details</span>
+              <ChevronRight className="ml-1 h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      ))}
     </div>
   );
 };

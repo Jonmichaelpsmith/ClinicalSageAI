@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'wouter';
 import { ArrowRight, ShieldCheck, BarChart2, UploadCloud, BookOpen, FileText, ChartPie, Clipboard, Users, Microscope, Database, ZapOff } from 'lucide-react';
-import Slider from "../lightweight-wrappers.js";
+import { Slider } from "../lightweight-wrappers.jsx";
 // // import 'slick-carousel/slick/slick.css' - commented out by resolver - commented out by resolver;
 // // import 'slick-carousel/slick/slick-theme.css' - commented out by resolver - commented out by resolver;
 

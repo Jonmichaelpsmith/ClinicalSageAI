@@ -1,3 +1,0 @@
-"""
-TrialSage Server Package
-"""
