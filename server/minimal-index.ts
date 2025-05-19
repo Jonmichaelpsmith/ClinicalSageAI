@@ -100,31 +100,22 @@ app.get('/', (req, res) => {
   }
 });
 
-// Client portal - serve the no-login direct access portal
+// Client portal - use legacy/portal.html as the real client portal
 app.get('/client-portal', (req, res) => {
-  console.log('Serving direct access portal without login');
+  console.log('Serving legacy portal - the real client portal');
   
-  // Use our direct access portal that doesn't require login
-  const directAccessPortalPath = path.join(process.cwd(), 'direct-access-portal.html');
-  
-  if (fs.existsSync(directAccessPortalPath)) {
-    console.log(`Found direct access portal at: ${directAccessPortalPath}`);
-    return res.sendFile(directAccessPortalPath);
-  }
-  
-  // If direct access portal not found, try legacy portal
-  console.log('Direct access portal not found, trying legacy portal');
+  // Use legacy/portal.html as it's from May 17
   const legacyPortalPath = path.join(process.cwd(), 'legacy/portal.html');
   
   if (fs.existsSync(legacyPortalPath)) {
-    console.log(`Found portal at: ${legacyPortalPath}`);
+    console.log(`Found real client portal at: ${legacyPortalPath}`);
     return res.sendFile(legacyPortalPath);
   }
   
   // If no portal is found, send an error
   res.status(404).send(`
     <h1>Client Portal Not Found</h1>
-    <p>Could not locate any client portal implementation.</p>
+    <p>Could not locate the real client portal implementation.</p>
   `);
 });
 
