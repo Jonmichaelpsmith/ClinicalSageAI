@@ -19,9 +19,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Info, HelpCircle, BookOpen } from 'lucide-react';
 
-function About510kDialog() {
+function About510kDialog({ open, onOpenChange }) {
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         <Button 
           variant="ghost" 

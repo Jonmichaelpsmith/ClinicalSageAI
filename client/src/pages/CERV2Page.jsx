@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 // Safely handle LumenAiAssistant context access with fallbacks
 import { useLumenAiAssistant } from '@/contexts/LumenAiAssistantContext';
+import { useDialogContext } from '@/contexts/DialogContext';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,6 @@ import { initializeStates, saveState, loadState, recoverWorkflow, getWorkflowDia
 import WorkflowContinuityManager from '../components/recovery/WorkflowContinuityManager';
 import DeviceProfileSelector from '../components/510k/DeviceProfileSelector';
 import NavigationBlocker from '../components/navigation/NavigationBlocker';
-import { cleanupModals } from '../lib/modalHelpers';
 
 // Implementation of openDocumentSafely function
 const openDocumentSafely = (documentPath, documentName, toast) => {
@@ -117,6 +117,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   // Use the safe assistant hook instead of direct context access
   const assistantContext = safeAssistantHook();
   const { openAssistant = () => {}, setModuleContext = () => {} } = assistantContext || {};
+  const { resetDialogs } = useDialogContext();
   const { toast } = useToast();
   
   // State variables
@@ -157,37 +158,24 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   const [showDebugInfo, setShowDebugInfo] = useState(true); // Debug UI visibility toggle
   const [saveError, setSaveError] = useState(null); // Error state for save operations
   
-  // Enhanced modal and UI cleanup function - call this whenever switching tabs or views
-  const cleanupModals = useCallback(() => {
-    // Close any active modals, dialogs, or overlays by setting their state to false
+  // Modal state management to prevent UI overlay issues
+  const resetAllModals = useCallback(() => {
+    // Reset all modal states to false
     setShowWelcomeDialog(false);
     setShowDeviceIntakeForm(false);
     setShowFolderCreate(false);
     setShowESTARDemo(false);
     setShowProcessingResults(false);
-    
-    // Force removal of any modal-related DOM elements that might be lingering
-    document.querySelectorAll('.modal-overlay, .modal-backdrop, .dialog-container, [role="dialog"]').forEach(el => {
-      el.remove();
-    });
+    setShowRiskDialog(false);
+    setShowFixesDialog(false);
+    setShowTemplateDialog(false);
+    setShowDeviceInfoDialog(false);
 
-    // Remove any stacked backdrop elements that might be causing UI issues
-    document.querySelectorAll('.fixed.inset-0, .absolute.inset-0').forEach(el => {
-      if (el.classList.contains('bg-black') || 
-          el.classList.contains('bg-opacity') || 
-          el.classList.contains('bg-gray') ||
-          el.style.zIndex >= 40) {
-        el.remove();
-      }
-    });
+    // Also clear any dialogs managed by context
+    if (resetDialogs) resetDialogs();
 
-    // Clean up any floating menu elements
-    document.querySelectorAll('.floating-menu, .dropdown-menu, .popup-menu').forEach(el => {
-      el.remove();
-    });
-    
-    console.log('UI cleanup: All modals, overlays and floating UI elements have been forcibly unmounted');
-  }, []);
+    console.log('Modal state reset: All modals closed');
+  }, [resetDialogs]);
   
   // Enhanced helper function to load saved state from localStorage with multi-key support
   const loadSavedState = (key, defaultValue) => {
@@ -534,7 +522,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     console.log("CERV2Page: deviceProfile state updated in useEffect:", deviceProfile);
   }, [deviceProfile]);
   
-  // Watch for tab changes to clean up any UI overlays
+  // Watch for tab changes to reset modal state and prevent UI overlays
   useEffect(() => {
     // Update the document title
     document.title = `TrialSage - ${documentType.toUpperCase()} - ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}`;
@@ -542,11 +530,11 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     // Save the current tab to localStorage for persistence
     saveState('activeTab', activeTab);
     
-    // Clean up any lingering UI elements when tab changes
-    cleanupModals();
+    // Reset modal state to prevent UI overlays when tab changes
+    resetAllModals();
     
-    console.log(`Tab changed to: ${activeTab} - cleaning up UI elements`);
-  }, [activeTab, documentType, cleanupModals]);
+    console.log(`Tab changed to: ${activeTab} - modal state reset`);
+  }, [activeTab, documentType, resetAllModals]);
 
   // Update device profile when device information changes and persist it
   useEffect(() => {
@@ -1352,6 +1340,9 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
         // Use a slight delay to allow the loading state to be visible
         // and to ensure state updates are processed correctly
         setTimeout(() => {
+          // Reset any open dialogs before switching steps
+          resetAllModals();
+
           // Update step with proper persistence
           setWorkflowStep(step);
           saveState('workflowStep', step);
@@ -1359,9 +1350,6 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
           // Update progress with proper persistence
           setWorkflowProgress(progressMap[step]);
           saveState('workflowProgress', progressMap[step]);
-          
-          // Clean up any open modals or overlays before switching tabs
-          cleanupModals();
           
           // Update tab with proper persistence
           setActiveTab(targetTab);
@@ -2063,7 +2051,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                           const newProgress = Math.round((7 / 8) * 100);
                           setWorkflowProgress(newProgress);
                           saveState('workflowProgress', newProgress);
-                          cleanupModals();
+                          resetAllModals();
                           setActiveTab('estar-builder');
                           
                           toast({
@@ -2863,7 +2851,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                 {group.label}
               </div>
               <div className="flex space-x-1">
-                {group.tabs && Array.isArray(group.tabs) && group.tabs.map((tab) => (
+                {group.tabs.map((tab) => (
                   <Button
                     key={tab.id}
                     variant={activeTab === tab.id ? 'default' : 'ghost'}

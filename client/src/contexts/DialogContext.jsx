@@ -6,7 +6,8 @@ const DialogContext = createContext({
   dialogType: null,
   dialogData: null,
   openDialog: () => {},
-  closeDialog: () => {}
+  closeDialog: () => {},
+  resetDialogs: () => {}
 });
 
 // Custom hook to use dialog context
@@ -33,6 +34,13 @@ export const DialogContextProvider = ({ children }) => {
     }, 300);
   };
 
+  // Immediately close any open dialog and clear its state
+  const resetDialogs = () => {
+    setIsOpen(false);
+    setDialogType(null);
+    setDialogData(null);
+  };
+
   return (
     <DialogContext.Provider
       value={{
@@ -40,7 +48,8 @@ export const DialogContextProvider = ({ children }) => {
         dialogType,
         dialogData,
         openDialog,
-        closeDialog
+        closeDialog,
+        resetDialogs
       }}
     >
       {children}
