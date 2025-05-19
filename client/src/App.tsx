@@ -9,6 +9,7 @@ import NotFound from "./pages/not-found";
 import CERV2Page from "./pages/CERV2Page";
 import ClientPortalLanding from "./pages/ClientPortalLanding";
 import HomeLanding from "./pages/HomeLanding";
+import { useEffect } from "react";
 
 function Router() {
   return (
