@@ -15,15 +15,60 @@ function Router() {
     <Switch>
       <Route path="/" component={() => (
         <Layout>
-          <LandingPage />
+          <HomeLanding />
         </Layout>
       )} />
       <Route path="/client-portal" component={() => (
         <Layout>
-          <ClientPortal />
+          <ClientPortalLanding />
         </Layout>
       )} />
       <Route path="/cerv2" component={() => (
+        <Layout>
+          <CERV2Page />
+        </Layout>
+      )} />
+      <Route path="/ind-wizard" component={() => (
+        <Layout>
+          <CERV2Page />
+        </Layout>
+      )} />
+      <Route path="/coauthor" component={() => (
+        <Layout>
+          <CERV2Page />
+        </Layout>
+      )} />
+      <Route path="/cmc" component={() => (
+        <Layout>
+          <CERV2Page />
+        </Layout>
+      )} />
+      <Route path="/vault" component={() => (
+        <Layout>
+          <CERV2Page />
+        </Layout>
+      )} />
+      <Route path="/regulatory-intelligence-hub" component={() => (
+        <Layout>
+          <CERV2Page />
+        </Layout>
+      )} />
+      <Route path="/regulatory-risk-dashboard" component={() => (
+        <Layout>
+          <CERV2Page />
+        </Layout>
+      )} />
+      <Route path="/study-architect" component={() => (
+        <Layout>
+          <CERV2Page />
+        </Layout>
+      )} />
+      <Route path="/analytics" component={() => (
+        <Layout>
+          <CERV2Page />
+        </Layout>
+      )} />
+      <Route path="/regulatory-ai-test" component={() => (
         <Layout>
           <CERV2Page />
         </Layout>
