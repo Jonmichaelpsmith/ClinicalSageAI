@@ -10,8 +10,8 @@
 
 import React, { useState, useEffect } from 'react';
 import ErrorBoundary from '@/ErrorBoundary';
-import useHealthMonitor from '@/hooks/useHealthMonitor';
-import useNetworkResilience from '@/hooks/useNetworkResilience';
+import { useHealthMonitor } from '@/hooks/useHealthMonitor';
+import { useNetworkResilience } from '@/hooks/useNetworkResilience';
 import errorAnalytics from '@/utils/errorAnalytics';
 import storageResilience from '@/utils/storageResilience';
 import memoryManagement from '@/utils/memoryManagement';
@@ -32,13 +32,17 @@ export default function StabilityEnabledLayout({ children }) {
     console.log('Error analytics initialized with session ID:', analyticsInfo.sessionId);
     
     // Initialize storage resilience
-    storageResilience.initStorageResilience()
-      .then(status => {
-        console.log('Storage resilience initialized:', status);
-      })
-      .catch(err => {
-        console.error('Failed to initialize storage resilience:', err);
-      });
+    if (typeof storageResilience.initStorageResilience === 'function') {
+      storageResilience.initStorageResilience()
+        .then(status => {
+          console.log('Storage resilience initialized:', status);
+        })
+        .catch(err => {
+          console.error('Failed to initialize storage resilience:', err);
+        });
+    } else {
+      console.warn('Storage resilience initialization function not available, using defaults');
+    }
     
     // Initialize memory management monitoring
     memoryManagement.setupMemoryMonitoring();

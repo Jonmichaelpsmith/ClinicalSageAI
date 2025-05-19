@@ -27,6 +27,7 @@ export default function GenerateFullCerButton({ onCompletion }) {
     { name: 'Gathering device information', duration: 1200 },
     { name: 'Analyzing clinical data', duration: 1500 },
     { name: 'Retrieving literature review data', duration: 1200 },
+    { name: 'Integrating QMP data (ICH E6(R3))', duration: 1300 },
     { name: 'Synthesizing regulatory requirements', duration: 1000 },
     { name: 'Building document structure', duration: 1000 },
     { name: 'Generating content sections', duration: 2000 },
@@ -154,11 +155,49 @@ export default function GenerateFullCerButton({ onCompletion }) {
           "Device Description",
           "Literature Review",
           "Clinical Data Analysis",
-          "Risk Assessment",
+          "Risk Assessment", 
+          "Quality Management Plan (ICH E6(R3))",
+          "Regulatory Traceability Matrix",
           "Conclusions"
         ],
         includeAppendices: true
       };
+      
+      // Fetch QMP data with enhanced metadata to include in the generation process
+      let qmpData = null;
+      try {
+        const qmpResponse = await fetch('/api/qmp-api/data', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (qmpResponse.ok) {
+          qmpData = await qmpResponse.json();
+          
+          // Extract metadata if available, or use defaults for backward compatibility
+          const metadata = qmpData.metadata || {
+            planName: 'Quality Management Plan',
+            planVersion: '1.0.0',
+            authorName: 'System User',
+            authorRole: 'Quality Manager',
+            dateCreated: new Date().toISOString(),
+            lastUpdated: new Date().toISOString(),
+            linkedCerVersion: 'Current Draft'
+          };
+          
+          // Ensure metadata is properly structured in the QMP data
+          qmpData = {
+            ...qmpData,
+            metadata: metadata
+          };
+          
+          console.log('Fetched QMP data with metadata for ICH E6(R3) integration into CER');
+        }
+      } catch (qmpError) {
+        console.warn('Failed to fetch QMP data, proceeding without ICH E6(R3) integration:', qmpError);
+      }
       
       // Make API call to start the generation process
       console.log('Starting CER generation process via API');
@@ -171,7 +210,8 @@ export default function GenerateFullCerButton({ onCompletion }) {
           deviceData,
           clinicalData,
           literature,
-          templateSettings
+          templateSettings,
+          qmpData // Include QMP data for ICH E6(R3) integration
         })
       });
       

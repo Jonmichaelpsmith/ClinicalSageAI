@@ -1,325 +1,467 @@
 /**
  * CER Validation API Routes
  * 
- * This module provides endpoints for validating Clinical Evaluation Reports
- * against regulatory requirements from multiple frameworks.
+ * This module provides the API endpoints for validating Clinical Evaluation Reports (CERs)
+ * against various regulatory frameworks and ensuring compliance with standards.
  */
 
 const express = require('express');
 const router = express.Router();
+const { isAuthenticated } = require('../middleware/auth');
 const { OpenAI } = require('openai');
 
-// Initialize OpenAI client
+// Initialize OpenAI client with GPT-4o for advanced validation
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Validation framework requirements
-const validationFrameworks = {
-  mdr: {
-    name: 'EU MDR',
-    requirements: [
-      'GSPR mapping for all safety and performance claims',
-      'State-of-the-art analysis with current standards',
-      'Literature search methodology documentation',
-      'Benefit-risk analysis',
-      'Post-market surveillance plan',
-      'PMCF plan compliant with MDCG 2020-7',
-      'Device description and intended purpose',
-      'Qualifications of evaluators',
-      'Complete bibliography with proper citations'
-    ]
-  },
-  fda: {
-    name: 'US FDA',
-    requirements: [
-      'Substantial equivalence documentation (for 510(k))',
-      'Benefit-risk determination',
-      'Performance testing data',
-      'Clinical study protocols and results',
-      'Device description and indications for use',
-      'Complete reference list with proper citations'
-    ]
-  },
-  ukca: {
-    name: 'UKCA',
-    requirements: [
-      'UK-specific clinical evidence requirements',
-      'UKCA marking compliance documentation',
-      'Post-market surveillance plan for UK market',
-      'UK Responsible Person details',
-      'Complete reference list with proper citations'
-    ]
-  },
-  health_canada: {
-    name: 'Health Canada',
-    requirements: [
-      'Device classification according to Canadian regulations',
-      'Canadian Medical Device Licence requirements',
-      'Risk classification and management',
-      'Clinical evidence specific to Canadian guidelines',
-      'Complete reference list with proper citations'
-    ]
-  },
-  ich: {
-    name: 'ICH',
-    requirements: [
-      'International harmonization documentation',
-      'Cross-reference to regional requirements',
-      'Complete reference list with proper citations'
-    ]
-  }
-};
-
 /**
- * Validate a CER document using GPT-4o AI analysis
- * POST /api/cer/documents/:id/validate
+ * Validate CER Document Endpoint
+ * Validates a CER document against a specific regulatory framework
  */
-router.post('/documents/:id/validate', async (req, res) => {
+router.post('/documents/:documentId/validate', async (req, res) => {
   try {
-    const documentId = req.params.id;
-    const { framework = 'mdr', sections } = req.body;
+    const { documentId } = req.params;
+    const { framework = 'mdr', sections = [] } = req.body;
     
-    // Check if OpenAI API key is available
-    if (!process.env.OPENAI_API_KEY) {
-      throw new Error('OpenAI API key is required for regulatory validation. Please add this to environment variables.');
+    console.log(`Validating document ${documentId} against ${framework} framework`);
+    
+    // Get document from database
+    const documentService = require('../services/documentService');
+    const document = await documentService.getDocumentById(documentId);
+    
+    if (!document) {
+      return res.status(404).json({ error: 'Document not found' });
     }
     
-    // Prepare document for validation
-    const document = {
-      id: documentId,
-      sections: sections || []
+    // Load regulatory requirements from database based on framework
+    const regulatoryService = require('../services/regulatoryService');
+    const regulatoryRequirements = await regulatoryService.getRequirements(framework);
+    
+    // Create a validation context with document content and requirements
+    const validationContext = {
+      document: document,
+      framework: framework,
+      requirements: regulatoryRequirements,
+      sectionsToValidate: sections.length > 0 ? sections : null // If specified, only validate these sections
     };
     
-    // Log the validation request
-    console.log(`Validating document ${documentId} against ${framework} framework with GPT-4o`);
+    // Use regulatory validation service to perform validation
+    const validationService = require('../services/validationService');
+    const validationResults = await validationService.validateDocument(validationContext);
     
-    // Always use AI validation with GPT-4o
-    const validationResults = await validateWithAI(document, framework);
-    
-    // Add additional validation details 
-    validationResults.validationMethod = 'ai';
-    validationResults.documentId = documentId;
-    validationResults.frameworkUsed = framework;
-    validationResults.validationDate = new Date().toISOString();
+    // Log validation result summary
+    console.log(`Validation complete for document ${documentId}. Score: ${validationResults.validationResults.summary.overallScore}. Critical issues: ${validationResults.validationResults.summary.criticalIssues}`);
     
     res.json(validationResults);
   } catch (error) {
     console.error('Error validating document:', error);
-    res.status(500).json({
-      error: 'Failed to validate document',
-      message: error.message
-    });
+    res.status(500).json({ error: error.message });
   }
 });
 
+/**
+ * Enhanced Validation Endpoint using GPT-4o 
+ * Provides deeper analysis including hallucination detection, reference checking,
+ * and regulatory gap analysis
+ */
+router.post('/documents/:documentId/validate-enhanced', async (req, res) => {
+  try {
+    const { documentId } = req.params;
+    const { framework = 'mdr', sections = [], options = {} } = req.body;
+    
+    console.log(`Running enhanced validation for document ${documentId} against ${framework}`);
+    
+    // Get document from database
+    const documentService = require('../services/documentService');
+    const document = await documentService.getDocumentById(documentId);
+    
+    if (!document) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+    
+    // Load regulatory requirements from database based on framework
+    const regulatoryService = require('../services/regulatoryService');
+    const regulatoryRequirements = await regulatoryService.getRequirements(framework);
+    
+    // Extract references from document for verification
+    const referenceService = require('../services/referenceService');
+    const references = await referenceService.extractReferences(document);
+    
+    // Initialize base result structure
+    const enhancedValidationResults = {
+      documentId,
+      framework,
+      timestamp: new Date().toISOString(),
+      analysisMode: 'enhanced',
+      validationResults: {
+        summary: {
+          overallScore: 0,
+          criticalIssues: 0,
+          majorIssues: 0,
+          minorIssues: 0,
+          recommendations: 0
+        },
+        hallucinations: [],
+        referenceIssues: [],
+        sections: [],
+        regulatoryRequirements: []
+      }
+    };
+    
+    // 1. Perform enhanced validation using GPT-4o
+    console.log("Performing GPT-4o enhanced validation analysis...");
+    const openaiService = require('../services/openaiService');
+    
+    // Convert document to text for analysis
+    const documentText = documentService.convertToText(document);
+    
+    // Build prompt for GPT-4o
+    const systemPrompt = `You are an expert regulatory validator for Clinical Evaluation Reports (CER) in the medical device industry.
+You are analyzing a CER document for compliance with ${framework} framework.
+Your task is to:
+1. Identify potential hallucinations (claims not supported by evidence)
+2. Detect any inconsistencies within the document
+3. Evaluate adherence to regulatory requirements
+4. Find any scientific or medical inaccuracies
+5. Provide an overall assessment with specific, actionable recommendations
 
+Format your response as a valid JSON with the following structure:
+{
+  "summary": {
+    "overallScore": <number between 0-100>,
+    "criticalIssues": <number>,
+    "majorIssues": <number>,
+    "minorIssues": <number>,
+    "recommendations": <number>
+  },
+  "hallucinations": [
+    {
+      "text": "<the problematic claim>",
+      "location": "<section reference>",
+      "confidence": <number between 0-1>,
+      "details": "<explanation>",
+      "suggestedCorrection": "<suggested fix>"
+    }
+  ],
+  "sections": [
+    {
+      "name": "<section name>",
+      "score": <number between 0-100>,
+      "issues": [
+        {
+          "severity": "<critical|major|minor>",
+          "description": "<issue description>",
+          "location": "<precise location in document>"
+        }
+      ],
+      "recommendations": ["<recommendation 1>", "<recommendation 2>"]
+    }
+  ],
+  "regulatoryRequirements": [
+    {
+      "requirement": "<regulatory reference>",
+      "compliant": <boolean>,
+      "details": "<explanation>"
+    }
+  ]
+}`;
+
+    try {
+      const gpt4oResponse = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `Analyze this Clinical Evaluation Report for compliance with ${framework}:\n\n${documentText}` }
+        ],
+        temperature: 0.2,
+        response_format: { type: "json_object" }
+      });
+      
+      // Parse and validate the response
+      const aiAnalysis = JSON.parse(gpt4oResponse.choices[0].message.content);
+      
+      // Update enhanced validation results with AI analysis
+      enhancedValidationResults.validationResults.summary = aiAnalysis.summary;
+      enhancedValidationResults.validationResults.hallucinations = aiAnalysis.hallucinations;
+      enhancedValidationResults.validationResults.sections = aiAnalysis.sections;
+      enhancedValidationResults.validationResults.regulatoryRequirements = aiAnalysis.regulatoryRequirements;
+      
+      console.log(`GPT-4o analysis complete. Overall score: ${aiAnalysis.summary.overallScore}`);
+    } catch (openaiError) {
+      console.error("Error during GPT-4o analysis:", openaiError);
+      throw new Error(`Enhanced validation failed during AI analysis: ${openaiError.message}`);
+    }
+    
+    // 2. Verify references against literature databases
+    console.log("Verifying document references against literature databases...");
+    
+    try {
+      const verifiedReferences = await Promise.all(
+        references.map(reference => referenceService.verifyReference(reference))
+      );
+      
+      // Add reference issues to results
+      enhancedValidationResults.validationResults.referenceIssues = verifiedReferences
+        .filter(result => !result.valid)
+        .map(result => ({
+          reference: result.reference,
+          valid: false,
+          confidence: result.confidence,
+          issue: result.issue,
+          suggestedCorrection: result.suggestedCorrection
+        }));
+      
+      console.log(`Reference verification complete. Found ${enhancedValidationResults.validationResults.referenceIssues.length} issues.`);
+    } catch (referenceError) {
+      console.error("Error during reference verification:", referenceError);
+      throw new Error(`Enhanced validation failed during reference verification: ${referenceError.message}`);
+    }
+    
+    // Log validation result summary
+    console.log(`Enhanced validation complete for document ${documentId}. Score: ${enhancedValidationResults.validationResults.summary.overallScore}. Critical issues: ${enhancedValidationResults.validationResults.summary.criticalIssues}`);
+    
+    res.json(enhancedValidationResults);
+  } catch (error) {
+    console.error('Error performing enhanced validation:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 /**
- * Validate a document using OpenAI's GPT-4o model
- * @param {Object} document - The document to validate 
- * @param {string} framework - The regulatory framework to validate against
- * @returns {Promise<Object>} - Validation results with detailed analysis
+ * Check Specific Section Endpoint
+ * Validates a single section of a CER document
  */
-async function validateWithAI(document, framework) {
+router.post('/documents/:documentId/check-section', async (req, res) => {
   try {
-    // Use the appropriate framework requirements
-    const frameworkData = validationFrameworks[framework] || validationFrameworks.mdr;
+    const { documentId } = req.params;
+    const { section, framework = 'mdr' } = req.body;
     
-    // Create a comprehensive and framework-specific prompt for the AI model
-    const promptsByFramework = {
-      mdr: `
-        You are an expert regulatory consultant specialized in EU MDR MEDDEV 2.7/1 Rev 4 Clinical Evaluation Reports (CERs).
-        Analyze the following clinical evaluation report content against EU MDR requirements.
-        
-        EU MDR REQUIREMENTS:
-        1. Complete GSPR mapping for all safety and performance claims with traceability to evidence
-        2. Comprehensive state-of-the-art analysis with current standards and published literature
-        3. Detailed literature search methodology documentation (databases, search terms, inclusion/exclusion criteria)
-        4. Thorough benefit-risk analysis quantifying both benefits and risks
-        5. Post-market surveillance plan with specific triggers for CER updates
-        6. PMCF plan compliant with MDCG 2020-7 guidance
-        7. Detailed device description including all variants and configurations
-        8. Qualifications of evaluators demonstrating expertise in the specific device technology
-        9. Complete bibliography with proper citations formatted according to EU regulatory expectations
-        10. Comprehensive clinical evaluation of equivalence when relying on equivalent devices
-        11. Valid clinical data from PMCF studies, clinical investigations, and literature
-        12. Gap analysis with specific plans to address any identified gaps
-        
-        Focus particular attention on identifying:
-        - Missing or insufficient GSPR mapping to clinical evidence
-        - Inadequate literature search methodology
-        - Incomplete state-of-the-art analysis
-        - Insufficient clinical data for claims made
-        - Improper application of equivalence criteria
-      `,
-      fda: `
-        You are an expert regulatory consultant specialized in FDA Medical Device Clinical Evaluation Reports.
-        Analyze the following clinical evaluation report content against US FDA requirements.
-        
-        FDA REQUIREMENTS:
-        1. Substantial equivalence documentation for 510(k) submissions with proper predicate comparison
-        2. Comprehensive benefit-risk determination according to FDA guidance
-        3. Complete performance testing data supporting each indication
-        4. Clinical study protocols and results meeting FDA expectations
-        5. Detailed device description and specific indications for use
-        6. Complete reference list with proper citations
-        7. Data from valid scientific evidence as defined in 21 CFR 860.7
-        8. Risk analysis according to ISO 14971
-        9. Statistical justification for sample sizes and endpoints
-        10. Discussion of all known adverse events and complications
-        
-        Focus particular attention on identifying:
-        - Inadequate substantial equivalence justification
-        - Missing performance data for specific indications
-        - Statistical deficiencies in clinical data
-        - Unsupported claims or indications
-        - Insufficient adverse event analysis
-      `,
-      ukca: `
-        You are an expert regulatory consultant specialized in UK Conformity Assessed (UKCA) Medical Device Clinical Evaluation Reports.
-        Analyze the following clinical evaluation report content against UK regulatory requirements.
-        
-        UKCA REQUIREMENTS:
-        1. UK-specific clinical evidence requirements
-        2. UKCA marking compliance documentation
-        3. Post-market surveillance plan specific to the UK market
-        4. Details of the UK Responsible Person
-        5. Complete reference list with proper citations
-        6. Evidence meeting UK Medical Devices Regulations 2002 (as amended)
-        7. Clinical data considerations specific to UK patient populations
-        8. Compliance with applicable UK designated standards
-        
-        Focus particular attention on identifying:
-        - Missing UK-specific regulatory documentation
-        - Insufficient UK market surveillance planning
-        - Absent or incomplete UK Responsible Person details
-        - Lack of UK-specific clinical considerations
-      `,
-      health_canada: `
-        You are an expert regulatory consultant specialized in Health Canada Medical Device Clinical Evaluation Reports.
-        Analyze the following clinical evaluation report content against Canadian regulatory requirements.
-        
-        HEALTH CANADA REQUIREMENTS:
-        1. Device classification according to Canadian regulations
-        2. Canadian Medical Device Licence requirements
-        3. Risk classification and management according to Canadian standards
-        4. Clinical evidence specific to Canadian guidelines
-        5. Complete reference list with proper citations
-        6. Compliance with Canadian Medical Devices Regulations (SOR/98-282)
-        7. Safety and effectiveness requirements per section 10-20 of Canadian regulations
-        8. Consideration of Canadian population demographics in clinical data
-        
-        Focus particular attention on identifying:
-        - Incorrect device classification for Canadian market
-        - Missing Canadian-specific regulatory requirements
-        - Insufficient safety and effectiveness data for Canadian approval
-        - Inadequate risk management for Canadian regulations
-      `,
-      ich: `
-        You are an expert regulatory consultant specialized in International Council for Harmonisation (ICH) compliance for medical device documentation.
-        Analyze the following clinical evaluation report content against ICH requirements.
-        
-        ICH REQUIREMENTS:
-        1. International harmonization documentation
-        2. Cross-reference to regional requirements
-        3. Complete reference list with proper citations
-        4. Compliance with ICH E6(R2) Good Clinical Practice
-        5. Statistical analysis following ICH E9 Statistical Principles
-        6. Safety reporting aligned with ICH guidelines
-        7. Documentation quality meeting ICH expectations
-        
-        Focus particular attention on identifying:
-        - Non-compliance with ICH guidelines for clinical investigations
-        - Statistical analysis deficiencies per ICH E9
-        - Inconsistent application of international standards
-        - Inadequate harmonization across regional requirements
-      `
-    };
+    if (!section) {
+      return res.status(400).json({ error: 'Section identifier is required' });
+    }
     
-    // Select appropriate framework-specific prompt
-    const frameworkPrompt = promptsByFramework[framework] || promptsByFramework.mdr;
+    console.log(`Checking section ${section} of document ${documentId}`);
     
-    // Build the complete prompt
-    const prompt = `
-      ${frameworkPrompt}
+    // Get document from database
+    const documentService = require('../services/documentService');
+    const document = await documentService.getDocumentById(documentId);
+    
+    if (!document) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+    
+    // Extract just the specified section
+    const sectionContent = documentService.getSectionContent(document, section);
+    
+    if (!sectionContent) {
+      return res.status(404).json({ error: 'Section not found in document' });
+    }
+    
+    // Load section-specific requirements from the regulatory framework
+    const regulatoryService = require('../services/regulatoryService');
+    const sectionRequirements = await regulatoryService.getSectionRequirements(section, framework);
+    
+    // Use GPT-4o to analyze the specific section
+    console.log(`Using GPT-4o to analyze section ${section} against ${framework} requirements`);
+    
+    const systemPrompt = `You are an expert regulatory validator for Clinical Evaluation Reports (CER) in the medical device industry.
+You are analyzing a specific section of a CER document for compliance with ${framework} framework.
+The section being analyzed is: ${section}
+
+Your task is to:
+1. Evaluate if the section satisfies all regulatory requirements
+2. Identify any missing elements required by the standard
+3. Check for consistency with standard format and structure
+4. Provide an overall assessment with specific, actionable recommendations
+
+Format your response as a valid JSON with the following structure:
+{
+  "score": <number between 0-100>,
+  "compliantWithRegulation": <boolean>,
+  "issues": [
+    {
+      "severity": "<critical|major|minor>",
+      "description": "<issue description>",
+      "details": "<details of the issue>"
+    }
+  ],
+  "recommendations": ["<recommendation 1>", "<recommendation 2>"]
+}`;
+
+    try {
+      const gpt4oResponse = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `Analyze this section (${section}) for compliance with ${framework}:\n\n${sectionContent}` }
+        ],
+        temperature: 0.2,
+        response_format: { type: "json_object" }
+      });
       
-      DOCUMENT SECTIONS TO ANALYZE:
-      ${JSON.stringify(document.sections, null, 2)}
+      // Parse and validate the response
+      const aiAnalysis = JSON.parse(gpt4oResponse.choices[0].message.content);
       
-      For each requirement, determine if the document fully meets, partially meets, or fails to meet the requirement.
-      Identify any critical issues, major issues, and minor issues.
+      // Structure the final response
+      const sectionCheckResults = {
+        documentId,
+        section,
+        framework,
+        timestamp: new Date().toISOString(),
+        results: aiAnalysis
+      };
       
-      Critical issues: Missing essential components required by regulations that could result in rejection by authorities
-      Major issues: Incomplete sections or inadequate evidence for important claims that require significant revision
-      Minor issues: Formatting issues, minor inconsistencies, or areas that could be improved for clarity
+      console.log(`Section ${section} analysis complete. Score: ${aiAnalysis.score}`);
       
-      For each issue, provide:
-      1. The specific location in the document (section number and title if possible)
-      2. A detailed description of the issue with reference to the specific regulatory requirement
-      3. A concrete, actionable suggestion for how to address the issue with examples when applicable
-      
-      Return your analysis in the following JSON format:
-      {
-        "summary": {
-          "totalIssues": number,
-          "criticalIssues": number,
-          "majorIssues": number,
-          "minorIssues": number,
-          "passedChecks": number,
-          "complianceScore": number
-        },
-        "categories": {
-          "regulatory_compliance": { "status": "success"|"warning"|"error", "passed": number, "failed": number },
-          "completeness": { "status": "success"|"warning"|"error", "passed": number, "failed": number },
-          "references": { "status": "success"|"warning"|"error", "passed": number, "failed": number },
-          "consistency": { "status": "success"|"warning"|"error", "passed": number, "failed": number }
-        },
-        "issues": [
-          {
-            "id": number,
-            "category": "regulatory_compliance"|"completeness"|"references"|"consistency",
-            "severity": "critical"|"major"|"minor",
-            "message": "Description of the issue",
-            "location": "Section X.Y",
-            "suggestion": "How to address the issue"
-          }
-        ]
+      res.json(sectionCheckResults);
+    } catch (error) {
+      console.error(`Error analyzing section ${section}:`, error);
+      throw new Error(`Section validation failed: ${error.message}`);
+    }
+  } catch (error) {
+    console.error('Error checking section:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * QMP Integration Validation Endpoint
+ * Validates a Quality Management Plan's objectives against CER sections
+ * to ensure proper compliance with ICH E6(R3) and regulatory requirements
+ */
+router.post('/qmp-integration/validate', async (req, res) => {
+  try {
+    const { objectives, cerSections, framework = 'mdr' } = req.body;
+    
+    if (!objectives || !Array.isArray(objectives) || objectives.length === 0) {
+      return res.status(400).json({ 
+        error: 'Valid quality objectives array is required' 
+      });
+    }
+    
+    console.log(`Validating QMP integration with ${objectives.length} objectives against framework: ${framework}`);
+    
+    // Extract required sections for the specified framework
+    const regulatoryService = require('../services/regulatoryService');
+    const frameworkSections = await regulatoryService.getRequiredSections(framework);
+    
+    // Check which required sections are covered by objectives
+    const coveredSections = new Set();
+    objectives.forEach(objective => {
+      if (objective.scopeSections && Array.isArray(objective.scopeSections)) {
+        objective.scopeSections.forEach(section => {
+          coveredSections.add(section);
+        });
       }
-    `;
-    
-    // Call the OpenAI API with the latest GPT-4o model for more human-like writing
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
-      messages: [
-        { 
-          role: "system", 
-          content: "You are an expert regulatory consultant for medical device Clinical Evaluation Reports with deep knowledge of EU MDR, FDA, UKCA, Health Canada, and ICH requirements. Write with a natural, conversational tone while maintaining technical accuracy. Your writing should sound like it was written by a human expert who understands regulatory nuances. Use clear, accessible language that regulatory professionals would use in conversation. Avoid overly formal, robotic, or academic language patterns."
-        },
-        { role: "user", content: prompt }
-      ],
-      response_format: { type: "json_object" }
     });
     
-    // Parse the AI response
-    const aiAnalysis = JSON.parse(response.choices[0].message.content);
+    // Check for missing critical sections
+    const criticalSections = ['Safety', 'Clinical Data', 'GSPR Mapping'];
+    const missingSections = frameworkSections.filter(section => !coveredSections.has(section));
+    const missingCriticalSections = criticalSections.filter(section => !coveredSections.has(section));
     
-    // Integrate AI validation with standard checks
-    return {
-      ...aiAnalysis,
-      aiValidated: true,
-      validationDate: new Date().toISOString(),
-      framework: frameworkData.name
-    };
+    // Use GPT-4o for advanced validation of QMP integration
+    console.log(`Using GPT-4o to analyze QMP compliance with ICH E6(R3) requirements`);
+    
+    // Convert objectives to easily readable text format for the AI
+    const objectivesText = objectives.map(obj => {
+      return `Objective: ${obj.title}
+Description: ${obj.description}
+Status: ${obj.status}
+Scope Sections: ${obj.scopeSections ? obj.scopeSections.join(', ') : 'None'}
+Mitigation Actions: ${obj.mitigationActions || 'None'}
+`;
+    }).join('\n\n');
+    
+    const systemPrompt = `You are an expert in regulatory compliance focusing on Quality Management Plans for medical device Clinical Evaluation Reports.
+You are evaluating whether a set of quality objectives properly addresses ICH E6(R3) requirements and provides adequate coverage for CER sections.
+
+Your task is to:
+1. Analyze if the quality objectives adequately cover the critical sections of a CER
+2. Evaluate the completeness and specificity of the objectives
+3. Assess if mitigation actions are appropriate and sufficient
+4. Determine if the overall QMP approach meets ICH E6(R3) standards
+5. Identify any gaps or areas for improvement
+
+Format your response as a valid JSON with the following structure:
+{
+  "compliance": {
+    "score": <number between 0-100>,
+    "compliantWithICH": <boolean>,
+    "compliantWithFramework": <boolean>,
+    "adequateCoverage": <boolean>
+  },
+  "gaps": [
+    {
+      "section": "<section name>",
+      "impact": "<high|medium|low>",
+      "description": "<description of the gap>"
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "<high|medium|low>",
+      "description": "<recommendation>",
+      "justification": "<regulatory reference or rationale>"
+    }
+  ],
+  "strengths": ["<strength 1>", "<strength 2>"]
+}`;
+
+    try {
+      const gpt4oResponse = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `Analyze these Quality Management Plan objectives for compliance with ICH E6(R3) and coverage of CER sections:\n\n${objectivesText}` }
+        ],
+        temperature: 0.2,
+        response_format: { type: "json_object" }
+      });
+      
+      // Parse and validate the response
+      const aiAnalysis = JSON.parse(gpt4oResponse.choices[0].message.content);
+      
+      // Calculate section coverage metrics
+      const coveragePercentage = frameworkSections.length > 0 
+        ? Math.round((coveredSections.size / frameworkSections.length) * 100) 
+        : 0;
+      
+      // Compile final validation results
+      const validationResults = {
+        timestamp: new Date().toISOString(),
+        framework,
+        sectionsAnalysis: {
+          requiredSections: frameworkSections,
+          coveredSections: Array.from(coveredSections),
+          missingSections,
+          missingCriticalSections,
+          coveragePercentage
+        },
+        aiAnalysis,
+        complianceStatus: {
+          compliant: aiAnalysis.compliance.compliantWithICH && aiAnalysis.compliance.compliantWithFramework,
+          objectivesWithoutScope: objectives.filter(obj => !obj.scopeSections || obj.scopeSections.length === 0).length,
+          objectivesWithoutMitigation: objectives.filter(obj => !obj.mitigationActions || obj.mitigationActions.trim() === '').length,
+          coverage: coveragePercentage,
+          criticalSectionsMissing: missingCriticalSections.length > 0,
+          recommendationCount: aiAnalysis.recommendations.length
+        }
+      };
+      
+      console.log(`QMP validation complete. Coverage: ${coveragePercentage}%, Compliance score: ${aiAnalysis.compliance.score}`);
+      
+      res.json(validationResults);
+    } catch (error) {
+      console.error(`Error analyzing QMP objectives:`, error);
+      throw new Error(`QMP validation failed: ${error.message}`);
+    }
   } catch (error) {
-    console.error('Error validating with AI:', error);
-    
-    // Don't fallback to simulation - throw the error to be handled by the caller
-    throw new Error(`GPT-4o validation failed: ${error.message}. Please ensure your OpenAI API key is valid and has sufficient credits.`);
+    console.error('Error validating QMP integration:', error);
+    res.status(500).json({ error: error.message });
   }
-}
+});
 
-
-// Export the router as default
+// Export the router
 module.exports = router;
-module.exports.default = router;

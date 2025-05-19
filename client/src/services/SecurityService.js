@@ -11,8 +11,19 @@ class SecurityService {
     this.currentUser = null;
     this.roles = [];
     this.organizations = [];
-    this.currentOrganization = null;
     this.permissions = new Map();
+    
+    // Initialize with default data for development
+    this.currentOrganization = {
+      id: 'org-001',
+      name: 'Acme CRO',
+      type: 'cro',
+      role: 'Administrator',
+      clients: 5,
+      lastUpdated: '2025-05-10'
+    };
+    
+    this.parentOrganization = null;
   }
   
   /**
@@ -315,4 +326,12 @@ class SecurityService {
   }
 }
 
-export default SecurityService;
+// Create a singleton instance
+const securityService = new SecurityService();
+
+// Initialize it immediately
+securityService.initialize().catch(err => {
+  console.error('Failed to initialize security service:', err);
+});
+
+export default securityService;

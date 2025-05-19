@@ -15,7 +15,7 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import logger from '../utils/logger.js';
-import openaiService from '../services/openaiService.js';
+import openaiService from '../services/openaiService.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

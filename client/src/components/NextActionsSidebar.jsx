@@ -1,102 +1,174 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { Clock, CheckCircle, AlertCircle, CalendarClock } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 
-const NextActionsSidebar = () => {
-  // Sample next actions (in a real app these would come from an API)
-  const [actions] = useState([
+/**
+ * NextActionsSidebar Component
+ * 
+ * Displays upcoming tasks and actions required from the user.
+ */
+const NextActionsSidebar = ({ clientId }) => {
+  // Sample next actions data - in a real application, this would come from an API
+  const nextActions = [
     {
-      id: 1,
-      title: 'Review draft IND form',
-      priority: 'High',
-      dueDate: '2025-05-05',
-      project: 'Enzyvant BLA',
-      module: 'IND Wizard'
+      id: 'action-1',
+      title: 'CER Quality Check Due',
+      dueDate: '2025-05-15', // 5 days from today
+      priority: 'high',
+      status: 'pending',
+      project: 'BTX-112 Clinical Trial',
+      module: 'cer2v',
+      progress: 0
     },
     {
-      id: 2,
-      title: 'Upload clinical data for CSR',
-      priority: 'Medium',
-      dueDate: '2025-05-10',
-      project: 'Axogen CMC',
-      module: 'CSR Analyzer'
+      id: 'action-2',
+      title: 'Review Protocol Amendments',
+      dueDate: '2025-05-12', // 2 days from today
+      priority: 'medium',
+      status: 'in_progress',
+      project: 'BTX-112 Clinical Trial',
+      module: 'study-architect',
+      progress: 35
     },
     {
-      id: 3,
-      title: 'Prepare FDA response',
-      priority: 'High',
-      dueDate: '2025-05-03',
-      project: 'Novartis IND',
-      module: 'IND Wizard'
+      id: 'action-3',
+      title: 'CMC Documentation Updates',
+      dueDate: '2025-05-20', // 10 days from today
+      priority: 'medium',
+      status: 'in_progress',
+      project: 'BTX-112 Clinical Trial',
+      module: 'cmc-module',
+      progress: 68
     },
     {
-      id: 4,
-      title: 'Schedule CRO meeting',
-      priority: 'Low',
-      dueDate: '2025-05-15',
-      project: 'Merck PMDA',
-      module: 'Study Architect'
-    },
-    {
-      id: 5,
-      title: 'Update study protocol',
-      priority: 'Medium',
-      dueDate: '2025-05-12',
-      project: 'Pfizer CER',
-      module: 'Study Architect'
+      id: 'action-4',
+      title: 'IND Submission Final Check',
+      dueDate: '2025-05-30', // 20 days from today
+      priority: 'high',
+      status: 'not_started',
+      project: 'BTX-112 Clinical Trial',
+      module: 'ind-wizard',
+      progress: 0
     }
-  ]);
+  ];
+
+  // Get prioritized, client-specific next actions
+  const getClientActions = () => {
+    if (!clientId) return nextActions;
+    
+    // In a real app, this would filter based on client ID
+    // For demo purposes, we'll just return all actions
+    return nextActions;
+  };
+
+  const clientActions = getClientActions();
+
+  // Calculate days remaining
+  const getDaysRemaining = (dueDate) => {
+    const today = new Date();
+    const due = new Date(dueDate);
+    const diffTime = due - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  // Get badge variant based on priority and days remaining
+  const getBadgeVariant = (priority, dueDate) => {
+    const daysRemaining = getDaysRemaining(dueDate);
+    
+    if (priority === 'high' && daysRemaining <= 7) {
+      return 'destructive';
+    }
+    
+    if (priority === 'high' || daysRemaining <= 3) {
+      return 'destructive';
+    }
+    
+    if (priority === 'medium' || daysRemaining <= 7) {
+      return 'warning';
+    }
+    
+    return 'outline';
+  };
+
+  if (clientActions.length === 0) {
+    return (
+      <div className="text-center py-4">
+        <CheckCircle className="h-12 w-12 mx-auto text-green-500 mb-2" />
+        <h3 className="text-lg font-medium text-gray-700">All Caught Up!</h3>
+        <p className="text-sm text-gray-500">No pending actions at this time.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
-      {actions.map((action) => (
-        <div key={action.id} className="p-3 bg-gray-50 rounded-lg hover:shadow-sm transition">
+      {clientActions.map((action) => (
+        <div 
+          key={action.id} 
+          className="p-3 bg-white border rounded-lg shadow-sm hover:shadow-md transition-shadow"
+        >
           <div className="flex justify-between items-start">
-            <h3 className="font-medium text-gray-900">{action.title}</h3>
-            <span className={`px-2 py-1 text-xs rounded-full ${getPriorityColor(action.priority)}`}>
-              {action.priority}
+            <h3 className="font-medium text-gray-800">{action.title}</h3>
+            <Badge variant={getBadgeVariant(action.priority, action.dueDate)}>
+              {action.priority === 'high' ? 'High' : action.priority === 'medium' ? 'Medium' : 'Low'}
+            </Badge>
+          </div>
+          
+          <div className="mt-2 flex items-center text-sm text-gray-500">
+            <Clock className="h-4 w-4 mr-1 text-gray-400" />
+            <span>
+              Due: {new Date(action.dueDate).toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric',
+                year: 'numeric' 
+              })}
             </span>
+            <span className="mx-2">•</span>
+            <span>{getDaysRemaining(action.dueDate)} days remaining</span>
           </div>
-          <div className="text-xs text-gray-500 mt-1">
-            Due: {formatDate(action.dueDate)}
-          </div>
-          <div className="flex justify-between mt-2 text-xs">
-            <span className="text-indigo-700">{action.project}</span>
-            <span className="text-gray-500">{action.module}</span>
-          </div>
-          <div className="flex justify-end mt-2">
-            <button className="text-xs text-white bg-indigo-600 hover:bg-indigo-700 px-2 py-1 rounded">
-              Complete
-            </button>
+          
+          {action.progress > 0 && (
+            <div className="mt-3">
+              <div className="flex justify-between items-center text-xs mb-1">
+                <span>Progress</span>
+                <span>{action.progress}%</span>
+              </div>
+              <Progress value={action.progress} className="h-1.5" />
+            </div>
+          )}
+          
+          <div className="mt-3">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-full text-primary border-primary/20 hover:bg-primary/5"
+            >
+              <div className="flex items-center justify-center w-full">
+                {action.status === 'pending' ? (
+                  <AlertCircle className="h-3.5 w-3.5 mr-1.5 text-amber-500" />
+                ) : action.status === 'in_progress' ? (
+                  <CalendarClock className="h-3.5 w-3.5 mr-1.5 text-blue-500" />
+                ) : (
+                  <CheckCircle className="h-3.5 w-3.5 mr-1.5 text-green-500" />
+                )}
+                Take Action
+              </div>
+            </Button>
           </div>
         </div>
       ))}
       
-      <div className="pt-4 border-t border-gray-200">
-        <button className="w-full text-sm bg-indigo-50 text-indigo-700 py-2 rounded-lg hover:bg-indigo-100 transition">
-          View All Actions
-        </button>
-      </div>
+      <Button 
+        variant="ghost" 
+        className="w-full text-primary"
+      >
+        View All Tasks
+      </Button>
     </div>
   );
-};
-
-// Get appropriate background color based on priority
-const getPriorityColor = (priority) => {
-  switch (priority) {
-    case 'High':
-      return 'bg-red-100 text-red-800';
-    case 'Medium':
-      return 'bg-yellow-100 text-yellow-800';
-    case 'Low':
-      return 'bg-green-100 text-green-800';
-    default:
-      return 'bg-gray-100 text-gray-800';
-  }
-};
-
-// Format date to be more readable
-const formatDate = (dateString) => {
-  const options = { month: 'short', day: 'numeric' };
-  return new Date(dateString).toLocaleDateString(undefined, options);
 };
 
 export default NextActionsSidebar;
