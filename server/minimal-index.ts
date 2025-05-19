@@ -100,10 +100,20 @@ app.get('/', (req, res) => {
   }
 });
 
-// Client portal - use the May 17th legacy portal file
+// Client portal - serve the no-login direct access portal
 app.get('/client-portal', (req, res) => {
-  console.log('Serving legacy portal from May 17th');
+  console.log('Serving direct access portal without login');
   
+  // Use our direct access portal that doesn't require login
+  const directAccessPortalPath = path.join(process.cwd(), 'direct-access-portal.html');
+  
+  if (fs.existsSync(directAccessPortalPath)) {
+    console.log(`Found direct access portal at: ${directAccessPortalPath}`);
+    return res.sendFile(directAccessPortalPath);
+  }
+  
+  // If direct access portal not found, try legacy portal
+  console.log('Direct access portal not found, trying legacy portal');
   const legacyPortalPath = path.join(process.cwd(), 'legacy/portal.html');
   
   if (fs.existsSync(legacyPortalPath)) {
@@ -111,12 +121,17 @@ app.get('/client-portal', (req, res) => {
     return res.sendFile(legacyPortalPath);
   }
   
-  // If not found, send an error
+  // If no portal is found, send an error
   res.status(404).send(`
     <h1>Client Portal Not Found</h1>
-    <p>Could not locate the legacy portal file from May 17th.</p>
-    <p>Missing path: ${legacyPortalPath}</p>
+    <p>Could not locate any client portal implementation.</p>
   `);
+});
+
+// Handle the /login route which might be redirected from the portal
+app.get('/login', (req, res) => {
+  console.log('Login page redirected to client portal');
+  res.redirect('/client-portal');
 });
 
 // CER V2 page route
