@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrialSage™ by Concept2Cures - Accelerate Regulatory Submissions with AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0B6E4F;
+            --primary-dark: #08563D;
+            --primary-light: #0E8761;
+            --primary-lighter: #E6F3EF;
+            --secondary: #FF6B35;
+            --secondary-dark: #E55A2B;
+            --secondary-light: #FF8C64;
+            --background: #FFFFFF;
+            --background-alt: #F8FAFC;
+            --text: #1E293B;
+            --text-light: #64748B;
+            --text-lighter: #94A3B8;
+            --border: #E2E8F0;
+            --surface: #FFFFFF;
+            --surface-hover: #F1F5F9;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            line-height: 1.5;
+            background-color: var(--background);
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1320px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background-color: var(--surface);
+            box-shadow: var(--shadow);
+        }
+
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 80px;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            list-style: none;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            color: var(--text);
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary);
+        }
+
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-toggle {
+            cursor: pointer;
+        }
+
+        .dropdown-toggle i {
+            margin-left: 8px;
+            font-size: 12px;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 1000;
+            min-width: 240px;
+            padding: 10px 0;
+            margin-top: 10px;
+            background-color: var(--surface);
+            border-radius: 4px;
+            box-shadow: var(--shadow-md);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(5px);
+            transition: all 0.3s ease;
+        }
+
+        .dropdown:hover .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            display: block;
+            padding: 10px 20px;
+            color: var(--text);
+            font-weight: 400;
+            transition: background-color 0.3s ease;
+        }
+
+        .dropdown-item:hover {
+            background-color: var(--surface-hover);
+            color: var(--primary);
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            margin: 8px 0;
+            background-color: var(--border);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: 500;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary-lighter);
+        }
+
+        .btn-lg {
+            padding: 12px 24px;
+            font-size: 18px;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #0B6E4F 0%, #9C27B0 100%);
+            color: white;
+            padding: 120px 0 80px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 10% 10%, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 60%);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .hero-title {
+            font-size: 48px;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 20px;
+        }
+
+        .hero-title span {
+            background: linear-gradient(90deg, #FFD700, #FF6B81);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 20px;
+            font-weight: 400;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .hero-buttons {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        .hero-stats {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+        }
+
+        .hero-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .hero-stat-value {
+            font-size: 36px;
+            font-weight: 700;
+        }
+
+        .hero-stat-label {
+            font-size: 16px;
+            opacity: 0.8;
+        }
+
+        .hamburger, .close-menu {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100vh;
+            background-color: var(--surface);
+            box-shadow: var(--shadow-lg);
+            z-index: 110;
+            transition: right 0.3s ease;
+        }
+
+        .mobile-menu.active {
+            right: 0;
+        }
+
+        .mobile-menu-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .mobile-nav {
+            padding: 20px;
+        }
+
+        .mobile-submenu-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 0;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .mobile-submenu {
+            display: none;
+            padding: 0 0 15px 15px;
+        }
+
+        .mobile-submenu.active {
+            display: block;
+        }
+
+        .mobile-submenu a {
+            display: block;
+            padding: 10px 0;
+            color: var(--text-light);
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 105;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        @media (max-width: 991px) {
+            .nav-menu {
+                display: none;
+            }
+
+            .hamburger {
+                display: block;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .hero-title {
+                font-size: 36px;
+            }
+
+            .hero-subtitle {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <a href="/" class="logo">TrialSage™ by Concept2Cures</a>
+                
+                <ul class="nav-menu">
+                    <li class="dropdown">
+                        <div class="dropdown-toggle nav-link">
+                            <span>Solutions</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="dropdown-menu">
+                            <a href="/solutions/csr-intelligence" class="dropdown-item">CSR Intelligence™</a>
+                            <a href="/solutions/ind-wizard" class="dropdown-item">IND Wizard™</a>
+                            <a href="/solutions/ich-wiz" class="dropdown-item">ICH Wiz™</a>
+                            <a href="/solutions/vault-workspace" class="dropdown-item">Vault™ Workspace</a>
+                            <a href="/solutions/study-architect" class="dropdown-item">Study Architect™</a>
+                            <div class="dropdown-divider"></div>
+                            <a href="/solutions" class="dropdown-item">All Solutions</a>
+                        </div>
+                    </li>
+                    <li class="dropdown">
+                        <div class="dropdown-toggle nav-link">
+                            <span>Use Cases</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="dropdown-menu">
+                            <a href="/use-case/ectd-submissions" class="dropdown-item">eCTD Submissions</a>
+                            <a href="/use-case/protocol-design" class="dropdown-item">Protocol Design</a>
+                            <a href="/use-case/regulatory-intelligence" class="dropdown-item">Regulatory Intelligence</a>
+                        </div>
+                    </li>
+                    <li><a href="/about" class="nav-link">About</a></li>
+                    <li><a href="/contact" class="nav-link">Contact</a></li>
+                    <li><a href="/client-portal" class="nav-link">Client Portal</a></li>
+                    <li><a href="/demo" class="btn btn-primary">Request Demo</a></li>
+                </ul>
+                
+                <button class="hamburger" id="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </nav>
+        </div>
+    </header>
+    
+    <div class="mobile-menu" id="mobile-menu">
+        <div class="mobile-menu-header">
+            <a href="/" class="logo">TrialSage™</a>
+            <button class="close-menu" id="close-menu">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <nav class="mobile-nav">
+            <div class="mobile-submenu-toggle" data-target="solutions-submenu">
+                <span>Solutions</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="mobile-submenu" id="solutions-submenu">
+                <a href="/solutions/csr-intelligence">CSR Intelligence™</a>
+                <a href="/solutions/ind-wizard">IND Wizard™</a>
+                <a href="/solutions/ich-wiz">ICH Wiz™</a>
+                <a href="/solutions/vault-workspace">Vault™ Workspace</a>
+                <a href="/solutions/study-architect">Study Architect™</a>
+                <a href="/solutions">All Solutions</a>
+            </div>
+            
+            <div class="mobile-submenu-toggle" data-target="use-cases-submenu">
+                <span>Use Cases</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="mobile-submenu" id="use-cases-submenu">
+                <a href="/use-case/ectd-submissions">eCTD Submissions</a>
+                <a href="/use-case/protocol-design">Protocol Design</a>
+                <a href="/use-case/regulatory-intelligence">Regulatory Intelligence</a>
+            </div>
+            
+            <a href="/about" class="mobile-submenu-toggle">About</a>
+            <a href="/contact" class="mobile-submenu-toggle">Contact</a>
+            <a href="/client-portal" class="mobile-submenu-toggle">Client Portal</a>
+            <a href="/demo" class="btn btn-primary" style="display: block; margin-top: 20px; text-align: center;">Request Demo</a>
+        </nav>
+    </div>
+    
+    <div class="overlay" id="overlay"></div>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Transform Regulatory Submissions with <span>AI-Powered Intelligence</span></h1>
+                <p class="hero-subtitle">TrialSage™ accelerates document creation, automates compliance checks, and delivers actionable insights for global regulatory submissions.</p>
+                
+                <div class="hero-buttons">
+                    <a href="/demo" class="btn btn-primary btn-lg">Request Demo</a>
+                    <a href="/client-portal" class="btn btn-outline btn-lg">Access Client Portal</a>
+                </div>
+                
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <span class="hero-stat-value">3,217+</span>
+                        <span class="hero-stat-label">CSRs Analyzed</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-value">75%</span>
+                        <span class="hero-stat-label">Faster Submissions</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-value">98%</span>
+                        <span class="hero-stat-label">First-time Acceptance</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Mobile menu functionality
+        const menuToggle = document.getElementById('menu-toggle');
+        const closeMenu = document.getElementById('close-menu');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const overlay = document.getElementById('overlay');
+        const submenuToggles = document.querySelectorAll('.mobile-submenu-toggle');
+        
+        menuToggle.addEventListener('click', () => {
+            mobileMenu.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        
+        closeMenu.addEventListener('click', () => {
+            mobileMenu.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+        
+        overlay.addEventListener('click', () => {
+            mobileMenu.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+        
+        submenuToggles.forEach(toggle => {
+            const target = toggle.getAttribute('data-target');
+            if (target) {
+                toggle.addEventListener('click', () => {
+                    const submenu = document.getElementById(target);
+                    submenu.classList.toggle('active');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
