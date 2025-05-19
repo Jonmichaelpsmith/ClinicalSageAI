@@ -103,7 +103,7 @@ export default function HomeLanding() {
             <Link to="/products" className="text-gray-600 hover:text-emerald-600 dark:text-gray-300">Products</Link>
             <Link to="/solutions" className="text-gray-600 hover:text-emerald-600 dark:text-gray-300">Solutions</Link>
             <Link to="/csr-library" className="text-gray-600 hover:text-emerald-600 dark:text-gray-300">CSR Intelligence</Link>
-            <Link to="/client-portal" className="text-gray-600 hover:text-emerald-600 dark:text-gray-300">Client Portal</Link>
+            <Link to="/portal" className="text-gray-600 hover:text-emerald-600 dark:text-gray-300">Client Portal</Link>
             <Link to="/builder" className="px-4 py-2 rounded bg-emerald-600 text-white hover:bg-emerald-700">eCTD Builder</Link>
           </div>
         </div>

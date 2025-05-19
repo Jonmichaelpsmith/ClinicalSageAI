@@ -1,14 +1,15 @@
-modules = ["nodejs-20", "web", "postgresql-16"]
+modules = ["bash", "nodejs-20", "python-3.11", "python3", "web"]
 run = "npm run dev"
 hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
 channel = "stable-24_05"
+packages = ["cairo", "cargo", "ffmpeg-full", "freetype", "ghostscript", "gitFull", "glibcLocales", "gobject-introspection", "gtk3", "gumbo", "harfbuzz", "jbig2dec", "libiconv", "libjpeg_turbo", "libxcrypt", "mupdf", "openjpeg", "openssl", "pgadmin4", "pkg-config", "playwright-driver", "postgresql", "qhull", "rustc", "swig", "tcl", "tk", "xcbuild", "xcodebuild", "xsimd", "zlib"]
 
 [deployment]
 deploymentTarget = "autoscale"
-build = ["npm", "run", "build"]
 run = ["npm", "run", "start"]
+build = ["npm", "run", "build"]
 
 [[ports]]
 localPort = 3000
@@ -59,7 +60,16 @@ localPort = 8083
 externalPort = 3003
 
 [workflows]
-runButton = "Project"
+runButton = "Run TrialSage"
+
+[[workflows.workflow]]
+name = "Run App"
+author = 41101236
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
 
 [[workflows.workflow]]
 name = "Project"
@@ -74,7 +84,25 @@ args = "Start application"
 name = "Start application"
 author = "agent"
 
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm run dev"
 waitForPort = 5000
+
+[[workflows.workflow]]
+name = "Run TrialSage"
+author = 41101236
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+
+[env]
+NODE_OPTIONS = "--max-old-space-size=512"

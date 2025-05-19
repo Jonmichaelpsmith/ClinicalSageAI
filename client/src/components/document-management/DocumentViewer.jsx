@@ -3,7 +3,7 @@ import {
   FileText, Download, FileUp, Share2, 
   Edit, Trash2, File, Clock, User, Tag, 
   CheckCircle, AlertCircle, ChevronDown, Menu,
-  Save, FilePdf, FileText as FileWordIcon,
+  Save, FileText, FileText as FileWordIcon,
   FileSpreadsheet, FilePresentation, FileJson,
   FileCode, Eye, Lock, ArrowUpRight,
   Table, Image, BarChart, FileArchive
@@ -33,7 +33,7 @@ const HtmlPreview = ({ htmlContent }) => (
 // Placeholder for PDF preview (in a real app, use a PDF viewer library)
 const PdfPreview = ({ document }) => (
   <div className="w-full h-full border rounded-lg overflow-hidden bg-gray-100 flex flex-col items-center justify-center">
-    <FilePdf size={64} className="text-red-500 mb-4" />
+    <FileText size={64} className="text-red-500 mb-4" />
     <h3 className="text-lg font-medium text-gray-900 mb-2">PDF Preview</h3>
     <p className="text-sm text-gray-600 mb-4 text-center max-w-md">
       {document.displayName}
@@ -325,7 +325,7 @@ export default function DocumentViewer({
     const fileName = document.displayName.toLowerCase();
     
     if (fileName.endsWith('.pdf')) {
-      return <FilePdf size={40} className="text-red-500" />;
+      return <FileText size={40} className="text-red-500" />;
     } else if (fileName.endsWith('.docx') || fileName.endsWith('.doc')) {
       return <FileWordIcon size={40} className="text-blue-600" />;
     } else if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls') || fileName.endsWith('.csv')) {
@@ -452,7 +452,7 @@ export default function DocumentViewer({
                         className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         onClick={() => handleDownload(format.value)}
                       >
-                        {format.value === 'pdf' && <FilePdf size={14} className="mr-2 text-red-500" />}
+                        {format.value === 'pdf' && <FileText size={14} className="mr-2 text-red-500" />}
                         {format.value === 'docx' && <FileWordIcon size={14} className="mr-2 text-blue-600" />}
                         {format.value === 'xlsx' && <FileSpreadsheet size={14} className="mr-2 text-green-600" />}
                         {format.value === 'pptx' && <FilePresentation size={14} className="mr-2 text-orange-600" />}
