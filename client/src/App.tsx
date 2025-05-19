@@ -15,36 +15,68 @@ function LandingPage() {
   const [, navigate] = useLocation();
   
   useEffect(() => {
-    // Redirect to client portal when "Client Login" button is clicked
-    const handleClientLogin = () => {
-      navigate('/client-portal');
-    };
-    
-    // Find and attach event listeners to client login buttons
-    const clientLoginButtons = document.querySelectorAll('.client-login-btn');
-    clientLoginButtons.forEach(button => {
-      button.addEventListener('click', handleClientLogin);
-    });
-    
+    // Clean up when unmounting
     return () => {
-      // Clean up event listeners
-      clientLoginButtons.forEach(button => {
-        button.removeEventListener('click', handleClientLogin);
-      });
+      cleanupModals();
     };
-  }, [navigate]);
+  }, []);
   
   useEffect(() => {
     // Load the landing page HTML
     fetch('/landing-page.html')
       .then(response => response.text())
       .then(html => {
-        document.getElementById('landing-page-container').innerHTML = html;
+        const container = document.getElementById('landing-page-container');
+        if (container) {
+          container.innerHTML = html;
+          
+          // Add event listeners to client portal buttons
+          const clientPortalButtons = document.querySelectorAll('.client-portal-button');
+          clientPortalButtons.forEach(button => {
+            button.addEventListener('click', () => {
+              navigate('/client-portal');
+            });
+          });
+          
+          // Override solution card links to go to client portal
+          const solutionLinks = document.querySelectorAll('.solution-link');
+          solutionLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+              e.preventDefault();
+              navigate('/client-portal');
+            });
+          });
+          
+          // Override any onclick handlers in buttons
+          const buttonsWithOnclick = document.querySelectorAll('button[onclick]');
+          buttonsWithOnclick.forEach(button => {
+            button.removeAttribute('onclick');
+            button.addEventListener('click', () => {
+              navigate('/client-portal');
+            });
+          });
+          
+          // Special handling for any "Access Module" buttons
+          const accessModuleButtons = Array.from(document.querySelectorAll('button')).filter(
+            button => button.textContent && button.textContent.includes('Access Module')
+          );
+          accessModuleButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+              e.preventDefault();
+              navigate('/client-portal');
+            });
+          });
+        }
       })
       .catch(error => {
         console.error('Error loading landing page:', error);
       });
-  }, []);
+      
+    return () => {
+      // Clean up event listeners when component unmounts
+      cleanupModals();
+    };
+  }, [navigate]);
   
   return <div id="landing-page-container"></div>;
 }
@@ -67,11 +99,24 @@ function ClientPortal() {
       .then(html => {
         document.getElementById('client-portal-container').innerHTML = html;
         
-        // Add event listeners to module cards to navigate to CERV2
-        const moduleCards = document.querySelectorAll('.module-card');
-        moduleCards.forEach(card => {
-          card.addEventListener('click', () => {
-            navigate('/cerv2');
+        // Add event listeners to module buttons to navigate to CERV2
+        const moduleButtons = document.querySelectorAll('.module-btn');
+        moduleButtons.forEach(button => {
+          button.addEventListener('click', (e) => {
+            // Prevent default button action
+            e.preventDefault();
+            
+            // Get the module name from the data attribute
+            const moduleName = button.getAttribute('data-module');
+            console.log(`Module selected: ${moduleName}`);
+            
+            // Navigate to CERV2 module (you can add other module routing here if needed)
+            if (moduleName === "CERV2" || moduleName === "Clinical Evaluation Reports") {
+              navigate('/cerv2');
+            } else {
+              // For demo purposes, all modules go to CERV2 for now
+              navigate('/cerv2');
+            }
           });
         });
       })
