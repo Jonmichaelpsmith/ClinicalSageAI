@@ -16,7 +16,6 @@ import memoryManagement from '@/utils/memoryManagement';
 import StabilityEnabledLayout from '@/components/layout/StabilityEnabledLayout';
 import { initializeMemoryOptimization } from './utils/memoryOptimizer';
 import StabilityEnabler from './components/layout/StabilityEnabler';
-import securityService from './services/SecurityService';
 
 // Core navigation component (loaded immediately)
 import UnifiedTopNavV3 from './components/navigation/UnifiedTopNavV3';
@@ -36,8 +35,6 @@ import ClientPortalLanding from './pages/ClientPortalLanding';
 import HomeLanding from './pages/HomeLanding';
 
 // Lazy load all other pages grouped by related functionality
-// Client Portal features
-const ClientTemplatesPage = lazy(() => import('./pages/ClientTemplatesPage'));
 // CER-related pages
 const CERPage = lazy(() => import('./pages/CerPage'));
 // Import the original CERV2Page directly, not the wrapper
@@ -116,7 +113,6 @@ const ReportsPage = lazy(() => import('./pages/ReportsPage'));
 const TenantManagement = lazy(() => import('./pages/TenantManagement'));
 const ClientManagement = lazy(() => import('./pages/ClientManagement'));
 const Settings = lazy(() => import('./pages/Settings'));
-const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 
 // 510(k) Automation is now fully integrated into CERV2Page
 // Standalone FDA510k pages have been permanently removed
@@ -210,27 +206,6 @@ function App() {
               <Route path="/client-portal/csr-analyzer" component={CSRPage} />
               <Route path="/client-portal/study-architect" component={StudyArchitectPage} />
               <Route path="/client-portal/analytics" component={AnalyticsDashboard} />
-              <Route path="/client-portal/templates">
-                {() => (
-                  <Suspense fallback={<LoadingPage />}>
-                    <ClientTemplatesPage />
-                  </Suspense>
-                )}
-              </Route>
-              <Route path="/client-portal/admin">
-                {() => (
-                  securityService.getUserRoles().includes('admin') ? (
-                    <Suspense fallback={<LoadingPage />}>
-                      <AdminDashboard />
-                    </Suspense>
-                  ) : (
-                    <div className="p-8">
-                      <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
-                      <p>You do not have permission to view this page.</p>
-                    </div>
-                  )
-                )}
-              </Route>
               {/* 510k functionality is now integrated in CERV2Page */}
               <Route path="/client-portal/510k">
                 {() => <CERV2Page initialDocumentType="510k" initialActiveTab="predicates" />}

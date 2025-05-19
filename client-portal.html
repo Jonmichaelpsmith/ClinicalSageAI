@@ -3,387 +3,420 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TrialSage Client Portal</title>
+  <title>TrialSage™ Client Portal</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="/js/resilience-service.js"></script>
   <style>
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f8f9fa;
-      color: #333;
+      background: linear-gradient(to bottom, white 80%, #ffd1dc 100%);
+      min-height: 100vh;
     }
-    
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
+    .bg-primary {
+      background-color: #ff1493;
     }
-    
-    header {
-      background-color: #fff;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      padding: 15px 0;
+    .text-primary {
+      color: #ff1493;
     }
-    
-    .header-content {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .border-primary {
+      border-color: #ff1493;
     }
-    
-    .logo {
-      font-size: 24px;
-      font-weight: bold;
-      color: #2563eb;
+    .animate-pulse {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
-    
-    .user-menu {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    
-    .user-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background-color: #e2e8f0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-    }
-    
-    .dashboard {
-      display: grid;
-      grid-template-columns: 1fr 300px;
-      gap: 20px;
-      margin-top: 30px;
-    }
-    
-    .main-content {
-      background-color: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      padding: 20px;
-    }
-    
-    .sidebar {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-    
-    .card {
-      background-color: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      padding: 20px;
-    }
-    
-    h1, h2, h3 {
-      margin-top: 0;
-      color: #1e293b;
-    }
-    
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 15px;
-      margin-bottom: 30px;
-    }
-    
-    .stat-card {
-      background-color: #f1f5f9;
-      border-radius: 8px;
-      padding: 15px;
-      text-align: center;
-    }
-    
-    .stat-value {
-      font-size: 24px;
-      font-weight: bold;
-      margin: 10px 0;
-      color: #2563eb;
-    }
-    
-    .status-pill {
-      display: inline-block;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 500;
-    }
-    
-    .status-active {
-      background-color: #dcfce7;
-      color: #166534;
-    }
-    
-    .status-pending {
-      background-color: #fef3c7;
-      color: #92400e;
-    }
-    
-    .trial-list {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-    
-    .trial-item {
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    
-    .trial-info h3 {
-      margin-bottom: 5px;
-    }
-    
-    .trial-meta {
-      color: #64748b;
-      font-size: 14px;
-    }
-    
-    .action-button {
-      background-color: #2563eb;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 500;
-    }
-    
-    .action-button:hover {
-      background-color: #1d4ed8;
-    }
-    
-    .document-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    
-    .document-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px;
-      border-radius: 6px;
-    }
-    
-    .document-item:hover {
-      background-color: #f1f5f9;
-    }
-    
-    .document-icon {
-      width: 32px;
-      height: 32px;
-      background-color: #e2e8f0;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .document-info {
-      flex-grow: 1;
-    }
-    
-    .document-name {
-      font-weight: 500;
-      margin: 0;
-    }
-    
-    .document-date {
-      font-size: 12px;
-      color: #64748b;
-      margin: 0;
-    }
-    
-    .message-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    
-    .message-item {
-      padding: 12px;
-      border-radius: 6px;
-      background-color: #f1f5f9;
-    }
-    
-    .message-header {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 5px;
-    }
-    
-    .message-sender {
-      font-weight: 500;
-    }
-    
-    .message-time {
-      font-size: 12px;
-      color: #64748b;
-    }
-    
-    .message-content {
-      margin: 0;
-    }
-    
-    @media (max-width: 768px) {
-      .dashboard {
-        grid-template-columns: 1fr;
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
       }
-      
-      .stats-grid {
-        grid-template-columns: 1fr;
+      50% {
+        opacity: .5;
       }
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="container">
-      <div class="header-content">
-        <div class="logo">TrialSage™</div>
-        <div class="user-menu">
-          <span>John Smith</span>
-          <div class="user-avatar">JS</div>
+  <div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200 py-4 mb-8">
+      <div class="container mx-auto px-4 flex items-center justify-between">
+        <div class="flex items-center">
+          <div class="font-bold text-2xl text-primary">TrialSage™</div>
+          <div class="ml-2 bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">Client Portal</div>
+        </div>
+        <div class="flex items-center">
+          <span id="userWelcome" class="mr-4 text-sm text-gray-600">Welcome, Admin User</span>
+          <button id="logoutBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded text-sm">Logout</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Notification Message -->
+    <div class="bg-green-50 border border-green-200 text-green-800 rounded-md p-4 mb-8">
+      <div class="flex">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+        </svg>
+        <div>
+          <p class="font-medium">Direct Access Enabled</p>
+          <p class="text-sm">Welcome to the TrialSage Client Portal. This standalone portal provides access to all modules.</p>
         </div>
       </div>
     </div>
-  </header>
-  
-  <div class="container">
-    <div class="dashboard">
-      <div class="main-content">
-        <h1>Clinical Trial Dashboard</h1>
-        
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div>Active Trials</div>
-            <div class="stat-value">8</div>
-            <div>2 recently updated</div>
+
+    <!-- Dashboard Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Projects Column -->
+      <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+        <div class="px-4 py-3 border-b bg-gray-50">
+          <h2 class="font-semibold text-gray-800">Active Projects</h2>
+        </div>
+        <div class="divide-y">
+          <div class="p-4 hover:bg-gray-50">
+            <div class="flex items-start">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <div class="ml-3 flex-1">
+                <div class="font-medium text-gray-800">Phase II Clinical Trial - BX-107</div>
+                <div class="flex items-center mt-2 text-xs text-gray-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span class="ml-1 text-blue-600">In Progress</span>
+                  <span class="mx-2">•</span>
+                  <span>Due June 15, 2025</span>
+                </div>
+                
+                <!-- Progress bar -->
+                <div class="mt-2 w-full bg-gray-200 rounded-full h-2">
+                  <div class="bg-primary h-2 rounded-full" style="width: 65%"></div>
+                </div>
+                <div class="mt-1 text-xs text-right text-gray-500">
+                  65% complete
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="stat-card">
-            <div>Enrolled Patients</div>
-            <div class="stat-value">324</div>
-            <div>Target: 450</div>
-          </div>
-          <div class="stat-card">
-            <div>Regulatory Documents</div>
-            <div class="stat-value">42</div>
-            <div>5 pending approval</div>
+          
+          <div class="p-4 hover:bg-gray-50">
+            <div class="flex items-start">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+              </svg>
+              <div class="ml-3 flex-1">
+                <div class="font-medium text-gray-800">IND Application for BTX-331</div>
+                <div class="flex items-center mt-2 text-xs text-gray-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span class="ml-1 text-blue-600">In Progress</span>
+                  <span class="mx-2">•</span>
+                  <span>Due May 30, 2025</span>
+                </div>
+                
+                <!-- Progress bar -->
+                <div class="mt-2 w-full bg-gray-200 rounded-full h-2">
+                  <div class="bg-primary h-2 rounded-full" style="width: 42%"></div>
+                </div>
+                <div class="mt-1 text-xs text-right text-gray-500">
+                  42% complete
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        
-        <h2>Current Trials</h2>
-        <div class="trial-list">
-          <div class="trial-item">
-            <div class="trial-info">
-              <h3>BTX-331 Phase 1 Study</h3>
-              <div class="trial-meta">
-                <span class="status-pill status-active">Active</span>
-                <span>Started: May 2, 2025</span>
-                <span>ID: NCT0391845</span>
-              </div>
-            </div>
-            <button class="action-button">View Details</button>
-          </div>
-          
-          <div class="trial-item">
-            <div class="trial-info">
-              <h3>CIR-507 Treatment Efficacy Trial</h3>
-              <div class="trial-meta">
-                <span class="status-pill status-pending">Patient Recruitment</span>
-                <span>Started: April 15, 2025</span>
-                <span>ID: NCT0387234</span>
-              </div>
-            </div>
-            <button class="action-button">View Details</button>
-          </div>
-          
-          <div class="trial-item">
-            <div class="trial-info">
-              <h3>NVR-221 Safety Evaluation</h3>
-              <div class="trial-meta">
-                <span class="status-pill status-active">Active</span>
-                <span>Started: March 28, 2025</span>
-                <span>ID: NCT0382156</span>
-              </div>
-            </div>
-            <button class="action-button">View Details</button>
-          </div>
+        <div class="px-4 py-3 border-t bg-gray-50 text-center">
+          <a href="#" class="text-sm text-primary hover:underline">View All Projects</a>
         </div>
       </div>
       
-      <div class="sidebar">
-        <div class="card">
-          <h2>Recent Documents</h2>
-          <div class="document-list">
-            <div class="document-item">
-              <div class="document-icon">📄</div>
-              <div class="document-info">
-                <p class="document-name">BTX-331 Protocol Amendment</p>
-                <p class="document-date">May 16, 2025</p>
+      <!-- Recent Documents Column -->
+      <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+        <div class="px-4 py-3 border-b bg-gray-50">
+          <h2 class="font-semibold text-gray-800">Recent Documents</h2>
+        </div>
+        <div class="divide-y">
+          <div class="p-4 hover:bg-gray-50">
+            <div class="flex items-start">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <div class="ml-3 flex-1">
+                <div class="font-medium text-gray-800">BX-107 Protocol.docx</div>
+                <div class="flex items-center mt-1 text-xs text-gray-500">
+                  <span>Protocol</span>
+                  <span class="mx-2">•</span>
+                  <span>Updated 2 days ago</span>
+                </div>
+                <div class="mt-1 text-xs text-gray-500">
+                  Updated by John Davis
+                </div>
               </div>
             </div>
-            
-            <div class="document-item">
-              <div class="document-icon">📄</div>
-              <div class="document-info">
-                <p class="document-name">CIR-507 Investigator Brochure</p>
-                <p class="document-date">May 14, 2025</p>
-              </div>
-            </div>
-            
-            <div class="document-item">
-              <div class="document-icon">📄</div>
-              <div class="document-info">
-                <p class="document-name">NVR-221 Interim Analysis</p>
-                <p class="document-date">May 10, 2025</p>
-              </div>
-            </div>
-            
-            <div class="document-item">
-              <div class="document-icon">📄</div>
-              <div class="document-info">
-                <p class="document-name">BTX-331 Safety Report</p>
-                <p class="document-date">May 8, 2025</p>
+          </div>
+          
+          <div class="p-4 hover:bg-gray-50">
+            <div class="flex items-start">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <div class="ml-3 flex-1">
+                <div class="font-medium text-gray-800">BTX-331 Investigator Brochure.pdf</div>
+                <div class="flex items-center mt-1 text-xs text-gray-500">
+                  <span>Brochure</span>
+                  <span class="mx-2">•</span>
+                  <span>Updated 3 days ago</span>
+                </div>
+                <div class="mt-1 text-xs text-gray-500">
+                  Updated by Sarah Johnson
+                </div>
               </div>
             </div>
           </div>
         </div>
+        <div class="px-4 py-3 border-t bg-gray-50 text-center">
+          <a href="#" class="text-sm text-primary hover:underline">View All Documents</a>
+        </div>
+      </div>
+      
+      <!-- Recent Activity Column -->
+      <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+        <div class="px-4 py-3 border-b bg-gray-50">
+          <h2 class="font-semibold text-gray-800">Recent Activity</h2>
+        </div>
+        <div class="divide-y">
+          <div class="p-4 hover:bg-gray-50">
+            <div class="flex items-start">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+              <div class="ml-3 flex-1">
+                <div class="font-medium text-gray-800">BX-107 Protocol updated</div>
+                <div class="text-xs text-gray-500 mt-1">
+                  2 days ago by John Davis
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="p-4 hover:bg-gray-50">
+            <div class="flex items-start">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div class="ml-3 flex-1">
+                <div class="font-medium text-gray-800">Phase I CSR Quality Check completed</div>
+                <div class="text-xs text-gray-500 mt-1">
+                  3 days ago by Sarah Johnson
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="p-4 hover:bg-gray-50">
+            <div class="flex items-start">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+              </svg>
+              <div class="ml-3 flex-1">
+                <div class="font-medium text-gray-800">Comment added to BTX-331 IND application</div>
+                <div class="text-xs text-gray-500 mt-1">
+                  3 days ago by Mark Wilson
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="px-4 py-3 border-t bg-gray-50 text-center">
+          <a href="#" class="text-sm text-primary hover:underline">View All Activity</a>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Module Access Section -->
+    <div class="mt-8">
+      <h2 class="text-xl font-bold text-gray-800 mb-4">TrialSage™ Modules</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <!-- Vault Module -->
+        <div class="block bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow p-4">
+          <div class="flex items-center mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            <h3 class="font-semibold text-gray-800">TrialSage Vault™</h3>
+          </div>
+          <p class="text-sm text-gray-600">Manage and access all your clinical trial documents securely.</p>
+          <div class="mt-3">
+            <button class="module-btn w-full bg-primary text-white px-3 py-1.5 rounded text-sm hover:bg-opacity-90" data-module="Vault">
+              Access Module
+            </button>
+          </div>
+        </div>
         
-        <div class="card">
-          <h2>Messages</h2>
-          <div class="message-list">
-            <div class="message-item">
-              <div class="message-header">
-                <span class="message-sender">Dr. Emily Chen</span>
-                <span class="message-time">Today, 2:45 PM</span>
-              </div>
-              <p class="message-content">The BTX-331 protocol amendment has been approved by the IRB. Please update the study documents accordingly.</p>
-            </div>
-            
-            <div class="message-item">
-              <div class="message-header">
-                <span class="message-sender">Mark Wilson</span>
-                <span class="message-time">Yesterday, 10:30 AM</span>
-              </div>
-              <p class="message-content">CIR-507 patient recruitment is still behind schedule. Let's discuss strategies in the team meeting tomorrow.</p>
-            </div>
+        <!-- IND Wizard Module -->
+        <div class="block bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow p-4">
+          <div class="flex items-center mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <h3 class="font-semibold text-gray-800">IND Wizard™</h3>
+          </div>
+          <p class="text-sm text-gray-600">Streamline IND application preparation with AI-powered guidance.</p>
+          <div class="mt-3">
+            <button class="module-btn w-full bg-primary text-white px-3 py-1.5 rounded text-sm hover:bg-opacity-90" data-module="IND Wizard">
+              Access Module
+            </button>
+          </div>
+        </div>
+        
+        <!-- CSR Intelligence Module -->
+        <div class="block bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow p-4">
+          <div class="flex items-center mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <h3 class="font-semibold text-gray-800">CSR Intelligence™</h3>
+          </div>
+          <p class="text-sm text-gray-600">Generate and analyze clinical study reports with AI assistance.</p>
+          <div class="mt-3">
+            <button class="module-btn w-full bg-primary text-white px-3 py-1.5 rounded text-sm hover:bg-opacity-90" data-module="CSR Intelligence">
+              Access Module
+            </button>
+          </div>
+        </div>
+        
+        <!-- Study Architect Module -->
+        <div class="block bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow p-4">
+          <div class="flex items-center mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            <h3 class="font-semibold text-gray-800">Study Architect™</h3>
+          </div>
+          <p class="text-sm text-gray-600">Design clinical trials with protocol optimization and template automation.</p>
+          <div class="mt-3">
+            <button class="module-btn w-full bg-primary text-white px-3 py-1.5 rounded text-sm hover:bg-opacity-90" data-module="Study Architect">
+              Access Module
+            </button>
           </div>
         </div>
       </div>
     </div>
   </div>
+  
+  <!-- Footer -->
+  <footer class="bg-gray-100 mt-12 border-t border-gray-200">
+    <div class="container mx-auto px-4 py-8">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-700 mb-4">TrialSage™</h3>
+          <p class="text-sm text-gray-600 mb-4">
+            AI-powered clinical and regulatory document authoring platform for global pharmaceutical submissions.
+          </p>
+          <p class="text-sm text-gray-600">
+            &copy; 2025 Concept2Cures Inc. All rights reserved.
+          </p>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-semibold text-gray-700 mb-4">Quick Links</h3>
+          <ul class="text-sm text-gray-600 space-y-2">
+            <li><a href="#" class="hover:text-primary">Dashboard</a></li>
+            <li><a href="#" class="hover:text-primary">Projects</a></li>
+            <li><a href="#" class="hover:text-primary">Documents</a></li>
+            <li><a href="#" class="hover:text-primary">Support</a></li>
+            <li><a href="/terms.html" class="hover:text-primary">Terms of Service</a></li>
+            <li><a href="/privacy.html" class="hover:text-primary">Privacy Policy</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-semibold text-gray-700 mb-4">Contact</h3>
+          <ul class="text-sm text-gray-600 space-y-2">
+            <li>
+              <a href="mailto:support@trialsage.ai" class="hover:text-primary flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                support@trialsage.ai
+              </a>
+            </li>
+            <li>
+              <a href="tel:+18005551234" class="hover:text-primary flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                </svg>
+                (800) 555-1234
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+      // Initialize the resilience service
+      const resilience = new ResilienceService({
+        prewarmEndpoint: '/api/prewarm',
+        prewarmInterval: 4 * 60 * 1000,
+        authRedirectDelay: 1500,
+        silentMode: false
+      });
+      
+      // Pre-warm server before any other operations
+      console.log('Pre-warming server before checking authentication...');
+      try {
+        const startTime = Date.now();
+        const response = await fetch('/api/prewarm');
+        const responseTime = Date.now() - startTime;
+        console.log(`Server warm-up response:`, response.status);
+      } catch (error) {
+        console.error('Initial server warm-up error:', error);
+      }
+      
+      // Start resilience service
+      resilience.init();
+      
+      // Authentication check using the resilience service
+      if (!resilience.isAuthenticated()) {
+        console.log("Not authenticated, redirecting to login");
+        resilience.redirectWithDelay('/login');
+        return;
+      }
+      
+      // Get user information from resilience service
+      const user = resilience.getCurrentUser();
+      if (user) {
+        const userWelcome = document.getElementById('userWelcome');
+        if (userWelcome && user.name) {
+          userWelcome.textContent = `Welcome, ${user.name}`;
+        }
+      }
+      
+      // Logout handler with improved resilience
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', function() {
+          resilience.logout();
+          // Add delay before redirect to allow for server warmup
+          setTimeout(() => {
+            window.location.href = '/login';
+          }, 1000);
+        });
+      }
+      
+      // Module access buttons
+      const moduleButtons = document.querySelectorAll('.module-btn');
+      moduleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const module = this.getAttribute('data-module');
+          alert(`You clicked on the ${module} module. This would navigate to the module interface.`);
+        });
+      });
+      
+      console.log('Client Portal initialized with resilience service');
+    });
+  </script>
 </body>
 </html>

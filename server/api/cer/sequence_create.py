@@ -95,7 +95,7 @@ def create_cer_sequence(body: SequenceBody, db: Session = Depends(get_db)):
     # Generate XML files based on region
     try:
         # Common index.xml (shared across regions)
-        write_ectd_xml(f"{seq.id:04d}", doc_models, base_dir="./output/cer")
+        write_ectd_xml(f"{seq.id:04d}", doc_models)
         
         # Region-specific XMLs
         if body.region == "EU":

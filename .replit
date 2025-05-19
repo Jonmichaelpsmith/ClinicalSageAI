@@ -1,4 +1,4 @@
-modules = ["bash", "nodejs-20", "python-3.11", "python3", "web"]
+modules = ["nodejs-20", "bash", "web", "python-3.11", "python3"]
 run = "npm run dev"
 hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
@@ -103,6 +103,3 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm run dev"
-
-[env]
-NODE_OPTIONS = "--max-old-space-size=512"
