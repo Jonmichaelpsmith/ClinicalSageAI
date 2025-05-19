@@ -100,33 +100,22 @@ app.get('/', (req, res) => {
   }
 });
 
-// Client portal - try to find the most robust implementation available
+// Client portal - use the May 17th legacy portal file
 app.get('/client-portal', (req, res) => {
-  console.log('Serving client portal - trying all available versions');
+  console.log('Serving legacy portal from May 17th');
   
-  // Try paths in order of potential completeness
-  const possiblePaths = [
-    path.join(process.cwd(), 'client/public/client-portal-direct.html'),
-    path.join(process.cwd(), 'no-login-client-portal.html'),
-    path.join(process.cwd(), 'client-portal-direct.html'),
-    path.join(process.cwd(), 'direct-client-portal.html'),
-    path.join(process.cwd(), 'direct-standalone-portal.html')
-  ];
+  const legacyPortalPath = path.join(process.cwd(), 'legacy/portal.html');
   
-  // Find the first existing file
-  for (const portalPath of possiblePaths) {
-    if (fs.existsSync(portalPath)) {
-      console.log(`Found client portal at: ${portalPath}`);
-      return res.sendFile(portalPath);
-    }
+  if (fs.existsSync(legacyPortalPath)) {
+    console.log(`Found portal at: ${legacyPortalPath}`);
+    return res.sendFile(legacyPortalPath);
   }
   
-  // If no file is found, send an error
+  // If not found, send an error
   res.status(404).send(`
     <h1>Client Portal Not Found</h1>
-    <p>Could not locate any valid client portal implementation.</p>
-    <p>Tried these paths:</p>
-    <ul>${possiblePaths.map(p => `<li>${p}</li>`).join('')}</ul>
+    <p>Could not locate the legacy portal file from May 17th.</p>
+    <p>Missing path: ${legacyPortalPath}</p>
   `);
 });
 
