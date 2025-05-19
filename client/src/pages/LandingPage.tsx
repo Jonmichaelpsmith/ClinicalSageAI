@@ -1,38 +1,54 @@
-import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
+import { Button } from '@/components/ui/button';
+import { useEffect } from 'react';
+import { cleanupModals } from '../lib/modalHelpers';
 
-const LandingPage = () => {
-  const [, setLocation] = useLocation();
+export default function LandingPage() {
+  const [, navigate] = useLocation();
+
+  // Clean up modals when component unmounts
+  useEffect(() => {
+    return () => {
+      cleanupModals();
+    };
+  }, []);
+
+  const goToClientPortal = () => {
+    navigate('/client-portal');
+  };
 
   return (
     <div className="landing-page">
       {/* Header */}
-      <header className="landing-header">
-        <div className="logo-container">
-          <h1 className="logo">TrialSage™ by <span className="company-name">Concept2Cures</span></h1>
-        </div>
-        <nav className="main-nav">
-          <ul className="nav-links">
-            <li><a href="#solutions">Solutions</a></li>
-            <li><a href="#features">Features</a></li>
-            <li><a href="#ai-technology">AI Technology</a></li>
-            <li><a href="#about">About</a></li>
-            <li><a href="#contact">Contact</a></li>
-          </ul>
-          <div className="auth-buttons">
-            <button className="btn btn-outline">RFP</button>
-            <button className="btn btn-outline">Demo</button>
-            <button className="btn btn-primary" onClick={() => setLocation('/client-portal')}>Client Login</button>
-            <button className="btn btn-outline">Support</button>
+      <div className="header">
+        <div className="header-container">
+          <div className="logo">
+            <span className="brand-text">TrialSage™ by</span>
+            <span className="company-name">Concept2Cures</span>
           </div>
-        </nav>
-      </header>
+          <div className="nav">
+            <div className="nav-links">
+              <a href="#solutions">Solutions</a>
+              <a href="#features">Features</a>
+              <a href="#ai-tech">AI Technology</a>
+              <a href="#about">About</a>
+              <a href="#contact">Contact</a>
+            </div>
+            <div className="auth-buttons">
+              <button className="btn-white">RFP</button>
+              <button className="btn-white">Demo</button>
+              <button className="btn-primary" onClick={goToClientPortal}>Client Login</button>
+              <button className="btn-white">Support</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Hero Section */}
-      <section className="hero-section">
-        <div className="hero-content">
-          <h1 className="hero-title">TrialSage™: Enterprise Regulatory Intelligence Platform</h1>
-          <p className="hero-description">
+      <div className="hero">
+        <div className="hero-container">
+          <h1>TrialSage™: Enterprise Regulatory Intelligence Platform</h1>
+          <p className="hero-text">
             TrialSage™ is a comprehensive AI-powered platform integrating enterprise document
             management, regulatory submissions, and intelligent workflow automation. Our
             Microsoft 365-style UI with advanced retention management exceeds industry
@@ -40,131 +56,144 @@ const LandingPage = () => {
             85%.
           </p>
           <div className="hero-buttons">
-            <button className="btn btn-primary">Request Demo</button>
-            <button className="btn btn-secondary">Explore Solutions</button>
+            <button className="btn-primary">Request Demo</button>
+            <button className="btn-secondary">Explore Solutions</button>
           </div>
         </div>
-      </section>
+      </div>
 
       {/* Stats Section */}
-      <section className="stats-section">
-        <div className="stat-item">
-          <div className="stat-number">5,750+</div>
-          <div className="stat-label">Documents Processed</div>
+      <div className="stats">
+        <div className="stats-container">
+          <div className="stat">
+            <h2>5,750+</h2>
+            <p>Documents Processed</p>
+          </div>
+          <div className="stat">
+            <h2>85%</h2>
+            <p>Faster Submissions</p>
+          </div>
+          <div className="stat">
+            <h2>99.7%</h2>
+            <p>Audit Compliance</p>
+          </div>
+          <div className="stat">
+            <h2>8</h2>
+            <p>Enterprise Modules</p>
+          </div>
         </div>
-        <div className="stat-item">
-          <div className="stat-number">85%</div>
-          <div className="stat-label">Faster Submissions</div>
-        </div>
-        <div className="stat-item">
-          <div className="stat-number">99.7%</div>
-          <div className="stat-label">Audit Compliance</div>
-        </div>
-        <div className="stat-item">
-          <div className="stat-number">8</div>
-          <div className="stat-label">Enterprise Modules</div>
-        </div>
-      </section>
+      </div>
 
-      {/* Feature Highlights */}
-      <section className="features-section" id="features">
-        <div className="section-header">
-          <h2 className="section-title">Comprehensive Regulatory Solutions</h2>
-          <p className="section-subtitle">Our integrated platform streamlines the entire regulatory lifecycle</p>
+      {/* Solutions Section */}
+      <div className="solutions" id="solutions">
+        <div className="solutions-container">
+          <h2 className="section-title">Our Solutions</h2>
+          <div className="section-divider"></div>
+          <p className="section-description">
+            Explore our suite of AI-powered regulatory tools designed to revolutionize
+            your workflow and accelerate time to market.
+          </p>
+
+          <div className="solution-cards">
+            <div className="solution-card">
+              <h3>CSR Intelligence™</h3>
+              <p>Access and analyze 3,217+ parsed clinical study reports with our powerful search and AI assistant.</p>
+              <ul className="feature-list">
+                <li>Intelligent search across all your CSR data</li>
+                <li>Ask questions in plain English and get immediate answers</li>
+                <li>Jump directly to source documents with precise citations</li>
+              </ul>
+              <a href="#" className="learn-more">Learn more →</a>
+            </div>
+
+            <div className="solution-card">
+              <h3>IND Building & Submission Wizard™</h3>
+              <p>Turn complex IND applications into a simple guided process with intelligent document generation.</p>
+              <ul className="feature-list">
+                <li>Guided IND application process with expert system</li>
+                <li>Auto-generation of compliant regulatory documents</li>
+                <li>Reduce IND preparation time by up to 70%</li>
+              </ul>
+              <a href="#" className="learn-more">Learn more →</a>
+            </div>
+
+            <div className="solution-card">
+              <h3>CMC Automation Module™</h3>
+              <p>Streamline Chemistry, Manufacturing, and Controls documentation with AI-powered automation tools.</p>
+              <ul className="feature-list">
+                <li>Auto-generate ICH-compliant Module 3 documentation</li>
+                <li>Simulate change consequences across global filings</li>
+                <li>AI-powered manufacturing process optimization</li>
+              </ul>
+              <a href="#" className="learn-more">Learn more →</a>
+            </div>
+
+            <div className="solution-card">
+              <h3>CER Generator Module™</h3>
+              <p>Create comprehensive Clinical Evaluation Reports that meet global regulatory requirements.</p>
+              <ul className="feature-list">
+                <li>Auto-generate CER templates and structure</li>
+                <li>Intelligent data extraction from clinical studies</li>
+                <li>Risk assessment and safety analysis automation</li>
+              </ul>
+              <a href="#" className="learn-more">Learn more →</a>
+            </div>
+          </div>
         </div>
-        <div className="features-grid">
-          <div className="feature-card">
-            <div className="feature-icon">📄</div>
-            <h3 className="feature-title">510(k) Submission Automation</h3>
-            <p className="feature-description">
-              Streamline your FDA 510(k) submission process with our end-to-end automation pipeline.
-            </p>
-          </div>
-          <div className="feature-card">
-            <div className="feature-icon">🔍</div>
-            <h3 className="feature-title">Clinical Evaluation Reporting</h3>
-            <p className="feature-description">
-              Generate comprehensive CER documents with automated evidence collection and analysis.
-            </p>
-          </div>
-          <div className="feature-card">
-            <div className="feature-icon">📊</div>
-            <h3 className="feature-title">Quality Management System</h3>
-            <p className="feature-description">
-              Maintain compliance with integrated quality management workflows and documentation.
-            </p>
-          </div>
-          <div className="feature-card">
-            <div className="feature-icon">🤖</div>
-            <h3 className="feature-title">AI-Powered Document Generation</h3>
-            <p className="feature-description">
-              Create regulatory-compliant documents with intelligent assistance and templates.
-            </p>
-          </div>
-        </div>
-      </section>
+      </div>
 
       {/* CTA Section */}
-      <section className="cta-section">
-        <div className="cta-content">
-          <h2 className="cta-title">Ready to accelerate your regulatory process?</h2>
-          <p className="cta-description">
-            Join leading medical device companies that trust TrialSage™ for their regulatory needs.
-          </p>
-          <button className="btn btn-primary btn-large" onClick={() => setLocation('/client-portal')}>
+      <div className="cta">
+        <div className="cta-container">
+          <h2>Ready to experience the TrialSage™ difference?</h2>
+          <button className="btn-primary" onClick={goToClientPortal}>
             Access Client Portal
           </button>
         </div>
-      </section>
+      </div>
 
       {/* Footer */}
-      <footer className="footer">
-        <div className="footer-content">
-          <div className="footer-logo">
-            <h2>TrialSage™</h2>
-            <p>Enterprise Regulatory Intelligence</p>
-          </div>
-          <div className="footer-links">
-            <div className="footer-column">
-              <h3>Products</h3>
-              <ul>
-                <li><a href="#">510(k) Automation</a></li>
-                <li><a href="#">CER Generator</a></li>
-                <li><a href="#">IND Wizard</a></li>
-                <li><a href="#">TrialSage Vault</a></li>
-              </ul>
+      <div className="footer">
+        <div className="footer-container">
+          <div className="footer-top">
+            <div className="footer-logo">
+              <h3>TrialSage™</h3>
+              <p>Enterprise Regulatory Intelligence</p>
             </div>
-            <div className="footer-column">
-              <h3>Resources</h3>
-              <ul>
-                <li><a href="#">Documentation</a></li>
-                <li><a href="#">Knowledge Base</a></li>
-                <li><a href="#">Compliance Guides</a></li>
-                <li><a href="#">Webinars</a></li>
-              </ul>
-            </div>
-            <div className="footer-column">
-              <h3>Company</h3>
-              <ul>
-                <li><a href="#">About Us</a></li>
-                <li><a href="#">Contact</a></li>
-                <li><a href="#">Careers</a></li>
-                <li><a href="#">Press</a></li>
-              </ul>
+            <div className="footer-links">
+              <div className="footer-column">
+                <h4>Product</h4>
+                <a href="#">510(k) Automation</a>
+                <a href="#">CER Generator</a>
+                <a href="#">IND Wizard</a>
+                <a href="#">Vault Workspace</a>
+              </div>
+              <div className="footer-column">
+                <h4>Resources</h4>
+                <a href="#">Documentation</a>
+                <a href="#">API</a>
+                <a href="#">Guides</a>
+                <a href="#">Webinars</a>
+              </div>
+              <div className="footer-column">
+                <h4>Company</h4>
+                <a href="#">About</a>
+                <a href="#">Careers</a>
+                <a href="#">Blog</a>
+                <a href="#">Contact</a>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="footer-bottom">
-          <p>&copy; 2025 Concept2Cures. All rights reserved.</p>
-          <div className="footer-legal">
-            <a href="#">Privacy Policy</a>
-            <a href="#">Terms of Service</a>
-            <a href="#">Cookie Policy</a>
+          <div className="footer-bottom">
+            <p>© 2025 Concept2Cures. All rights reserved.</p>
+            <div className="footer-legal">
+              <a href="#">Privacy Policy</a>
+              <a href="#">Terms of Service</a>
+              <a href="#">GDPR</a>
+            </div>
           </div>
         </div>
-      </footer>
+      </div>
     </div>
   );
-};
-
-export default LandingPage;
+}
