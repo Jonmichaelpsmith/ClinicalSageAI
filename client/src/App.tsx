@@ -7,6 +7,8 @@ import { ThemeProvider } from "next-themes";
 import Layout from "./components/Layout";
 import NotFound from "./pages/not-found";
 import CERV2Page from "./pages/CERV2Page";
+import ClientPortalLanding from "./pages/ClientPortalLanding";
+import HomeLanding from "./pages/HomeLanding";
 
 function Router() {
   return (
