@@ -3,168 +3,1411 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TrialSage™ Emergency Portal</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <script>
-        window.onload = function() {
-            // Add the base URL to all module links
-            document.querySelectorAll('.module-link').forEach(link => {
-                const path = link.getAttribute('data-path');
-                link.href = window.location.origin + '/' + path;
-                console.log('Set link to: ' + link.href);
-            });
-        };
-    </script>
+    <title>TrialSage™ by Concept2Cures - Accelerate Regulatory Submissions with AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --primary: #0B6E4F;
+            --primary-dark: #08563D;
+            --primary-light: #0E8761;
+            --primary-lighter: #E6F3EF;
+            --secondary: #FF6B35;
+            --secondary-dark: #E55A2B;
+            --secondary-light: #FF8C64;
+            --background: #FFFFFF;
+            --background-alt: #F8FAFC;
+            --text: #1E293B;
+            --text-light: #64748B;
+            --text-lighter: #94A3B8;
+            --border: #E2E8F0;
+            --surface: #FFFFFF;
+            --surface-hover: #F1F5F9;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f9fafb;
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            line-height: 1.5;
+            background-color: var(--background);
         }
-        .module-card {
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.5rem 1.25rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            text-align: center;
             transition: all 0.2s ease;
-            border-left: 4px solid;
+            cursor: pointer;
         }
-        .module-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            border: 1px solid var(--primary);
+            box-shadow: var(--shadow-sm);
         }
-        .cerv2 { border-color: #10b981; }
-        .ind-wizard { border-color: #6366f1; }
-        .ectd { border-color: #8b5cf6; }
-        .cmc { border-color: #eab308; }
-        .csr { border-color: #14b8a6; }
-        .study { border-color: #f97316; }
-        .reports { border-color: #ec4899; }
-        .vault { border-color: #64748b; }
-        .regulatory { border-color: #6366f1; }
-        .risk { border-color: #ef4444; }
-        .analytics { border-color: #06b6d4; }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+            box-shadow: var(--shadow);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: white;
+            border: 1px solid var(--secondary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--secondary-dark);
+            border-color: var(--secondary-dark);
+            box-shadow: var(--shadow);
+            transform: translateY(-1px);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary-lighter);
+            box-shadow: var(--shadow-sm);
+            transform: translateY(-1px);
+        }
+
+        .btn-lg {
+            padding: 0.75rem 1.5rem;
+            font-size: 1.125rem;
+        }
+
+        .btn-sm {
+            padding: 0.375rem 0.875rem;
+            font-size: 0.875rem;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: var(--surface);
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 4.5rem;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--primary);
+        }
+
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            font-weight: 500;
+            color: var(--text);
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: var(--primary);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -0.25rem;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--primary);
+            transition: width 0.2s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        /* Dropdown Styles */
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        .dropdown-toggle i {
+            font-size: 0.75rem;
+            transition: transform 0.2s ease;
+        }
+
+        .dropdown:hover .dropdown-toggle i {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            min-width: 12rem;
+            background-color: var(--surface);
+            border-radius: 0.375rem;
+            box-shadow: var(--shadow-lg);
+            padding: 0.75rem 0;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(0.5rem);
+            transition: all 0.2s ease;
+            z-index: 101;
+        }
+
+        .dropdown:hover .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0.25rem);
+        }
+
+        .dropdown-item {
+            display: block;
+            padding: 0.5rem 1.25rem;
+            color: var(--text);
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .dropdown-item:hover {
+            background-color: var(--surface-hover);
+            color: var(--primary);
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background-color: var(--border);
+            margin: 0.5rem 0;
+        }
+
+        .hamburger {
+            display: none;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text);
+        }
+
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 80%;
+            max-width: 400px;
+            height: 100vh;
+            background-color: var(--surface);
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            transition: right 0.3s ease;
+            z-index: 200;
+            overflow-y: auto;
+        }
+
+        .mobile-menu.active {
+            right: 0;
+        }
+
+        .mobile-menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .close-menu {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        .mobile-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .mobile-nav-link {
+            color: var(--text);
+            font-weight: 500;
+            font-size: 1.125rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .mobile-submenu-toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .mobile-submenu-toggle i {
+            transition: transform 0.2s ease;
+        }
+
+        .mobile-submenu-toggle.active i {
+            transform: rotate(180deg);
+        }
+
+        .mobile-submenu {
+            display: none;
+            margin-top: 0.75rem;
+            padding-left: 1rem;
+        }
+
+        .mobile-submenu.active {
+            display: block;
+        }
+
+        .mobile-submenu-item {
+            display: block;
+            padding: 0.5rem 0;
+            color: var(--text-light);
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 99;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 6rem 0;
+            background-color: var(--background-alt);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            max-width: 700px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            color: var(--text);
+        }
+
+        .hero-title span {
+            color: var(--primary);
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-light);
+            margin-bottom: 2.5rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .hero-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .hero-stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .hero-stat-label {
+            font-size: 1rem;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        /* Value Proposition */
+        .value-prop {
+            padding: 6rem 0;
+            background-color: var(--surface);
+        }
+
+        .section-header {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 4rem;
+        }
+
+        .section-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .section-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-light);
+        }
+
+        .value-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+
+        .value-card {
+            background-color: var(--background-alt);
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .value-card:hover {
+            transform: translateY(-0.5rem);
+            box-shadow: var(--shadow-md);
+        }
+
+        .value-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 3.5rem;
+            height: 3.5rem;
+            background-color: var(--primary-lighter);
+            color: var(--primary);
+            border-radius: 0.75rem;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .value-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .value-description {
+            color: var(--text-light);
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .value-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary);
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: gap 0.2s ease;
+        }
+
+        .value-link:hover {
+            gap: 0.75rem;
+        }
+
+        /* Solutions Section */
+        .solutions {
+            padding: 6rem 0;
+            background-color: var(--background-alt);
+        }
+
+        .solutions-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+
+        .solution-card {
+            background-color: var(--surface);
+            border-radius: 0.75rem;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .solution-card:hover {
+            transform: translateY(-0.5rem);
+            box-shadow: var(--shadow-md);
+        }
+
+        .solution-header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1.5rem;
+        }
+
+        .solution-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 3rem;
+            height: 3rem;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 0.5rem;
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .solution-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .solution-tagline {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+
+        .solution-body {
+            padding: 1.5rem;
+        }
+
+        .solution-description {
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+            font-size: 0.9375rem;
+        }
+
+        .solution-features {
+            margin-bottom: 1.5rem;
+        }
+
+        .solution-feature {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .solution-feature i {
+            color: var(--primary);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        .solution-feature span {
+            font-size: 0.875rem;
+            color: var(--text);
+        }
+
+        .solution-footer {
+            padding: 1.25rem 1.5rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        /* Differentiators Section */
+        .differentiators {
+            padding: 6rem 0;
+            background-color: var(--surface);
+        }
+
+        .diff-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 3rem;
+        }
+
+        .diff-content {
+            padding-right: 2rem;
+        }
+
+        .diff-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text);
+        }
+
+        .diff-description {
+            font-size: 1.125rem;
+            color: var(--text-light);
+            margin-bottom: 2rem;
+        }
+
+        .diff-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .diff-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .diff-item-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            background-color: var(--primary-lighter);
+            color: var(--primary);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .diff-item-content {
+            flex: 1;
+        }
+
+        .diff-item-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+
+        .diff-item-description {
+            font-size: 0.9375rem;
+            color: var(--text-light);
+        }
+
+        .diff-image {
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .diff-image img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* CTA Section */
+        .cta {
+            padding: 6rem 0;
+            background-color: var(--primary);
+            color: white;
+            text-align: center;
+        }
+
+        .cta-content {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .cta-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+
+        .cta-description {
+            font-size: 1.125rem;
+            margin-bottom: 2.5rem;
+            opacity: 0.9;
+        }
+
+        .cta-btn {
+            background-color: white;
+            color: var(--primary);
+            padding: 0.75rem 2rem;
+            font-size: 1.125rem;
+            font-weight: 500;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-0.25rem);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Footer */
+        .footer {
+            padding: 4rem 0;
+            background-color: var(--background-alt);
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr repeat(3, 1fr);
+            gap: 3rem;
+        }
+
+        .footer-logo {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+
+        .footer-description {
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+            font-size: 0.9375rem;
+        }
+
+        .footer-social {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .footer-social-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.25rem;
+            height: 2.25rem;
+            background-color: var(--surface);
+            color: var(--primary);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .footer-social-link:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .footer-heading {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 1.25rem;
+        }
+
+        .footer-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.875rem;
+        }
+
+        .footer-link {
+            color: var(--text-light);
+            font-size: 0.9375rem;
+            transition: color 0.2s ease;
+        }
+
+        .footer-link:hover {
+            color: var(--primary);
+        }
+
+        .footer-contact {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-light);
+            font-size: 0.9375rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-contact i {
+            color: var(--primary);
+        }
+
+        .footer-bottom {
+            padding-top: 2rem;
+            margin-top: 3rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-copyright {
+            color: var(--text-light);
+            font-size: 0.875rem;
+        }
+
+        .footer-legal {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .footer-legal-link {
+            color: var(--text-light);
+            font-size: 0.875rem;
+            transition: color 0.2s ease;
+        }
+
+        .footer-legal-link:hover {
+            color: var(--primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .value-grid, .solutions-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .diff-grid {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+
+            .diff-content {
+                padding-right: 0;
+            }
+
+            .footer-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+            }
+
+            .hamburger {
+                display: block;
+            }
+
+            .hero {
+                padding: 4rem 0;
+            }
+
+            .hero-title {
+                font-size: 2.25rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.125rem;
+            }
+
+            .section-title {
+                font-size: 1.875rem;
+            }
+
+            .value-grid, .solutions-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .footer-legal {
+                flex-direction: column;
+                gap: 0.875rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-buttons {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-stats {
+                gap: 2rem;
+            }
+
+            .hero-stat-value {
+                font-size: 2rem;
+            }
+
+            .hero {
+                padding: 4rem 0;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.125rem;
+            }
+
+            .section {
+                padding: 4rem 0;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="min-h-screen flex flex-col">
-        <!-- Header -->
-        <header class="bg-white border-b shadow-sm">
-            <div class="container mx-auto px-4 py-4">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h1 class="text-xl font-bold">
-                            <span class="text-blue-600">TrialSage™</span>
-                            <span class="text-xs ml-1 bg-blue-100 text-blue-800 px-1 rounded">Enterprise</span>
-                        </h1>
-                        <p class="text-sm text-gray-500">AI-Powered Regulatory Platform (Emergency Access)</p>
-                    </div>
-                    <div class="flex space-x-4">
-                        <select class="border rounded px-2 py-1 text-sm">
-                            <option>Acme CRO</option>
-                            <option>BioTech Innovations</option>
-                            <option>Clari-Pharm</option>
-                        </select>
-                        <select class="border rounded px-2 py-1 text-sm">
-                            <option>NeuroPharma Inc.</option>
-                            <option>GeneTech Labs</option>
-                            <option>MedAlliance</option>
-                        </select>
-                    </div>
-                </div>
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <a href="/" class="logo">TrialSage™ by Concept2Cures</a>
+                
+                <ul class="nav-menu">
+                    <li class="dropdown">
+                        <div class="dropdown-toggle nav-link">
+                            <span>Solutions</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="dropdown-menu">
+                            <a href="/solutions/csr-intelligence" class="dropdown-item">CSR Intelligence™</a>
+                            <a href="/solutions/ind-wizard" class="dropdown-item">IND Wizard™</a>
+                            <a href="/solutions/ich-wiz" class="dropdown-item">ICH Wiz™</a>
+                            <a href="/solutions/vault-workspace" class="dropdown-item">Vault™ Workspace</a>
+                            <a href="/solutions/study-architect" class="dropdown-item">Study Architect™</a>
+                            <div class="dropdown-divider"></div>
+                            <a href="/solutions" class="dropdown-item">All Solutions</a>
+                        </div>
+                    </li>
+                    <li class="dropdown">
+                        <div class="dropdown-toggle nav-link">
+                            <span>Use Cases</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="dropdown-menu">
+                            <a href="/use-case/ectd-submissions" class="dropdown-item">eCTD Submissions</a>
+                            <a href="/use-case/protocol-design" class="dropdown-item">Protocol Design</a>
+                            <a href="/use-case/regulatory-intelligence" class="dropdown-item">Regulatory Intelligence</a>
+                        </div>
+                    </li>
+                    <li><a href="/about" class="nav-link">About</a></li>
+                    <li><a href="/contact" class="nav-link">Contact</a></li>
+                    <li><a href="/demo" class="btn btn-primary">Request Demo</a></li>
+                </ul>
+                
+                <button class="hamburger" id="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </nav>
+        </div>
+    </header>
+    
+    <div class="mobile-menu" id="mobile-menu">
+        <div class="mobile-menu-header">
+            <a href="/" class="logo">TrialSage™</a>
+            <button class="close-menu" id="close-menu">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <nav class="mobile-nav">
+            <div class="mobile-submenu-toggle" data-target="solutions-submenu">
+                <span>Solutions</span>
+                <i class="fas fa-chevron-down"></i>
             </div>
-        </header>
-
-        <!-- Main Content -->
-        <main class="container mx-auto px-4 py-8 flex-grow">
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <h2 class="text-blue-800 font-medium">Emergency Access Mode</h2>
-                <p class="text-sm text-blue-600">
-                    This is a lightweight emergency portal that provides direct access to all modules. 
-                    Click any module to access its functionality.
-                </p>
+            <div class="mobile-submenu" id="solutions-submenu">
+                <a href="/solutions/csr-intelligence" class="mobile-submenu-item">CSR Intelligence™</a>
+                <a href="/solutions/ind-wizard" class="mobile-submenu-item">IND Wizard™</a>
+                <a href="/solutions/ich-wiz" class="mobile-submenu-item">ICH Wiz™</a>
+                <a href="/solutions/vault-workspace" class="mobile-submenu-item">Vault™ Workspace</a>
+                <a href="/solutions/study-architect" class="mobile-submenu-item">Study Architect™</a>
+                <a href="/solutions" class="mobile-submenu-item">All Solutions</a>
             </div>
             
-            <h2 class="text-2xl font-bold mb-6">Module Access</h2>
+            <div class="mobile-submenu-toggle" data-target="use-cases-submenu">
+                <span>Use Cases</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="mobile-submenu" id="use-cases-submenu">
+                <a href="/use-case/ectd-submissions" class="mobile-submenu-item">eCTD Submissions</a>
+                <a href="/use-case/protocol-design" class="mobile-submenu-item">Protocol Design</a>
+                <a href="/use-case/regulatory-intelligence" class="mobile-submenu-item">Regulatory Intelligence</a>
+            </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Dashboard -->
-                <a href="#" data-path="dashboard" class="module-link module-card cerv2 block p-6 bg-white shadow rounded-lg hover:shadow-md">
-                    <h3 class="text-lg font-semibold">Dashboard</h3>
-                    <p class="text-sm text-gray-500 mt-1">Overview of all platform activities</p>
-                </a>
-                
-                <!-- CER2V -->
-                <a href="#" data-path="cerv2" class="module-link module-card cerv2 block p-6 bg-white shadow rounded-lg hover:shadow-md">
-                    <h3 class="text-lg font-semibold">CER2V™</h3>
-                    <p class="text-sm text-gray-500 mt-1">Clinical Evaluation Report generation and validation</p>
-                </a>
-                
-                <!-- IND Wizard -->
-                <a href="#" data-path="ind-wizard" class="module-link module-card ind-wizard block p-6 bg-white shadow rounded-lg hover:shadow-md">
-                    <h3 class="text-lg font-semibold">IND Wizard™</h3>
-                    <p class="text-sm text-gray-500 mt-1">Investigational New Drug application guidance</p>
-                </a>
-                
-                <!-- eCTD Author -->
-                <a href="#" data-path="ectd-author" class="module-link module-card ectd block p-6 bg-white shadow rounded-lg hover:shadow-md">
-                    <h3 class="text-lg font-semibold">eCTD Author™</h3>
-                    <p class="text-sm text-gray-500 mt-1">Electronic Common Technical Document authoring</p>
-                </a>
-                
-                <!-- CMC Module -->
-                <a href="#" data-path="cmc" class="module-link module-card cmc block p-6 bg-white shadow rounded-lg hover:shadow-md">
-                    <h3 class="text-lg font-semibold">CMC Module™</h3>
-                    <p class="text-sm text-gray-500 mt-1">Chemistry, Manufacturing, and Controls documentation</p>
-                </a>
-                
-                <!-- CSR Intelligence -->
-                <a href="#" data-path="csr" class="module-link module-card csr block p-6 bg-white shadow rounded-lg hover:shadow-md">
-                    <h3 class="text-lg font-semibold">CSR Intelligence™</h3>
-                    <p class="text-sm text-gray-500 mt-1">Clinical Study Report analytics</p>
-                </a>
-                
-                <!-- Study Architect -->
-                <a href="#" data-path="study-architect" class="module-link module-card study block p-6 bg-white shadow rounded-lg hover:shadow-md">
-                    <h3 class="text-lg font-semibold">Study Architect™</h3>
-                    <p class="text-sm text-gray-500 mt-1">Clinical study design and protocol development</p>
-                </a>
-                
-                <!-- Reports -->
-                <a href="#" data-path="reports" class="module-link module-card reports block p-6 bg-white shadow rounded-lg hover:shadow-md">
-                    <h3 class="text-lg font-semibold">Reports</h3>
-                    <p class="text-sm text-gray-500 mt-1">Comprehensive reporting and analytics</p>
-                </a>
-                
-                <!-- Vault -->
-                <a href="#" data-path="vault" class="module-link module-card vault block p-6 bg-white shadow rounded-lg hover:shadow-md">
-                    <h3 class="text-lg font-semibold">Vault™</h3>
-                    <p class="text-sm text-gray-500 mt-1">Secure document storage and management</p>
-                </a>
-                
-                <!-- Regulatory Hub -->
-                <a href="#" data-path="regulatory-intelligence-hub" class="module-link module-card regulatory block p-6 bg-white shadow rounded-lg hover:shadow-md">
-                    <h3 class="text-lg font-semibold">Regulatory Hub™</h3>
-                    <p class="text-sm text-gray-500 mt-1">Regulatory intelligence and compliance</p>
-                </a>
-                
-                <!-- Risk Heatmap -->
-                <a href="#" data-path="regulatory-risk-dashboard" class="module-link module-card risk block p-6 bg-white shadow rounded-lg hover:shadow-md">
-                    <h3 class="text-lg font-semibold">Risk Heatmap™</h3>
-                    <p class="text-sm text-gray-500 mt-1">Visual risk assessment and management</p>
-                </a>
-                
-                <!-- Analytics -->
-                <a href="#" data-path="analytics" class="module-link module-card analytics block p-6 bg-white shadow rounded-lg hover:shadow-md">
-                    <h3 class="text-lg font-semibold">Analytics</h3>
-                    <p class="text-sm text-gray-500 mt-1">Advanced data analysis and visualization</p>
-                </a>
-            </div>
-        </main>
-
-        <!-- Footer -->
-        <footer class="bg-white border-t mt-auto">
-            <div class="container mx-auto px-4 py-4">
-                <div class="text-sm text-gray-500 text-center">
-                    TrialSage™ Enterprise Platform © 2025
-                </div>
-            </div>
-        </footer>
+            <a href="/about" class="mobile-nav-link">About</a>
+            <a href="/contact" class="mobile-nav-link">Contact</a>
+            <a href="/demo" class="btn btn-primary" style="margin-top: 1rem;">Request Demo</a>
+        </nav>
     </div>
+    
+    <div class="overlay" id="overlay"></div>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Transform Regulatory Submissions with <span>AI-Powered Intelligence</span></h1>
+                <p class="hero-subtitle">TrialSage™ accelerates document creation, automates compliance checks, and delivers actionable insights for global regulatory submissions.</p>
+                
+                <div class="hero-buttons">
+                    <a href="/demo" class="btn btn-primary btn-lg">Request Demo</a>
+                    <a href="#solutions" class="btn btn-outline btn-lg">Explore Solutions</a>
+                </div>
+                
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <span class="hero-stat-value">3,217+</span>
+                        <span class="hero-stat-label">CSRs Analyzed</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-value">75%</span>
+                        <span class="hero-stat-label">Faster Submissions</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-value">98%</span>
+                        <span class="hero-stat-label">First-time Acceptance</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="value-prop">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Why Regulatory Teams Choose TrialSage™</h2>
+                <p class="section-subtitle">Our AI-powered platform transforms regulatory document creation and analysis, helping pharmaceutical companies achieve regulatory success faster.</p>
+            </div>
+            
+            <div class="value-grid">
+                <div class="value-card">
+                    <div class="value-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3 class="value-title">Accelerate Document Creation</h3>
+                    <p class="value-description">Generate high-quality regulatory documents up to 75% faster with AI assistance that leverages insights from thousands of historical submissions.</p>
+                    <a href="/benefits/speed" class="value-link">
+                        <span>Learn more</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                
+                <div class="value-card">
+                    <div class="value-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3 class="value-title">Ensure Global Compliance</h3>
+                    <p class="value-description">Automate compliance verification across FDA, EMA, PMDA, and NMPA requirements with real-time regulatory intelligence and guideline updates.</p>
+                    <a href="/benefits/compliance" class="value-link">
+                        <span>Learn more</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                
+                <div class="value-card">
+                    <div class="value-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3 class="value-title">Make Data-Driven Decisions</h3>
+                    <p class="value-description">Access insights from our vast repository of CSRs and regulatory documents to optimize protocols, endpoints, and statistical approaches.</p>
+                    <a href="/benefits/insights" class="value-link">
+                        <span>Learn more</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="solutions" id="solutions">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Our Integrated Solutions Suite</h2>
+                <p class="section-subtitle">TrialSage™ provides comprehensive tools for every stage of the regulatory process, from protocol development to submission management.</p>
+            </div>
+            
+            <div class="solutions-grid">
+                <div class="solution-card">
+                    <div class="solution-header">
+                        <div class="solution-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <h3 class="solution-title">CSR Intelligence™</h3>
+                        <p class="solution-tagline">Advanced clinical study report analytics</p>
+                    </div>
+                    <div class="solution-body">
+                        <p class="solution-description">Leverage our database of 3,217+ parsed clinical study reports to gain unprecedented insights from historical data and improve protocol design.</p>
+                        
+                        <div class="solution-features">
+                            <div class="solution-feature">
+                                <i class="fas fa-check"></i>
+                                <span>AI-powered pattern discovery across thousands of CSRs</span>
+                            </div>
+                            <div class="solution-feature">
+                                <i class="fas fa-check"></i>
+                                <span>Endpoint selection optimization with historical data</span>
+                            </div>
+                            <div class="solution-feature">
+                                <i class="fas fa-check"></i>
+                                <span>Competitive intelligence on similar studies</span>
+                            </div>
+                            <div class="solution-feature">
+                                <i class="fas fa-check"></i>
+                                <span>Regulatory precedent analysis by indication</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="solution-footer">
+                        <a href="/solutions/csr-intelligence" class="btn btn-primary">Learn More</a>
+                    </div>
+                </div>
+                
+                <div class="solution-card">
+                    <div class="solution-header">
+                        <div class="solution-icon">
+                            <i class="fas fa-flask"></i>
+                        </div>
+                        <h3 class="solution-title">IND Wizard™</h3>
+                        <p class="solution-tagline">Automated IND application preparation</p>
+                    </div>
+                    <div class="solution-body">
+                        <p class="solution-description">Streamline FDA Investigational New Drug (IND) application creation with guided questionnaires and automated document generation from templates.</p>
+                        
+                        <div class="solution-features">
+                            <div class="solution-feature">
+                                <i class="fas fa-check"></i>
+                                <span>Interactive IND questionnaire with context-aware help</span>
+                            </div>
+                            <div class="solution-feature">
+                                <i class="fas fa-check"></i>
+                                <span>Automatic document generation from templates</span>
+                            </div>
+                            <div class="solution-feature">
+                                <i class="fas fa-check"></i>
+                                <span>Real-time compliance validation against FDA requirements</span>
+                            </div>
+                            <div class="solution-feature">
+                                <i class="fas fa-check"></i>
+                                <span>Integrated eCTD publishing workflow</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="solution-footer">
+                        <a href="/solutions/ind-wizard" class="btn btn-primary">Learn More</a>
+                    </div>
+                </div>
+                
+                <div class="solution-card">
+                    <div class="solution-header">
+                        <div class="solution-icon">
+                            <i class="fas fa-clipboard-check"></i>
+                        </div>
+                        <h3 class="solution-title">ICH Wiz™</h3>
+                        <p class="solution-tagline">Digital compliance coach</p>
+                    </div>
+                    <div class="solution-body">
+                        <p class="solution-description">Ensure global compliance with interactive guidance on International Council for Harmonisation (ICH) guidelines implementation across regulatory bodies.</p>
+                        
+                        <div class="solution-features">
+                            <div class="solution-feature">
+                                <i class="fas fa-check"></i>
+                                <span>Real-time guidance on ICH guideline implementation</span>
+                            </div>
+                            <div class="solution-feature">
+                                <i class="fas fa-check"></i>
+                                <span>Compliance checking for FDA, EMA, PMDA, NMPA</span>
+                            </div>
+                            <div class="solution-feature">
+                                <i class="fas fa-check"></i>
+                                <span>Interactive compliance visualization and gap analysis</span>
+                            </div>
+                            <div class="solution-feature">
+                                <i class="fas fa-check"></i>
+                                <span>Regulatory change monitoring and notification</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="solution-footer">
+                        <a href="/solutions/ich-wiz" class="btn btn-primary">Learn More</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="differentiators">
+        <div class="container">
+            <div class="diff-grid">
+                <div class="diff-content">
+                    <h2 class="diff-title">How TrialSage™ Stands Apart</h2>
+                    <p class="diff-description">Our platform delivers unique capabilities that transform regulatory submissions and boost efficiency across your organization.</p>
+                    
+                    <div class="diff-list">
+                        <div class="diff-item">
+                            <div class="diff-item-icon">
+                                <i class="fas fa-database"></i>
+                            </div>
+                            <div class="diff-item-content">
+                                <h3 class="diff-item-title">Unparalleled Data Repository</h3>
+                                <p class="diff-item-description">Access insights from our proprietary database of 3,217+ parsed clinical study reports across diverse therapeutic areas and geographies.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="diff-item">
+                            <div class="diff-item-icon">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="diff-item-content">
+                                <h3 class="diff-item-title">Advanced AI Capabilities</h3>
+                                <p class="diff-item-description">Our specialized AI models are trained specifically on regulatory documents, delivering superior accuracy and relevance compared to general-purpose tools.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="diff-item">
+                            <div class="diff-item-icon">
+                                <i class="fas fa-globe"></i>
+                            </div>
+                            <div class="diff-item-content">
+                                <h3 class="diff-item-title">Global Regulatory Coverage</h3>
+                                <p class="diff-item-description">Comprehensive support for FDA, EMA, PMDA, and NMPA submissions with region-specific compliance validation and intelligence.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="diff-item">
+                            <div class="diff-item-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="diff-item-content">
+                                <h3 class="diff-item-title">Statistical Simulation Integration</h3>
+                                <p class="diff-item-description">Built-in Monte Carlo simulations for protocol optimization, sample size calculations, and endpoint selection with direct regulatory document integration.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="diff-image">
+                    <img src="landing-assets/regulatory-dashboard.png" alt="TrialSage Dashboard" onerror="this.src='data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22600%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20600%20400%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3Cstyle%20type%3D%22text%2Fcss%22%3E%23holder_1%20text%20%7B%20fill%3A%23ffffff%3Bfont-weight%3Anormal%3Bfont-family%3A%22Inter%22%2C%20sans-serif%3Bfont-size%3A30px%20%7D%20%3C%2Fstyle%3E%3C%2Fdefs%3E%3Cg%20id%3D%22holder_1%22%3E%3Crect%20width%3D%22600%22%20height%3D%22400%22%20fill%3D%22%230B6E4F%22%3E%3C%2Frect%3E%3Cg%3E%3Ctext%20x%3D%22170%22%20y%3D%22215%22%3ETrialSage%20Dashboard%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E';">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2 class="cta-title">Ready to Transform Your Regulatory Process?</h2>
+                <p class="cta-description">Schedule a personalized demo to see how TrialSage™ can help your team achieve faster submissions with higher quality and compliance.</p>
+                <a href="/demo" class="cta-btn">Request Demo</a>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <a href="/" class="footer-logo">TrialSage™ by Concept2Cures</a>
+                    <p class="footer-description">Transforming regulatory submissions with AI-powered intelligence for pharmaceutical and biotech companies worldwide.</p>
+                    <div class="footer-social">
+                        <a href="#" class="footer-social-link"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" class="footer-social-link"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="footer-heading">Solutions</h3>
+                    <div class="footer-links">
+                        <a href="/solutions/csr-intelligence" class="footer-link">CSR Intelligence™</a>
+                        <a href="/solutions/ind-wizard" class="footer-link">IND Wizard™</a>
+                        <a href="/solutions/ich-wiz" class="footer-link">ICH Wiz™</a>
+                        <a href="/solutions/vault-workspace" class="footer-link">Vault™ Workspace</a>
+                        <a href="/solutions/study-architect" class="footer-link">Study Architect™</a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="footer-heading">Company</h3>
+                    <div class="footer-links">
+                        <a href="/about" class="footer-link">About Us</a>
+                        <a href="/team" class="footer-link">Our Team</a>
+                        <a href="/careers" class="footer-link">Careers</a>
+                        <a href="/news" class="footer-link">News & Events</a>
+                        <a href="/contact" class="footer-link">Contact</a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="footer-heading">Contact</h3>
+                    <div class="footer-links">
+                        <div class="footer-contact">
+                            <i class="fas fa-envelope"></i>
+                            <span>info@concept2cures.com</span>
+                        </div>
+                        <div class="footer-contact">
+                            <i class="fas fa-phone"></i>
+                            <span>+1 (617) 555-0123</span>
+                        </div>
+                        <div class="footer-contact">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Cambridge, MA, USA</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <div class="footer-copyright">
+                    © 2025 Concept2Cures, Inc. All rights reserved.
+                </div>
+                
+                <div class="footer-legal">
+                    <a href="/privacy" class="footer-legal-link">Privacy Policy</a>
+                    <a href="/terms" class="footer-legal-link">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile Menu Toggle
+        document.getElementById('menu-toggle').addEventListener('click', function() {
+            document.getElementById('mobile-menu').classList.add('active');
+            document.getElementById('overlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        
+        document.getElementById('close-menu').addEventListener('click', function() {
+            document.getElementById('mobile-menu').classList.remove('active');
+            document.getElementById('overlay').classList.remove('active');
+            document.body.style.overflow = '';
+        });
+        
+        document.getElementById('overlay').addEventListener('click', function() {
+            document.getElementById('mobile-menu').classList.remove('active');
+            document.getElementById('overlay').classList.remove('active');
+            document.body.style.overflow = '';
+        });
+        
+        // Mobile Submenu Toggle
+        document.querySelectorAll('.mobile-submenu-toggle').forEach(function(toggle) {
+            toggle.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const submenu = document.getElementById(targetId);
+                
+                if (submenu.classList.contains('active')) {
+                    submenu.classList.remove('active');
+                    this.classList.remove('active');
+                } else {
+                    // Close other active submenus
+                    document.querySelectorAll('.mobile-submenu.active').forEach(function(menu) {
+                        menu.classList.remove('active');
+                    });
+                    document.querySelectorAll('.mobile-submenu-toggle.active').forEach(function(toggleBtn) {
+                        toggleBtn.classList.remove('active');
+                    });
+                    
+                    submenu.classList.add('active');
+                    this.classList.add('active');
+                }
+            });
+        });
+        
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    const headerHeight = document.querySelector('header').offsetHeight;
+                    const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+                    
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Close mobile menu if open
+                    document.getElementById('mobile-menu').classList.remove('active');
+                    document.getElementById('overlay').classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+        });
+    </script>
 </body>
 </html>
