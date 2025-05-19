@@ -10,6 +10,7 @@ import { initializeStates, saveState, loadState, recoverWorkflow, getWorkflowDia
 import WorkflowContinuityManager from '../components/recovery/WorkflowContinuityManager';
 import DeviceProfileSelector from '../components/510k/DeviceProfileSelector';
 import NavigationBlocker from '../components/navigation/NavigationBlocker';
+import { cleanupModals } from '../lib/modalHelpers';
 
 // Implementation of openDocumentSafely function
 const openDocumentSafely = (documentPath, documentName, toast) => {
