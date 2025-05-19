@@ -91,8 +91,13 @@ const ClientPortalLanding = () => {
     // Find the module path without trying to set the current module
     const selectedModule = moduleCards.find(m => m.id === moduleId);
     if (selectedModule) {
-      const fullUrl = window.location.origin + selectedModule.path;
-      window.location.href = fullUrl;
+      // Use React router navigation instead of window.location
+      setLocation(selectedModule.path);
+      
+      // Also set the current module in context if available
+      if (setCurrentModule) {
+        setCurrentModule(selectedModule);
+      }
     }
   };
   
