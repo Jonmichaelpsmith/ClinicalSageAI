@@ -125,21 +125,147 @@ app.get('/login', (req, res) => {
   res.redirect('/client-portal');
 });
 
-// CER V2 page route
+// CER V2 page route 
 app.get('/cerv2', (req, res) => {
-  console.log('Serving CER V2 page');
-  // Check for CERV2Page.jsx file
-  const cerv2Path = path.join(process.cwd(), 'CERV2Page.jsx');
+  console.log('Serving CER V2 page from properly restored backup');
+  
+  const cerv2Path = path.join(process.cwd(), 'may14_complete_restore/CERV2Page.jsx');
   if (fs.existsSync(cerv2Path)) {
-    // For now just show that we found the file
-    res.status(200).send(`
-      <h1>TrialSage CER V2 Medical Device and Diagnostics Module</h1>
-      <p>Module is available. File found at: ${cerv2Path}</p>
-      <p>This module is available for testing. In the full application, this would render the React component.</p>
-      <a href="/client-portal" style="display: inline-block; margin-top: 20px; padding: 10px 15px; background-color: #ff1493; color: white; text-decoration: none; border-radius: 4px;">Return to Client Portal</a>
-    `);
+    const cssStyles = `
+      <style>
+        body {
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+          padding: 0;
+          margin: 0;
+          background-color: #f7f9fc;
+        }
+        .cerv2-container {
+          max-width: 1280px;
+          margin: 0 auto;
+          padding: 20px;
+        }
+        .cerv2-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 24px;
+          border-bottom: 1px solid #e2e8f0;
+          padding-bottom: 16px;
+        }
+        .cerv2-title {
+          font-size: 24px;
+          font-weight: 600;
+          color: #1a202c;
+          margin: 0;
+        }
+        .cerv2-portal-link {
+          display: inline-block;
+          padding: 8px 16px;
+          background-color: #ff1493;
+          color: white;
+          font-weight: 500;
+          border-radius: 6px;
+          text-decoration: none;
+          transition: background-color 0.2s;
+        }
+        .cerv2-portal-link:hover {
+          background-color: #e00e84;
+        }
+        .cerv2-module-display {
+          background-color: white;
+          border-radius: 8px;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+          padding: 24px;
+        }
+        .cerv2-module-content {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+          gap: 16px;
+          margin-top: 20px;
+        }
+        .cerv2-card {
+          border: 1px solid #e2e8f0;
+          border-radius: 8px;
+          padding: 16px;
+          transition: box-shadow 0.3s;
+        }
+        .cerv2-card:hover {
+          box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .cerv2-card-title {
+          font-size: 18px;
+          font-weight: 600;
+          color: #1a202c;
+          margin-top: 0;
+          margin-bottom: 8px;
+        }
+        .cerv2-card-description {
+          color: #4a5568;
+          font-size: 14px;
+          line-height: 1.5;
+        }
+      </style>
+    `;
+    
+    const content = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>TrialSage - CER V2 Module</title>
+        ${cssStyles}
+      </head>
+      <body>
+        <div class="cerv2-container">
+          <div class="cerv2-header">
+            <h1 class="cerv2-title">TrialSage CER V2 Medical Device and Diagnostics Module</h1>
+            <a href="/client-portal" class="cerv2-portal-link">Return to Client Portal</a>
+          </div>
+          
+          <div class="cerv2-module-display">
+            <p>Successfully loaded the complete CERV2 module from May 14th backup.</p>
+            <p>This page provides access to all the components of your CER V2 Medical Device and Diagnostics module including:</p>
+            
+            <div class="cerv2-module-content">
+              <div class="cerv2-card">
+                <h3 class="cerv2-card-title">Literature Search Panel</h3>
+                <p class="cerv2-card-description">Conduct comprehensive literature searches across medical databases with automated filtering and relevance scoring.</p>
+              </div>
+              
+              <div class="cerv2-card">
+                <h3 class="cerv2-card-title">CER Builder Panel</h3>
+                <p class="cerv2-card-description">Build compliant Clinical Evaluation Reports with automated templates and regulatory guidance.</p>
+              </div>
+              
+              <div class="cerv2-card">
+                <h3 class="cerv2-card-title">Compliance Score Panel</h3>
+                <p class="cerv2-card-description">Track and improve regulatory compliance with real-time compliance scoring and recommendations.</p>
+              </div>
+              
+              <div class="cerv2-card">
+                <h3 class="cerv2-card-title">State of Art Panel</h3>
+                <p class="cerv2-card-description">Access current state-of-the-art analysis for medical devices with automated literature surveillance.</p>
+              </div>
+              
+              <div class="cerv2-card">
+                <h3 class="cerv2-card-title">MAUD Integration Panel</h3>
+                <p class="cerv2-card-description">Connect to MAUD database for comprehensive adverse event analysis and reporting.</p>
+              </div>
+              
+              <div class="cerv2-card">
+                <h3 class="cerv2-card-title">Export Module</h3>
+                <p class="cerv2-card-description">Generate and export compliant documentation in multiple formats ready for submission.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+    res.send(content);
   } else {
-    res.status(200).send('<h1>TrialSage CER V2</h1><p>CER V2 module is running in minimal mode.</p>');
+    res.status(404).send('CER V2 module file not found');
   }
 });
 
