@@ -137,9 +137,16 @@ app.get('/login', (req, res) => {
 // CER V2 page route
 app.get('/cerv2', (req, res) => {
   console.log('Serving CER V2 page');
-  const landingPath = path.join(process.cwd(), 'clean_landing_page.html');
-  if (fs.existsSync(landingPath)) {
-    res.sendFile(landingPath);
+  // Check for CERV2Page.jsx file
+  const cerv2Path = path.join(process.cwd(), 'CERV2Page.jsx');
+  if (fs.existsSync(cerv2Path)) {
+    // For now just show that we found the file
+    res.status(200).send(`
+      <h1>TrialSage CER V2 Medical Device and Diagnostics Module</h1>
+      <p>Module is available. File found at: ${cerv2Path}</p>
+      <p>This module is available for testing. In the full application, this would render the React component.</p>
+      <a href="/client-portal" style="display: inline-block; margin-top: 20px; padding: 10px 15px; background-color: #ff1493; color: white; text-decoration: none; border-radius: 4px;">Return to Client Portal</a>
+    `);
   } else {
     res.status(200).send('<h1>TrialSage CER V2</h1><p>CER V2 module is running in minimal mode.</p>');
   }
