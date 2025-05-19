@@ -65,7 +65,13 @@ export function OrganizationSwitcher() {
 
   const handleManageOrganizations = () => {
     setOpen(false);
-    navigate('/client-portal/admin?tab=organizations');
+    
+    // Navigation path for organization management
+    // This path should match the route defined in App.jsx
+    navigate('/tenant-management');
+    
+    // Log navigation for debugging purposes
+    console.log('Navigating to tenant management page');
   };
 
   return (
@@ -137,7 +143,7 @@ export function OrganizationSwitcher() {
             <CommandGroup>
               <CommandItem onSelect={handleManageOrganizations} className="py-2 px-3">
                 <Settings className="mr-2 h-4 w-4" />
-                <span>Admin Panel</span>
+                <span>Manage Organizations</span>
               </CommandItem>
             </CommandGroup>
           </CommandList>

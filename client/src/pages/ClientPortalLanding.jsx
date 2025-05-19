@@ -77,7 +77,6 @@ const ClientPortalLanding = () => {
   const moduleCards = [
     { id: 'ind', title: 'IND Wizard™', description: 'FDA-compliant INDs with automated form generation', path: '/ind-wizard' },
     { id: 'coauthor', title: 'eCTD Co-Author™', description: 'AI-assisted co-authoring of CTD submission sections', path: '/coauthor' },
-    { id: 'templates', title: 'Document Templates™', description: 'Client-specific document templates with regulatory compliance validation', path: '/templates', isNew: true, highlight: true },
     { id: 'cer', title: 'Medical Device and Diagnostics RA™', description: 'The TrialSage Medical Device and Diagnostics RA is a next-generation regulatory automation module designed to eliminate bottlenecks in medical device and combination product submissions. Built for compliance with EU MDR 2017/745, FDA post-market expectations, and ISO 14155 guidance, it fuses real-world adverse event data with literature review automation, GPT-4o reasoning, and structured risk modeling. This CRO-ready platform includes multi-client project management for complete control of your entire CER and 510(k) documentation portfolio.', path: '/cerv2', highlight: true },
     { id: 'cmc', title: 'CMC Wizard™', description: 'Chemistry, Manufacturing, and Controls documentation', path: '/cmc' },
     { id: 'vault', title: 'TrialSage Vault™', description: 'Secure document storage with intelligent retrieval', path: '/vault' },
@@ -92,13 +91,8 @@ const ClientPortalLanding = () => {
     // Find the module path without trying to set the current module
     const selectedModule = moduleCards.find(m => m.id === moduleId);
     if (selectedModule) {
-      // Handle special case for templates
-      if (moduleId === 'templates') {
-        setLocation('/client-portal/templates');
-      } else {
-        const fullUrl = window.location.origin + selectedModule.path;
-        window.location.href = fullUrl;
-      }
+      const fullUrl = window.location.origin + selectedModule.path;
+      window.location.href = fullUrl;
     }
   };
   
@@ -242,39 +236,6 @@ const ClientPortalLanding = () => {
                 </div>
               </div>
               
-              {/* Template Feature Highlight */}
-              <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500 mt-6">
-                <div className="flex flex-col md:flex-row items-start">
-                  <div className="flex-1">
-                    <h2 className="text-xl font-semibold text-indigo-700 mb-2 flex items-center">
-                      New Feature: Document Templates
-                      <span className="ml-2 bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">NEW</span>
-                    </h2>
-                    <p className="text-gray-600 mb-4">
-                      Create, manage, and use personalized templates for your regulatory submissions. 
-                      Ensure consistency across documents and compliance with regulatory standards.
-                    </p>
-                    <Button 
-                      onClick={() => setLocation('/client-portal/templates')}
-                      className="bg-green-600 hover:bg-green-700"
-                    >
-                      Explore Document Templates
-                    </Button>
-                  </div>
-                  <div className="hidden md:block ml-6 bg-green-50 p-3 rounded-lg mt-4 md:mt-0">
-                    <div className="text-sm text-green-800">
-                      <p className="font-medium mb-2">Features:</p>
-                      <ul className="list-disc pl-5 space-y-1">
-                        <li>Client-specific template library</li>
-                        <li>Template version control</li>
-                        <li>Regulatory compliance checking</li>
-                        <li>eCTD-compliant formatting</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
               {/* Module Cards */}
               <div className="bg-white rounded-xl shadow-md p-6">
                 <div className="flex justify-between items-center mb-4">
@@ -353,12 +314,20 @@ const ClientPortalLanding = () => {
                 
                 <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
                   <Button
-                    onClick={() => setLocation('/client-portal/admin')}
+                    onClick={() => setLocation('/client-portal/client-management')}
+                    variant="outline"
+                    className="w-full justify-center"
+                  >
+                    <Users className="mr-2 h-4 w-4" />
+                    Manage Clients
+                  </Button>
+                  <Button
+                    onClick={() => setLocation('/tenant-management')}
                     variant="outline"
                     className="w-full justify-center"
                   >
                     <Settings className="mr-2 h-4 w-4" />
-                    Admin Panel
+                    Manage Organizations
                   </Button>
                 </div>
               </div>

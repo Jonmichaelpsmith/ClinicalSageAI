@@ -68,8 +68,6 @@ import {
   Eye,
   ChevronDown,
   ChevronRight,
-  FilePdf,
-  FileSpreadsheet,
   ChevronLeft,
   Table,
   BarChart3,
@@ -334,12 +332,6 @@ export default function CoAuthor() {
   const [exportInProgress, setExportInProgress] = useState(false);
   const [exportFormat, setExportFormat] = useState('html');
   const [exportRegion, setExportRegion] = useState('US');
-  
-  // Multi-region regulatory compliance checking state
-  const [checkingCompliance, setCheckingCompliance] = useState(false);
-  const [multiRegionResults, setMultiRegionResults] = useState(null);
-  const [selectedRegions, setSelectedRegions] = useState(['US']);
-  const [complianceReportReady, setComplianceReportReady] = useState(false);
   const [exportOptions, setExportOptions] = useState({
     includeToc: true,
     includeValidationReport: true,
@@ -435,7 +427,7 @@ export default function CoAuthor() {
     checkGoogleAuth();
   }, []);
   
-  const [validationResults, setValidationResults] = useState({
+  const [validationResults] = useState({
     completeness: 78,
     consistency: 92,
     references: 65,
@@ -1700,186 +1692,6 @@ export default function CoAuthor() {
     }
   };
   
-  // Function to handle multi-region regulatory compliance check
-  const runMultiRegionComplianceCheck = async () => {
-    try {
-      setCheckingCompliance(true);
-      
-      // Determine which regions to check
-      const regionsToCheck = exportRegion === 'ALL'
-        ? ['US', 'EU', 'CA', 'JP', 'ICH']
-        : [exportRegion];
-      
-      setSelectedRegions(regionsToCheck);
-      
-      // In a real application, we would call an API to run the compliance check
-      // For this implementation, we'll simulate delays and results
-      
-      // Simulated analysis delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Generate simulated compliance data for each region
-      const simulatedResults = {
-        US: {
-          overallScore: Math.floor(Math.random() * 25) + 75, // 75-99%
-          sectionScores: {
-            'Module 1': Math.floor(Math.random() * 20) + 80,
-            'Module 2': Math.floor(Math.random() * 20) + 80,
-            'Module 3': Math.floor(Math.random() * 20) + 80,
-            'Module 4': Math.floor(Math.random() * 20) + 80,
-            'Module 5': Math.floor(Math.random() * 20) + 80,
-          },
-          findings: [
-            {
-              id: 'FDA-001',
-              section: '2.5.3',
-              description: 'Efficacy data lacks required statistical significance discussion',
-              severity: 'major',
-              regulation: 'FDA Guidance for Industry E9',
-              suggestion: 'Add detailed p-value analysis and confidence intervals'
-            },
-            {
-              id: 'FDA-002',
-              section: '2.7.1',
-              description: 'Missing demographic representation analysis',
-              severity: 'minor',
-              regulation: 'FDA Diversity Action Plan',
-              suggestion: 'Include demographic breakdown and representation analysis'
-            }
-          ]
-        }
-      };
-      
-      // Add data for other regions if requested
-      if (regionsToCheck.includes('EU')) {
-        simulatedResults.EU = {
-          overallScore: Math.floor(Math.random() * 25) + 75,
-          sectionScores: {
-            'Module 1': Math.floor(Math.random() * 20) + 80,
-            'Module 2': Math.floor(Math.random() * 20) + 80,
-            'Module 3': Math.floor(Math.random() * 20) + 80,
-            'Module 4': Math.floor(Math.random() * 20) + 80,
-            'Module 5': Math.floor(Math.random() * 20) + 80,
-          },
-          findings: [
-            {
-              id: 'EMA-001',
-              section: '1.8.2',
-              description: 'Missing risk management plan details according to EMA requirements',
-              severity: 'critical',
-              regulation: 'EMA Guideline on Risk Management Systems for Medicinal Products',
-              suggestion: 'Include detailed pharmacovigilance plan with EU-specific requirements'
-            }
-          ]
-        };
-      }
-      
-      if (regionsToCheck.includes('CA')) {
-        simulatedResults.CA = {
-          overallScore: Math.floor(Math.random() * 25) + 75,
-          sectionScores: {
-            'Module 1': Math.floor(Math.random() * 20) + 80,
-            'Module 2': Math.floor(Math.random() * 20) + 80,
-            'Module 3': Math.floor(Math.random() * 20) + 80,
-            'Module 4': Math.floor(Math.random() * 20) + 80,
-            'Module 5': Math.floor(Math.random() * 20) + 80,
-          },
-          findings: [
-            {
-              id: 'HC-001',
-              section: '1.3.1',
-              description: 'Product Monograph missing required Canadian labeling elements',
-              severity: 'major',
-              regulation: 'Health Canada Product Monograph Guidance',
-              suggestion: 'Update product information to include Canada-specific elements'
-            }
-          ]
-        };
-      }
-      
-      if (regionsToCheck.includes('JP')) {
-        simulatedResults.JP = {
-          overallScore: Math.floor(Math.random() * 25) + 75,
-          sectionScores: {
-            'Module 1': Math.floor(Math.random() * 20) + 80,
-            'Module 2': Math.floor(Math.random() * 20) + 80,
-            'Module 3': Math.floor(Math.random() * 20) + 80,
-            'Module 4': Math.floor(Math.random() * 20) + 80,
-            'Module 5': Math.floor(Math.random() * 20) + 80,
-          },
-          findings: [
-            {
-              id: 'PMDA-001',
-              section: '2.7.3',
-              description: 'Ethnic factors analysis insufficient for Japanese population',
-              severity: 'major',
-              regulation: 'PMDA Guidance on Ethnic Factors',
-              suggestion: 'Expand ethnic factors analysis with Japan-specific data'
-            }
-          ]
-        };
-      }
-      
-      if (regionsToCheck.includes('ICH')) {
-        simulatedResults.ICH = {
-          overallScore: Math.floor(Math.random() * 25) + 75,
-          sectionScores: {
-            'Module 1': Math.floor(Math.random() * 20) + 80,
-            'Module 2': Math.floor(Math.random() * 20) + 80,
-            'Module 3': Math.floor(Math.random() * 20) + 80,
-            'Module 4': Math.floor(Math.random() * 20) + 80,
-            'Module 5': Math.floor(Math.random() * 20) + 80,
-          },
-          findings: [
-            {
-              id: 'ICH-001',
-              section: '2.3.1',
-              description: 'Quality overall summary lacks ICH M4Q structure',
-              severity: 'minor',
-              regulation: 'ICH M4Q(R1)',
-              suggestion: 'Reorganize quality summary according to current ICH guidelines'
-            }
-          ]
-        };
-      }
-      
-      // Set the results
-      setMultiRegionResults(simulatedResults);
-      setComplianceReportReady(true);
-      
-      // Update the validation results with the new compliance data
-      setValidationResults(prev => ({
-        ...prev,
-        regulatory: simulatedResults[exportRegion]?.overallScore || prev.regulatory
-      }));
-      
-      toast({
-        title: "Compliance Check Complete",
-        description: `Multi-region regulatory compliance check completed for ${regionsToCheck.length} region(s).`,
-        variant: "success",
-      });
-    } catch (error) {
-      console.error("Compliance check error:", error);
-      toast({
-        title: "Compliance Check Failed",
-        description: "There was an error running the regulatory compliance check. Please try again.",
-        variant: "error",
-      });
-    } finally {
-      setCheckingCompliance(false);
-    }
-  };
-
-  // Function to export compliance report
-  const exportComplianceReport = (format) => {
-    // In a real application, this would generate an actual PDF or CSV
-    toast({
-      title: "Report Exported",
-      description: `Multi-region compliance report exported in ${format.toUpperCase()} format.`,
-      variant: "success",
-    });
-  };
-  
   // Serialize the document state to JSON
   const serializeDocument = () => {
     try {
@@ -1973,186 +1785,6 @@ export default function CoAuthor() {
           // Since we're working within a single file, we'll handle the eCTD backbone generation directly
           // In a production environment, this would be a proper backend endpoint
           console.log('Generating eCTD backbone for region:', exportRegion);
-          
-  // Function to handle multi-region regulatory compliance check
-  const runMultiRegionComplianceCheck = async () => {
-    try {
-      setCheckingCompliance(true);
-      
-      // Determine which regions to check
-      const regionsToCheck = exportRegion === 'ALL'
-        ? ['US', 'EU', 'CA', 'JP', 'ICH']
-        : [exportRegion];
-      
-      setSelectedRegions(regionsToCheck);
-      
-      // In a real application, we would call an API to run the compliance check
-      // For this implementation, we'll simulate delays and results
-      
-      // Simulated analysis delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Generate simulated compliance data for each region
-      const simulatedResults = {
-        US: {
-          overallScore: Math.floor(Math.random() * 25) + 75, // 75-99%
-          sectionScores: {
-            'Module 1': Math.floor(Math.random() * 20) + 80,
-            'Module 2': Math.floor(Math.random() * 20) + 80,
-            'Module 3': Math.floor(Math.random() * 20) + 80,
-            'Module 4': Math.floor(Math.random() * 20) + 80,
-            'Module 5': Math.floor(Math.random() * 20) + 80,
-          },
-          findings: [
-            {
-              id: 'FDA-001',
-              section: '2.5.3',
-              description: 'Efficacy data lacks required statistical significance discussion',
-              severity: 'major',
-              regulation: 'FDA Guidance for Industry E9',
-              suggestion: 'Add detailed p-value analysis and confidence intervals'
-            },
-            {
-              id: 'FDA-002',
-              section: '2.7.1',
-              description: 'Missing demographic representation analysis',
-              severity: 'minor',
-              regulation: 'FDA Diversity Action Plan',
-              suggestion: 'Include demographic breakdown and representation analysis'
-            }
-          ]
-        }
-      };
-      
-      // Add data for other regions if requested
-      if (regionsToCheck.includes('EU')) {
-        simulatedResults.EU = {
-          overallScore: Math.floor(Math.random() * 25) + 75,
-          sectionScores: {
-            'Module 1': Math.floor(Math.random() * 20) + 80,
-            'Module 2': Math.floor(Math.random() * 20) + 80,
-            'Module 3': Math.floor(Math.random() * 20) + 80,
-            'Module 4': Math.floor(Math.random() * 20) + 80,
-            'Module 5': Math.floor(Math.random() * 20) + 80,
-          },
-          findings: [
-            {
-              id: 'EMA-001',
-              section: '1.8.2',
-              description: 'Missing risk management plan details according to EMA requirements',
-              severity: 'critical',
-              regulation: 'EMA Guideline on Risk Management Systems for Medicinal Products',
-              suggestion: 'Include detailed pharmacovigilance plan with EU-specific requirements'
-            }
-          ]
-        };
-      }
-      
-      if (regionsToCheck.includes('CA')) {
-        simulatedResults.CA = {
-          overallScore: Math.floor(Math.random() * 25) + 75,
-          sectionScores: {
-            'Module 1': Math.floor(Math.random() * 20) + 80,
-            'Module 2': Math.floor(Math.random() * 20) + 80,
-            'Module 3': Math.floor(Math.random() * 20) + 80,
-            'Module 4': Math.floor(Math.random() * 20) + 80,
-            'Module 5': Math.floor(Math.random() * 20) + 80,
-          },
-          findings: [
-            {
-              id: 'HC-001',
-              section: '1.3.1',
-              description: 'Product Monograph missing required Canadian labeling elements',
-              severity: 'major',
-              regulation: 'Health Canada Product Monograph Guidance',
-              suggestion: 'Update product information to include Canada-specific elements'
-            }
-          ]
-        };
-      }
-      
-      if (regionsToCheck.includes('JP')) {
-        simulatedResults.JP = {
-          overallScore: Math.floor(Math.random() * 25) + 75,
-          sectionScores: {
-            'Module 1': Math.floor(Math.random() * 20) + 80,
-            'Module 2': Math.floor(Math.random() * 20) + 80,
-            'Module 3': Math.floor(Math.random() * 20) + 80,
-            'Module 4': Math.floor(Math.random() * 20) + 80,
-            'Module 5': Math.floor(Math.random() * 20) + 80,
-          },
-          findings: [
-            {
-              id: 'PMDA-001',
-              section: '2.7.3',
-              description: 'Ethnic factors analysis insufficient for Japanese population',
-              severity: 'major',
-              regulation: 'PMDA Guidance on Ethnic Factors',
-              suggestion: 'Expand ethnic factors analysis with Japan-specific data'
-            }
-          ]
-        };
-      }
-      
-      if (regionsToCheck.includes('ICH')) {
-        simulatedResults.ICH = {
-          overallScore: Math.floor(Math.random() * 25) + 75,
-          sectionScores: {
-            'Module 1': Math.floor(Math.random() * 20) + 80,
-            'Module 2': Math.floor(Math.random() * 20) + 80,
-            'Module 3': Math.floor(Math.random() * 20) + 80,
-            'Module 4': Math.floor(Math.random() * 20) + 80,
-            'Module 5': Math.floor(Math.random() * 20) + 80,
-          },
-          findings: [
-            {
-              id: 'ICH-001',
-              section: '2.3.1',
-              description: 'Quality overall summary lacks ICH M4Q structure',
-              severity: 'minor',
-              regulation: 'ICH M4Q(R1)',
-              suggestion: 'Reorganize quality summary according to current ICH guidelines'
-            }
-          ]
-        };
-      }
-      
-      // Set the results
-      setMultiRegionResults(simulatedResults);
-      setComplianceReportReady(true);
-      
-      // Update the validation results with the new compliance data
-      setValidationResults(prev => ({
-        ...prev,
-        regulatory: simulatedResults[exportRegion]?.overallScore || prev.regulatory
-      }));
-      
-      toast({
-        title: "Compliance Check Complete",
-        description: `Multi-region regulatory compliance check completed for ${regionsToCheck.length} region(s).`,
-        variant: "success",
-      });
-    } catch (error) {
-      console.error("Compliance check error:", error);
-      toast({
-        title: "Compliance Check Failed",
-        description: "There was an error running the regulatory compliance check. Please try again.",
-        variant: "error",
-      });
-    } finally {
-      setCheckingCompliance(false);
-    }
-  };
-
-  // Function to export compliance report
-  const exportComplianceReport = (format) => {
-    // In a real application, this would generate an actual PDF or CSV
-    toast({
-      title: "Report Exported",
-      description: `Multi-region compliance report exported in ${format.toUpperCase()} format.`,
-      variant: "success",
-    });
-  };
           
           // Mock eCTD XML backbone data generation
           const generateEctdBackbone = (metadata, region, module) => {
@@ -5358,214 +4990,47 @@ export default function CoAuthor() {
               <TabsContent value="compliance" className="mt-4 space-y-4">
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-lg font-medium">Regulatory Compliance</h3>
-                      <div className="flex space-x-2">
-                        <Select 
-                          value={exportRegion} 
-                          onValueChange={setExportRegion}
-                        >
-                          <SelectTrigger className="w-[160px] h-8">
-                            <SelectValue placeholder="Select Region" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectGroup>
-                              <SelectLabel>Regulatory Regions</SelectLabel>
-                              <SelectItem value="US">🇺🇸 FDA (US)</SelectItem>
-                              <SelectItem value="EU">🇪🇺 EMA (EU)</SelectItem>
-                              <SelectItem value="CA">🇨🇦 Health Canada</SelectItem>
-                              <SelectItem value="JP">🇯🇵 PMDA (Japan)</SelectItem>
-                              <SelectItem value="ICH">🌎 ICH (International)</SelectItem>
-                              <SelectItem value="ALL">🌐 All Regions</SelectItem>
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
-
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="h-8"
-                                onClick={() => runMultiRegionComplianceCheck()}
-                              >
-                                {checkingCompliance ? (
-                                  <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full mr-1"></div>
-                                ) : (
-                                  <ClipboardCheck className="h-4 w-4 mr-1" />
-                                )}
-                                Check Compliance
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Run multi-region regulatory compliance check</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-                    </div>
+                    <h3 className="text-lg font-medium">Regulatory Compliance</h3>
                     <div className="border rounded-md p-4 space-y-4">
-                      {multiRegionResults && exportRegion === 'US' && (
-                        <div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span>FDA Guidelines Compliance</span>
-                            <span className="font-medium">{multiRegionResults.US.overallScore}%</span>
-                          </div>
-                          <Progress value={multiRegionResults.US.overallScore} className="h-2 bg-slate-100" indicatorClassName="bg-green-600" />
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>FDA Guidelines Compliance</span>
+                          <span className="font-medium">{validationResults.regulatory}%</span>
                         </div>
-                      )}
-                      
-                      {multiRegionResults && exportRegion === 'EU' && (
-                        <div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span>EMA Guidelines Compliance</span>
-                            <span className="font-medium">{multiRegionResults.EU.overallScore}%</span>
-                          </div>
-                          <Progress value={multiRegionResults.EU.overallScore} className="h-2 bg-slate-100" indicatorClassName="bg-green-600" />
+                        <Progress value={validationResults.regulatory} className="h-2 bg-slate-100" indicatorClassName="bg-green-600" />
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>ICH M4 Compliance</span>
+                          <span className="font-medium">94%</span>
                         </div>
-                      )}
-                      
-                      {multiRegionResults && exportRegion === 'CA' && (
-                        <div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span>Health Canada Guidelines Compliance</span>
-                            <span className="font-medium">{multiRegionResults.CA.overallScore}%</span>
-                          </div>
-                          <Progress value={multiRegionResults.CA.overallScore} className="h-2 bg-slate-100" indicatorClassName="bg-green-600" />
+                        <Progress value={94} className="h-2 bg-slate-100" indicatorClassName="bg-green-600" />
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>EMA Guidelines Compliance</span>
+                          <span className="font-medium">81%</span>
                         </div>
-                      )}
-                      
-                      {multiRegionResults && exportRegion === 'JP' && (
-                        <div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span>PMDA Guidelines Compliance</span>
-                            <span className="font-medium">{multiRegionResults.JP.overallScore}%</span>
-                          </div>
-                          <Progress value={multiRegionResults.JP.overallScore} className="h-2 bg-slate-100" indicatorClassName="bg-green-600" />
-                        </div>
-                      )}
-                      
-                      {multiRegionResults && exportRegion === 'ICH' && (
-                        <div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span>ICH Guidelines Compliance</span>
-                            <span className="font-medium">{multiRegionResults.ICH.overallScore}%</span>
-                          </div>
-                          <Progress value={multiRegionResults.ICH.overallScore} className="h-2 bg-slate-100" indicatorClassName="bg-green-600" />
-                        </div>
-                      )}
-                      
-                      {(!multiRegionResults || exportRegion === 'ALL') && (
-                        <>
-                          <div>
-                            <div className="flex justify-between text-sm mb-1">
-                              <span>FDA Guidelines Compliance</span>
-                              <span className="font-medium">{validationResults.regulatory}%</span>
-                            </div>
-                            <Progress value={validationResults.regulatory} className="h-2 bg-slate-100" indicatorClassName="bg-green-600" />
-                          </div>
-                          <div>
-                            <div className="flex justify-between text-sm mb-1">
-                              <span>ICH M4 Compliance</span>
-                              <span className="font-medium">94%</span>
-                            </div>
-                            <Progress value={94} className="h-2 bg-slate-100" indicatorClassName="bg-green-600" />
-                          </div>
-                          <div>
-                            <div className="flex justify-between text-sm mb-1">
-                              <span>EMA Guidelines Compliance</span>
-                              <span className="font-medium">81%</span>
-                            </div>
-                            <Progress value={81} className="h-2 bg-slate-100" indicatorClassName="bg-green-600" />
-                          </div>
-                        </>
-                      )}
-                      
-                      {multiRegionResults && multiRegionResults[exportRegion] && (
-                        <div className="mt-4">
-                          <h4 className="font-medium text-sm mb-2">Module Compliance Breakdown</h4>
-                          <div className="space-y-2">
-                            {Object.entries(multiRegionResults[exportRegion].sectionScores).map(([section, score]) => (
-                              <div key={section}>
-                                <div className="flex justify-between text-xs mb-1">
-                                  <span>{section}</span>
-                                  <span>{score}%</span>
-                                </div>
-                                <Progress value={score} className="h-1.5 bg-slate-100" indicatorClassName="bg-blue-500" />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                        <Progress value={81} className="h-2 bg-slate-100" indicatorClassName="bg-green-600" />
+                      </div>
                     </div>
                     
                     <div className="border rounded-md p-4">
-                      <div className="flex justify-between items-center mb-3">
-                        <h4 className="font-medium text-sm">Compliance Findings</h4>
-                        {multiRegionResults && (
-                          <div className="flex space-x-1">
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              className="h-7 text-xs" 
-                              onClick={() => exportComplianceReport('pdf')}
-                            >
-                              <FilePdf className="h-3 w-3 mr-1" />
-                              Export PDF
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              className="h-7 text-xs" 
-                              onClick={() => exportComplianceReport('csv')}
-                            >
-                              <FileSpreadsheet className="h-3 w-3 mr-1" />
-                              Export CSV
-                            </Button>
+                      <h4 className="font-medium text-sm mb-3">Missing Required Elements</h4>
+                      <ul className="space-y-2 text-sm">
+                        <li className="flex items-start">
+                          <div className="w-5 h-5 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0 mr-2 mt-0.5">
+                            <span className="text-xs">!</span>
                           </div>
-                        )}
-                      </div>
-                      
-                      {multiRegionResults && multiRegionResults[exportRegion]?.findings?.length > 0 ? (
-                        <ul className="space-y-2 text-sm">
-                          {multiRegionResults[exportRegion].findings.map((finding) => (
-                            <li key={finding.id} className="flex items-start">
-                              <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mr-2 mt-0.5 ${
-                                finding.severity === 'critical' ? 'bg-red-100 text-red-700' :
-                                finding.severity === 'major' ? 'bg-amber-100 text-amber-700' :
-                                'bg-blue-100 text-blue-700'
-                              }`}>
-                                <span className="text-xs">!</span>
-                              </div>
-                              <div>
-                                <div>{finding.description} (Section {finding.section})</div>
-                                <div className="text-xs text-slate-500 mt-0.5">
-                                  <span className="font-medium">Regulation:</span> {finding.regulation}
-                                </div>
-                                <div className="text-xs text-slate-500 mt-0.5">
-                                  <span className="font-medium">Suggestion:</span> {finding.suggestion}
-                                </div>
-                              </div>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <ul className="space-y-2 text-sm">
-                          <li className="flex items-start">
-                            <div className="w-5 h-5 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0 mr-2 mt-0.5">
-                              <span className="text-xs">!</span>
-                            </div>
-                            <div>Comprehensive risk-benefit analysis in section 2.5.6</div>
-                          </li>
-                          <li className="flex items-start">
-                            <div className="w-5 h-5 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0 mr-2 mt-0.5">
-                              <span className="text-xs">!</span>
-                            </div>
-                            <div>Discussion of results in specific populations (elderly, pediatric)</div>
-                          </li>
-                        </ul>
-                      )}
+                          <div>Comprehensive risk-benefit analysis in section 2.5.6</div>
+                        </li>
+                        <li className="flex items-start">
+                          <div className="w-5 h-5 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0 mr-2 mt-0.5">
+                            <span className="text-xs">!</span>
+                          </div>
+                          <div>Discussion of results in specific populations (elderly, pediatric)</div>
+                        </li>
+                      </ul>
                     </div>
                   </div>
                   
