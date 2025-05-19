@@ -2862,7 +2862,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                 {group.label}
               </div>
               <div className="flex space-x-1">
-                {group.tabs.map((tab) => (
+                {group.tabs && Array.isArray(group.tabs) && group.tabs.map((tab) => (
                   <Button
                     key={tab.id}
                     variant={activeTab === tab.id ? 'default' : 'ghost'}
