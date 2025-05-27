@@ -163,19 +163,30 @@ class TemplateService {
    */
   async updateTemplate(id, templateData) {
     const client = await pool.connect();
-    
+
     try {
       await client.query('BEGIN');
-      
+
       // Check if template exists
       const checkResult = await client.query(
         'SELECT * FROM document_templates WHERE id = $1',
         [id]
       );
-      
+
       if (checkResult.rows.length === 0) {
         throw new Error('Template not found');
       }
+
+      // Save current version
+      const nextVerRes = await client.query(
+        'SELECT COALESCE(MAX(version),0) + 1 AS v FROM template_versions WHERE template_id = $1',
+        [id]
+      );
+      const nextVersion = nextVerRes.rows[0].v;
+      await client.query(
+        'INSERT INTO template_versions (template_id, version, data) VALUES ($1, $2, $3)',
+        [id, nextVersion, checkResult.rows[0]]
+      );
       
       // Build the SET clause dynamically based on provided data
       const updateFields = [];
@@ -459,6 +470,96 @@ class TemplateService {
     } catch (error) {
       logger.error(`Error deleting template file ${fileId}:`, error);
       throw new Error('Failed to delete template file');
+    }
+  }
+
+  /**
+   * Increment usage count for a template
+   * @param {string|number} templateId - Template ID
+   * @returns {Promise<void>}
+   */
+  async incrementUsageCount(templateId) {
+    try {
+      await pool.query(
+        'UPDATE document_templates SET usage_count = COALESCE(usage_count,0) + 1 WHERE id = $1',
+        [templateId]
+      );
+    } catch (error) {
+      logger.error(`Error incrementing usage for template ${templateId}:`, error);
+    }
+  }
+
+  /**
+   * Get version history for a template
+   * @param {string|number} templateId
+   * @returns {Promise<Array>}
+   */
+  async getTemplateVersions(templateId) {
+    const result = await pool.query(
+      'SELECT * FROM template_versions WHERE template_id = $1 ORDER BY version DESC',
+      [templateId]
+    );
+    return result.rows;
+  }
+
+  /**
+   * Roll back a template to a specific version
+   * @param {string|number} templateId
+   * @param {string|number} versionId
+   * @returns {Promise<Object>} - Updated template
+   */
+  async rollbackTemplate(templateId, versionId) {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      const versionRes = await client.query(
+        'SELECT * FROM template_versions WHERE id = $1 AND template_id = $2',
+        [versionId, templateId]
+      );
+
+      if (versionRes.rows.length === 0) {
+        throw new Error('Version not found');
+      }
+
+      const data = versionRes.rows[0].data || {};
+
+      const result = await client.query(
+        `UPDATE document_templates
+         SET title = $1,
+             module = $2,
+             section_id = $3,
+             description = $4,
+             guidance = $5,
+             required = $6,
+             status = $7,
+             sections = $8,
+             content = $9,
+             updated_at = NOW()
+         WHERE id = $10
+         RETURNING *`,
+        [
+          data.title,
+          data.module,
+          data.section_id,
+          data.description,
+          data.guidance,
+          data.required,
+          data.status,
+          JSON.stringify(data.sections || []),
+          data.content,
+          templateId
+        ]
+      );
+
+      await client.query('COMMIT');
+      return result.rows[0];
+    } catch (error) {
+      await client.query('ROLLBACK');
+      logger.error(`Error rolling back template ${templateId} to version ${versionId}:`, error);
+      throw error;
+    } finally {
+      client.release();
     }
   }
   
